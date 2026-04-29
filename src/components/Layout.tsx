@@ -5,7 +5,7 @@ export function Layout() {
     <div className="layout">
       <header className="site-header">
         <Link to="/" className="brand">
-          <span className="brand-mark" aria-hidden>◆</span>
+          <span className="brand-mark" aria-hidden />
           <span>AI Literacy</span>
         </Link>
         <nav className="site-nav">
