@@ -29,18 +29,6 @@ npm run lint       # ESLint
 npm run typecheck  # TS only, no emit
 ```
 
-## How we collaborate
-
-We work on branches and merge through pull requests so five people can work in parallel without stepping on each other.
-
-1. Pick a card from the [Project board](../../projects) and assign yourself.
-2. Branch off `main`: `git checkout -b feat/<short-name>` (or `fix/...`, `chore/...`).
-3. Commit, push, open a PR back into `main`.
-4. Vercel posts a preview URL on the PR — share it for feedback.
-5. One review approval before merging. Squash-merge to keep history tidy.
-
-Keep PRs small and focused — one mini-game or one feature at a time.
-
 ## Project structure
 
 ```
