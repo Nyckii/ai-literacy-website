@@ -1,4 +1,4 @@
-/* 仅针对翻转卡片的局部样式，不影响原有 game-page 结构 */
+
 .flip-cards-container {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
