@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  { useState, useEffect } from 'react';
 import './StereotypingBias.css';
 
 const PROFESSIONS = ['CEO', 'Doctor', 'Nurse', 'Housekeeper', 'Programmer', 'Teacher'];
