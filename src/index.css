@@ -792,3 +792,1063 @@ code {
   font-size: 0.85rem;
   margin-top: 12px;
 }
+
+/* ---------- Representation Bias game ---------- */
+
+.rb-page {
+  max-width: 1040px;
+}
+
+/* Two-column layout: newsstand | training sidebar */
+.rb-layout {
+  display: grid;
+  grid-template-columns: 1fr 280px;
+  gap: 24px;
+  align-items: start;
+}
+
+/* ── Newsstand ─────────────────────── */
+.rb-panel-title {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin: 0 0 14px;
+}
+
+.rb-panel-count {
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: var(--text-muted);
+  text-transform: none;
+  letter-spacing: 0;
+}
+
+.rb-newsstand-empty {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-style: italic;
+  padding: 12px 0;
+}
+
+/* Card grid */
+.rb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+/* Newspaper card */
+.rb-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 16px 16px 14px;
+  border-radius: var(--radius-lg);
+  background: linear-gradient(to bottom right, var(--surface), color-mix(in srgb, var(--surface) 90%, var(--accent-soft)));
+  border: 1px solid color-mix(in srgb, var(--border) 80%, transparent);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.5);
+  text-align: left;
+  cursor: grab;
+  user-select: none;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.1s ease;
+}
+
+.rb-card:active {
+  cursor: grabbing;
+  transform: scale(0.97);
+}
+
+.rb-card:hover {
+  border-color: color-mix(in srgb, var(--accent) 70%, var(--border));
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.rb-card-drag-handle {
+  font-size: 1rem;
+  color: var(--text-muted);
+  opacity: 0.5;
+  line-height: 1;
+  margin-bottom: 4px;
+  letter-spacing: -1px;
+}
+
+.rb-card-name {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+.rb-card-tagline {
+  font-size: 0.78rem;
+  font-style: italic;
+  font-weight: 500;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+
+.rb-card-desc {
+  font-size: 0.83rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+/* ── Sidebar / training box ──────────── */
+.rb-sidebar {
+  position: sticky;
+  top: 80px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rb-drop-zone {
+  min-height: 240px;
+  border-radius: var(--radius-xl);
+  border: 2px dashed color-mix(in srgb, var(--border) 60%, transparent);
+  background: color-mix(in srgb, var(--surface) 50%, transparent);
+  padding: 20px;
+  backdrop-filter: blur(8px);
+  transition:
+    border-color 0.25s ease,
+    background 0.25s ease,
+    transform 0.2s ease;
+}
+
+.rb-drop-zone-over {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 40%, var(--surface));
+  transform: scale(1.02);
+}
+
+.rb-drop-zone-filled {
+  border-style: solid;
+  border-color: var(--border);
+}
+
+.rb-drop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.rb-drop-label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--text-muted);
+}
+
+.rb-drop-count {
+  font-family: var(--mono);
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  background: color-mix(in srgb, var(--border) 40%, var(--surface));
+  padding: 2px 8px;
+  border-radius: 999px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.rb-drop-count-full {
+  background: var(--accent);
+  color: #fff;
+}
+
+.rb-drop-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 24px 0;
+  color: var(--text-muted);
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+.rb-drop-placeholder p {
+  margin: 0;
+}
+
+.rb-drop-icon {
+  font-size: 2rem;
+  opacity: 0.6;
+}
+
+/* Papers in training box */
+.rb-training-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.rb-training-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface));
+  border: 1px solid color-mix(in srgb, var(--accent) 25%, var(--border));
+}
+
+.rb-training-item-text {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.rb-training-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rb-training-tagline {
+  font-size: 0.74rem;
+  color: var(--text-muted);
+  font-style: italic;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.rb-remove-btn {
+  flex-shrink: 0;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  line-height: 1;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: background 0.12s, color 0.12s;
+}
+
+.rb-remove-btn:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+  border-color: #fca5a5;
+}
+
+@media (prefers-color-scheme: dark) {
+  .rb-remove-btn:hover {
+    background: #450a0a;
+    color: #f87171;
+    border-color: #7f1d1d;
+  }
+}
+
+/* Train button */
+.rb-train-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rb-train-btn {
+  width: 100%;
+  justify-content: center;
+  font-size: 0.97rem;
+  padding: 12px 18px;
+}
+
+/* ── Training animation screen ───────── */
+.rb-training-screen {
+  display: flex;
+  justify-content: center;
+  padding: 40px 0;
+}
+
+.rb-training-card {
+  width: 100%;
+  max-width: 480px;
+  padding: 32px 28px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+}
+
+.rb-training-status {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 18px;
+}
+
+.rb-training-bar-track {
+  height: 8px;
+  width: 100%;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+@keyframes rb-fill {
+  from {
+    width: 0%;
+  }
+
+  to {
+    width: 100%;
+  }
+}
+
+.rb-training-bar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  animation: rb-fill 2.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.rb-training-sub {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  margin: 0 0 16px;
+}
+
+.rb-training-sources {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  text-align: left;
+}
+
+@keyframes rb-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.rb-training-source-item {
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  padding: 5px 10px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent-soft) 50%, var(--surface));
+  opacity: 0;
+  animation: rb-fade-in 0.4s ease forwards;
+}
+
+/* ── Results ─────────────────────────── */
+.rb-results {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rb-verdict-card {
+  padding: 22px 26px;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.rb-verdict-transit {
+  border-color: color-mix(in srgb, #3b82f6 40%, var(--border));
+  background: color-mix(in srgb, #eff6ff 60%, var(--surface));
+}
+
+@media (prefers-color-scheme: dark) {
+  .rb-verdict-transit {
+    background: color-mix(in srgb, #1e3a5f 45%, var(--surface));
+    border-color: #3b82f6;
+  }
+}
+
+.rb-verdict-car {
+  border-color: color-mix(in srgb, #f59e0b 40%, var(--border));
+  background: color-mix(in srgb, #fffbeb 60%, var(--surface));
+}
+
+@media (prefers-color-scheme: dark) {
+  .rb-verdict-car {
+    background: color-mix(in srgb, #422006 45%, var(--surface));
+    border-color: #f59e0b;
+  }
+}
+
+.rb-verdict-balanced {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: color-mix(in srgb, var(--accent-soft) 60%, var(--surface));
+}
+
+.rb-verdict-label {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: var(--text);
+}
+
+.rb-verdict-sub {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Spectrum bar */
+.rb-spectrum-wrap {
+  padding: 20px 22px 14px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.rb-spectrum-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.rb-spectrum-track {
+  position: relative;
+  height: 14px;
+  border-radius: 999px;
+  overflow: visible;
+  margin-bottom: 30px;
+}
+
+.rb-spectrum-gradient {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(to right, #3b82f6, #a5b4fc, #fde68a, #f59e0b, #dc2626);
+  opacity: 0.85;
+}
+
+.rb-spectrum-neutral {
+  position: absolute;
+  top: -5px;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 24px;
+  background: var(--text-muted);
+  opacity: 0.45;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.rb-spectrum-marker {
+  position: absolute;
+  top: -8px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  z-index: 2;
+}
+
+.rb-spectrum-marker-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid var(--surface);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.25);
+}
+
+.rb-marker-transit .rb-spectrum-marker-dot {
+  background: #3b82f6;
+}
+
+.rb-marker-car .rb-spectrum-marker-dot {
+  background: #f59e0b;
+}
+
+.rb-marker-balanced .rb-spectrum-marker-dot {
+  background: var(--accent);
+}
+
+.rb-spectrum-marker-label {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-top: 6px;
+  white-space: nowrap;
+}
+
+.rb-spectrum-hint {
+  text-align: center;
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  opacity: 0.6;
+  margin-top: -14px;
+}
+
+/* Conclusion */
+.rb-conclusion {
+  padding: 18px 22px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface));
+  border-radius: var(--radius);
+}
+
+.rb-conclusion-quote {
+  font-size: 1.02rem;
+  font-style: italic;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* Selected sources */
+.rb-selected-list h2 {
+  font-size: 1.05rem;
+  margin-bottom: 12px;
+}
+
+.rb-selected-list ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.rb-selected-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 9px 13px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.93rem;
+}
+
+.rb-selected-name {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.rb-selected-tagline {
+  font-size: 0.8rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* Results actions */
+.rb-results-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+/* ── Responsive ──────────────────────── */
+@media (max-width: 760px) {
+  .rb-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .rb-sidebar {
+    position: static;
+    order: -1;
+    /* training box appears above newsstand on mobile */
+  }
+
+  .rb-drop-zone {
+    min-height: 120px;
+  }
+
+  .rb-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 440px) {
+  .rb-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rb-results-actions {
+    flex-direction: column;
+  }
+}
+
+.rb-page {
+  max-width: 960px;
+}
+
+/* Selection tray */
+.rb-tray {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin-bottom: 24px;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  position: sticky;
+  top: 60px;
+  z-index: 5;
+}
+
+.rb-count {
+  font-size: 1.05rem;
+  font-weight: 500;
+  color: var(--text-muted);
+}
+
+.rb-count-done {
+  color: var(--accent);
+  font-weight: 700;
+}
+
+.rb-tray-actions {
+  display: flex;
+  gap: 10px;
+}
+
+/* Card grid */
+.rb-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
+}
+
+/* Newspaper card */
+.rb-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  padding: 18px 16px 40px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1.5px solid var(--border);
+  box-shadow: var(--shadow-sm);
+  text-align: left;
+  cursor: pointer;
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    background 0.15s ease;
+  font-family: var(--sans);
+  color: var(--text);
+}
+
+.rb-card:hover:not(.rb-card-disabled) {
+  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
+  box-shadow: var(--shadow-md);
+}
+
+.rb-card-selected {
+  border-color: var(--accent) !important;
+  background: color-mix(in srgb, var(--accent-soft) 60%, var(--surface));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 18%, transparent), var(--shadow-sm) !important;
+}
+
+.rb-card-disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.rb-card-name {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.rb-card-tagline {
+  font-size: 0.78rem;
+  font-style: italic;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+.rb-card-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.rb-card-check {
+  position: absolute;
+  bottom: 12px;
+  right: 14px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.82rem;
+  font-weight: 700;
+  border: 1.5px solid var(--border);
+  color: var(--text-muted);
+  background: var(--bg);
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+}
+
+.rb-card-selected .rb-card-check {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* Results */
+.rb-results {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.rb-verdict-card {
+  padding: 24px 28px;
+  border-radius: var(--radius-lg);
+  border: 1.5px solid var(--border);
+  background: var(--surface);
+  box-shadow: var(--shadow-sm);
+}
+
+.rb-verdict-transit {
+  border-color: color-mix(in srgb, #3b82f6 40%, var(--border));
+  background: color-mix(in srgb, #eff6ff 60%, var(--surface));
+}
+
+@media (prefers-color-scheme: dark) {
+  .rb-verdict-transit {
+    background: color-mix(in srgb, #1e3a5f 45%, var(--surface));
+    border-color: #3b82f6;
+  }
+}
+
+.rb-verdict-car {
+  border-color: color-mix(in srgb, #f59e0b 40%, var(--border));
+  background: color-mix(in srgb, #fffbeb 60%, var(--surface));
+}
+
+@media (prefers-color-scheme: dark) {
+  .rb-verdict-car {
+    background: color-mix(in srgb, #422006 45%, var(--surface));
+    border-color: #f59e0b;
+  }
+}
+
+.rb-verdict-balanced {
+  border-color: color-mix(in srgb, var(--accent) 40%, var(--border));
+  background: color-mix(in srgb, var(--accent-soft) 60%, var(--surface));
+}
+
+.rb-verdict-label {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin: 0 0 4px;
+  color: var(--text);
+}
+
+.rb-verdict-sub {
+  font-size: 0.97rem;
+  color: var(--text-muted);
+  margin: 0;
+}
+
+/* Spectrum bar */
+.rb-spectrum-wrap {
+  padding: 22px 24px 16px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.rb-spectrum-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.rb-spectrum-track {
+  position: relative;
+  height: 14px;
+  border-radius: 999px;
+  overflow: visible;
+  margin-bottom: 28px;
+}
+
+.rb-spectrum-gradient {
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  background: linear-gradient(to right, #3b82f6, #a5b4fc, #fde68a, #f59e0b, #dc2626);
+  opacity: 0.85;
+  pointer-events: none;
+}
+
+.rb-spectrum-neutral {
+  position: absolute;
+  top: -5px;
+  transform: translateX(-50%);
+  width: 2px;
+  height: 24px;
+  background: var(--text-muted);
+  opacity: 0.5;
+  border-radius: 1px;
+  pointer-events: none;
+}
+
+.rb-spectrum-marker {
+  position: absolute;
+  top: -8px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  z-index: 2;
+}
+
+.rb-spectrum-marker-dot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid var(--surface);
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.22);
+}
+
+.rb-marker-transit .rb-spectrum-marker-dot {
+  background: #3b82f6;
+}
+
+.rb-marker-car .rb-spectrum-marker-dot {
+  background: #f59e0b;
+}
+
+.rb-marker-balanced .rb-spectrum-marker-dot {
+  background: var(--accent);
+}
+
+.rb-spectrum-marker-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--text);
+  margin-top: 6px;
+  white-space: nowrap;
+}
+
+.rb-spectrum-hint {
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  margin-top: -12px;
+}
+
+/* Conclusion quote */
+.rb-conclusion {
+  padding: 20px 24px;
+  border-left: 3px solid var(--accent);
+  background: color-mix(in srgb, var(--accent-soft) 55%, var(--surface));
+  border-radius: var(--radius);
+}
+
+.rb-conclusion-quote {
+  font-size: 1.05rem;
+  font-style: italic;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.55;
+}
+
+/* Selected sources list */
+.rb-selected-list h2 {
+  font-size: 1.1rem;
+  margin-bottom: 14px;
+}
+
+.rb-selected-list ul {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.rb-selected-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  font-size: 0.95rem;
+}
+
+.rb-selected-name {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.rb-selected-tagline {
+  font-size: 0.82rem;
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+.rb-explainer-note {
+  margin-top: 0;
+}
+
+/* Results action buttons */
+.rb-results-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+@media (max-width: 620px) {
+  .rb-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .rb-tray {
+    top: 54px;
+    padding: 12px 14px;
+  }
+
+  .rb-results-actions {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 420px) {
+  .rb-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ---------- Historical Bias page ---------- */
+
+.hb-page {
+  max-width: 880px;
+}
+
+.hb-card {
+  margin-bottom: 32px;
+  padding: 28px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-sm);
+}
+
+.hb-card h2 {
+  font-size: 1.2rem;
+  margin-bottom: 16px;
+}
+
+.hb-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.hb-list li strong {
+  color: var(--text);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.hb-note {
+  margin-bottom: 48px;
+  padding: 24px;
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface));
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+}
+
+.hb-note h2 {
+  font-size: 1.1rem;
+  margin-bottom: 12px;
+  color: var(--text);
+}
+
+.hb-cta {
+  text-align: center;
+  padding: 48px 24px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.hb-cta h2 {
+  margin-bottom: 16px;
+}
+
+.hb-cta p {
+  color: var(--text-muted);
+  margin-bottom: 32px;
+  max-width: 50ch;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.hb-cta .btn {
+  font-size: 1.05rem;
+  padding: 12px 24px;
+}
