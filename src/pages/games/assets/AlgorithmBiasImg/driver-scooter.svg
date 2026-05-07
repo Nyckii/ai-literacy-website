@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 96" role="img" aria-labelledby="title desc">
+  <title id="title">Delivery scooter game marker</title>
+  <desc id="desc">A right-facing semi-isometric delivery rider on a green scooter with a delivery box.</desc>
+  <defs>
+    <linearGradient id="greenBody" x1="20" y1="70" x2="92" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#32B75E"/>
+      <stop offset="0.55" stop-color="#58C96F"/>
+      <stop offset="1" stop-color="#A7DF72"/>
+    </linearGradient>
+    <linearGradient id="darkGreen" x1="45" y1="55" x2="92" y2="28" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0F5B5D"/>
+      <stop offset="1" stop-color="#16706B"/>
+    </linearGradient>
+    <linearGradient id="boxGrad" x1="72" y1="25" x2="108" y2="55" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#B8EA73"/>
+      <stop offset="0.55" stop-color="#79D36B"/>
+      <stop offset="1" stop-color="#48A86B"/>
+    </linearGradient>
+    <linearGradient id="helmetGrad" x1="55" y1="11" x2="79" y2="34" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#9AD967"/>
+      <stop offset="1" stop-color="#10646C"/>
+    </linearGradient>
+    <linearGradient id="wheelGrad" x1="19" y1="67" x2="43" y2="91" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#425362"/>
+      <stop offset="1" stop-color="#182331"/>
+    </linearGradient>
+    <filter id="softShadow" x="-20%" y="-20%" width="140%" height="150%">
+      <feDropShadow dx="2" dy="5" stdDeviation="3" flood-color="#0F2B34" flood-opacity="0.25"/>
+    </filter>
+    <filter id="whiteLift" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="0" stdDeviation="1.2" flood-color="#FFFFFF" flood-opacity="0.9"/>
+    </filter>
+  </defs>
+
+  <!-- Ground shadow -->
+  <ellipse cx="65" cy="82" rx="48" ry="12" fill="#2E6472" opacity="0.18"/>
+
+  <g filter="url(#whiteLift)">
+    <!-- Rear delivery box -->
+    <g filter="url(#softShadow)">
+      <path d="M75 25 L101 36 L101 57 L75 46 Z" fill="#5CBF69"/>
+      <path d="M75 25 L91 16 L116 28 L101 36 Z" fill="#BCEB75"/>
+      <path d="M101 36 L116 28 L116 50 L101 57 Z" fill="#46A66A"/>
+      <path d="M75 25 L101 36 L116 28 L91 16 Z" fill="none" stroke="#147263" stroke-width="2" stroke-linejoin="round" opacity="0.7"/>
+      <path d="M75 25 L75 46 L101 57 L116 50 L116 28" fill="none" stroke="#147263" stroke-width="2" stroke-linejoin="round" opacity="0.65"/>
+    </g>
+
+    <!-- Wheels -->
+    <g>
+      <ellipse cx="29" cy="74" rx="14" ry="17" fill="url(#wheelGrad)" transform="rotate(-20 29 74)"/>
+      <ellipse cx="29" cy="74" rx="8" ry="10" fill="#AFC6CC" transform="rotate(-20 29 74)"/>
+      <ellipse cx="29" cy="74" rx="4" ry="5" fill="#EDF4F2" transform="rotate(-20 29 74)"/>
+      <ellipse cx="87" cy="68" rx="13" ry="16" fill="url(#wheelGrad)" transform="rotate(-20 87 68)"/>
+      <ellipse cx="87" cy="68" rx="7" ry="9" fill="#AFC6CC" transform="rotate(-20 87 68)"/>
+    </g>
+
+    <!-- Scooter frame/body -->
+    <path d="M27 64 C34 47, 47 41, 63 42 C77 42, 89 47, 94 58 C92 65, 84 70, 72 70 L42 75 C34 77, 28 73, 27 64 Z" fill="url(#greenBody)" stroke="#147263" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M42 72 L70 69 C78 68, 85 64, 89 58 L98 61 C93 72, 79 78, 60 79 L38 81 C31 82, 25 78, 24 70 Z" fill="#0D6667" opacity="0.95"/>
+    <path d="M35 50 C40 44, 49 40, 58 41 L54 67 L31 67 C31 60, 32 55, 35 50 Z" fill="#F3F7F0" stroke="#147263" stroke-width="2"/>
+    <path d="M25 61 C30 58, 38 59, 45 64 C42 70, 34 73, 25 70 C21 68, 21 63, 25 61 Z" fill="#34B85A" stroke="#147263" stroke-width="2"/>
+    <path d="M76 50 C83 49, 92 53, 96 59 C92 63, 83 64, 76 62 Z" fill="#63C85F" stroke="#147263" stroke-width="2"/>
+    <path d="M53 43 L55 30 L63 29 L62 46 Z" fill="#D6E5E2" stroke="#147263" stroke-width="1.8"/>
+    <circle cx="50" cy="42" r="7" fill="#EAF9DB" stroke="#66B950" stroke-width="2"/>
+
+    <!-- Handlebar -->
+    <path d="M48 35 C39 33, 35 36, 31 42" fill="none" stroke="#123E49" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="31" cy="42" r="4" fill="#F3C1A1"/>
+
+    <!-- Rider body -->
+    <path d="M60 32 C69 33, 74 42, 75 57 C71 60, 64 59, 58 54 C55 47, 54 38, 60 32 Z" fill="url(#darkGreen)" stroke="#0C4A53" stroke-width="2"/>
+    <path d="M59 54 C64 59, 71 62, 77 64 L72 74 C64 72, 57 66, 52 59 Z" fill="#1E5965" stroke="#0C4A53" stroke-width="2"/>
+    <path d="M53 55 C47 57, 41 59, 34 62" fill="none" stroke="#174C58" stroke-width="7" stroke-linecap="round"/>
+    <path d="M34 62 L42 67" fill="none" stroke="#23313A" stroke-width="5" stroke-linecap="round"/>
+
+    <!-- Arm and hand -->
+    <path d="M60 39 C55 43, 50 46, 43 47" fill="none" stroke="#0D5A66" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="43" cy="47" r="4.5" fill="#F4B58F"/>
+    <path d="M73 43 C76 49, 77 54, 75 59" fill="none" stroke="#0D5A66" stroke-width="7" stroke-linecap="round"/>
+    <circle cx="75" cy="59" r="4.5" fill="#F4B58F"/>
+
+    <!-- Head and helmet -->
+    <circle cx="63" cy="27" r="10" fill="#F3B18B"/>
+    <path d="M52 26 C52 15, 61 8, 73 10 C83 13, 88 22, 84 33 C77 30, 67 32, 59 31 C54 30, 51 29, 52 26 Z" fill="url(#helmetGrad)" stroke="#0C5963" stroke-width="2"/>
+    <path d="M53 25 C57 29, 66 29, 75 27" fill="none" stroke="#0A4651" stroke-width="2.5" stroke-linecap="round" opacity="0.75"/>
+    <path d="M70 12 C79 14, 84 21, 83 29" fill="none" stroke="#BDEB79" stroke-width="3" stroke-linecap="round" opacity="0.55"/>
+
+    <!-- Small highlight lines -->
+    <path d="M69 38 L70 45" stroke="#BCEB75" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+    <path d="M42 53 C48 49, 54 48, 60 49" fill="none" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round" opacity="0.35"/>
+  </g>
+</svg>
