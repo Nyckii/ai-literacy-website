@@ -22,70 +22,70 @@ const ENTRIES: Entry[] = [
     title: 'Confirmation Bias',
     level: 'individual',
     essence:
-      'Click what you like → see more of it. The feed converges on a single viewpoint.',
+      'The more you engage with one viewpoint, the more the system shows you of it. Your world quietly narrows around what you already agree with, and the alternatives slide out of view.',
   },
   {
     slug: 'measurement-bias',
     title: 'Measurement Bias',
     level: 'individual',
     essence:
-      'Same idea, written in a different dialect → graded lower. The proxy isn\'t the thing.',
+      'A stand-in is used to score the real thing — and the system ends up rewarding the stand-in itself. People who happen to look right by that surrogate win, even when the underlying work is identical.',
   },
   {
     slug: 'algorithm-bias',
     title: 'Algorithm Bias',
     level: 'multi-level',
     essence:
-      'Even when the model fits its data correctly, the data itself encodes inequalities the model can\'t see past.',
+      'An unfair outcome doesn\'t require an unfair model. When imbalances live in the data, the design, or the context the system runs in, even a model that "works correctly" produces predictions that disadvantage some groups over others.',
   },
   {
     slug: 'learning-bias',
     title: 'Learning Bias',
     level: 'multi-level',
     essence:
-      'The model takes a shortcut — grabbing the easiest pattern instead of the meaningful one.',
+      'Models latch onto whatever pattern is easiest to detect, not whatever pattern is actually meaningful. The shortcut works on familiar examples but breaks down the moment something subtle changes.',
   },
   {
     slug: 'interaction-bias',
     title: 'Interaction Bias',
     level: 'multi-level',
     essence:
-      'Loud users dominate the signal; the silent majority gets read as agreement.',
+      'The signal a system sees is shaped by who chooses to participate. The most active voices dominate; the people who didn\'t speak up are read by the model as if they had agreed all along.',
   },
   {
     slug: 'stereotyping-bias',
     title: 'Stereotyping Bias',
     level: 'multi-level',
     essence:
-      'The CEO, the nurse, the doctor — the model fills in defaults that mirror social stereotypes.',
+      'When details are missing, the model fills the gaps with whatever pattern is most common in its training data. The defaults it picks tend to be the same assumptions society itself most often makes about people and roles.',
   },
   {
     slug: 'historical-bias',
     title: 'Historical Bias',
     level: 'group',
     essence:
-      'Same applicant, different neighborhood, different decision. The past sets the prediction.',
+      'A record of what came before is also a record of its inequalities. A model that fits that record faithfully will project those inequalities forward — its predictions are calibrated to a world we\'d rather move beyond.',
   },
   {
     slug: 'exclusion-bias',
     title: 'Exclusion Bias',
     level: 'group',
     essence:
-      'Advice that helps a default user — and quietly fails everyone who isn\'t one.',
+      'Every system is built around an imagined default user — their schedule, their resources, their context. People who fall outside that default aren\'t warned; the help simply works less well for them, and nobody flags it.',
   },
   {
     slug: 'representation-bias',
     title: 'Representation Bias',
     level: 'group',
     essence:
-      'Pick the training set, pick the worldview. Whoever\'s missing is missing from the output.',
+      'What lands in the training data defines what the model treats as normal, central, or important. Whoever — or whatever — is missing from the data is missing from the answer, no matter how confidently it is delivered.',
   },
   {
     slug: 'mapping-bias',
     title: 'Mapping Bias',
     level: 'group',
     essence:
-      'The model isn\'t broken — it\'s being asked questions outside the world it was trained on.',
+      'A model can be perfectly accurate inside the population it was built for and confidently wrong the moment it\'s used somewhere else. The flaw isn\'t in the model itself — it\'s in the act of moving it outside the world it was made for.',
   },
 ];
 
