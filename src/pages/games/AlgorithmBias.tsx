@@ -72,7 +72,7 @@ const HOODS: Hood[] = [
     id: 'downtown', name: 'Downtown', emoji: '🏙️',
     color: '#4f46e5', bgColor: 'rgba(79,70,229,0.15)', textColor: '#4338ca',
     pos: { x: 25, y: 65 }, radius: 9,
-    baseOrders: 6, baseTime: 8, minTime: 4, earnings: 8,
+    baseOrders: 6, baseTime: 8, minTime: 4, earnings: 10,
     tagline: 'Dense · Fast · Profitable',
     difficulty: 'Easy — short trips',
     exploreInfo: 'Packed skyscrapers, busy restaurants, tight grid roads. Riders can zip in and out — very short trips, high order volume.',
@@ -81,7 +81,7 @@ const HOODS: Hood[] = [
     id: 'midtown', name: 'Midtown', emoji: '🏢',
     color: '#0891b2', bgColor: 'rgba(8,145,178,0.15)', textColor: '#0e7490',
     pos: { x: 25, y: 33 }, radius: 8,
-    baseOrders: 4, baseTime: 13, minTime: 6, earnings: 10,
+    baseOrders: 4, baseTime: 13, minTime: 6, earnings: 11,
     tagline: 'Mixed · Steady · Moderate',
     difficulty: 'Medium — moderate trips',
     exploreInfo: 'Office towers and apartment blocks mixed together. Steady orders through the day, manageable distances from HQ.',
@@ -90,7 +90,7 @@ const HOODS: Hood[] = [
     id: 'northsuburb', name: 'North Suburb', emoji: '🏘️',
     color: '#d97706', bgColor: 'rgba(217,119,6,0.15)', textColor: '#b45309',
     pos: { x: 42, y: 17 }, radius: 7,
-    baseOrders: 3, baseTime: 17, minTime: 8, earnings: 12,
+    baseOrders: 3, baseTime: 17, minTime: 8, earnings: 13,
     tagline: 'Quiet · Spread out · Longer rides',
     difficulty: 'Harder — homes spread out',
     exploreInfo: 'Peaceful residential streets where houses are far apart. Fewer orders per shift, but each delivery covers more ground.',
@@ -99,7 +99,7 @@ const HOODS: Hood[] = [
     id: 'easthills', name: 'East Hills', emoji: '🏜️',
     color: '#dc2626', bgColor: 'rgba(220,38,38,0.15)', textColor: '#b91c1c',
     pos: { x: 73, y: 47 }, radius: 9,
-    baseOrders: 3, baseTime: 23, minTime: 10, earnings: 14,
+    baseOrders: 3, baseTime: 23, minTime: 10, earnings: 16,
     tagline: 'Remote · Winding roads · Hardest',
     difficulty: 'Hardest — longest trips',
     exploreInfo: 'The most remote neighborhood. Long winding roads mean every delivery is a journey — but residents here need service just as much as anyone.',
@@ -115,11 +115,35 @@ const ALGO_ORDERS_SURGE: Record<string, number> = { downtown: 6, midtown: 4, nor
 
 const TOTAL_RIDERS = 8;
 const YOUR_TURN_DURATION = 90;
-// Game time compression for display: 1 real second = GAME_SPEED game-minutes-equivalent
-const GAME_SPEED = 20;
+const LIVE_GOALS = {
+  avgTrip: 15,
+  delivered: 13,
+  earnings: 130,
+};
+
+const LIVE_TRIP_SECONDS: Record<string, number> = {
+  downtown: 9,
+  midtown: 14,
+  northsuburb: 23,
+  easthills: 36,
+};
+
+const DEMAND_CAPS: Record<string, number> = {
+  downtown: 12,
+  midtown: 10,
+  northsuburb: 8,
+  easthills: 8,
+};
+
+const DEMAND_WEIGHTS = [
+  { id: 'downtown', weight: 0.44 },
+  { id: 'midtown', weight: 0.29 },
+  { id: 'northsuburb', weight: 0.14 },
+  { id: 'easthills', weight: 0.13 },
+];
 
 // Initial demand at game start
-const INITIAL_DEMAND: Record<string, number> = { downtown: 4, midtown: 3, northsuburb: 2, easthills: 3 };
+const INITIAL_DEMAND: Record<string, number> = { downtown: 7, midtown: 5, northsuburb: 3, easthills: 4 };
 
 // ─── Simulation Helpers ───────────────────────────────────────────────────────
 
@@ -151,6 +175,21 @@ function computeSeqAssignments(seq: string[], n: number): Record<string, number>
   const a: Record<string, number> = { downtown: 0, midtown: 0, northsuburb: 0, easthills: 0 };
   seq.slice(0, n).forEach(id => { a[id] = (a[id] ?? 0) + 1; });
   return a;
+}
+function liveTripSeconds(hoodId: string) {
+  return LIVE_TRIP_SECONDS[hoodId] ?? 18;
+}
+function totalDemand(demand: Record<string, number>) {
+  return Object.values(demand).reduce((a, v) => a + v, 0);
+}
+function weightedDemandHood() {
+  const roll = Math.random();
+  let cursor = 0;
+  for (const item of DEMAND_WEIGHTS) {
+    cursor += item.weight;
+    if (roll <= cursor) return item.id;
+  }
+  return 'downtown';
 }
 
 // ─── Path / Animation Helpers ─────────────────────────────────────────────────
@@ -187,10 +226,9 @@ function progressToXY(hoodId: string, progress: number): [number, number] {
 
 function riderIsDelivering(progress: number) { return progress > 1.0 && progress <= 1.3; }
 
-// Round trip speed: Downtown ~6s real time, EastHills ~18s
+// Round-trip speeds are intentionally uneven to create live dispatch pressure.
 function riderSpeedForHood(h: Hood): number {
-  const ratio = h.baseTime / HOODS[0].baseTime;
-  const roundTripSecs = 6 * ratio;
+  const roundTripSecs = liveTripSeconds(h.id);
   return 2.3 / (roundTripSecs * 30); // progress units per frame at 30fps
 }
 
@@ -225,6 +263,28 @@ const STYLES = `
 
 /* ── Live HUD bar ── */
 .ab-hud { display:flex; gap:8px; width:100%; max-width:860px; flex-wrap:wrap; }
+.ab-goal-panel {
+  flex:1 1 520px; background:#fff; border:2px solid #d8d0ff; border-radius:14px;
+  padding:10px 14px; box-shadow:0 2px 10px rgba(79,70,229,0.08);
+  display:flex; align-items:center; justify-content:space-between; gap:12px;
+}
+.ab-goal-panel.safe { border-color:#86efac; background:#f0fdf4; }
+.ab-goal-panel.warn { border-color:#fbbf24; background:#fffbeb; }
+.ab-goal-panel.bad { border-color:#fca5a5; background:#fef2f2; }
+.ab-goal-main { min-width:0; }
+.ab-goal-kicker { font-size:9px; color:#7a6e64; text-transform:uppercase; letter-spacing:0.08em; font-weight:800; margin-bottom:2px; }
+.ab-goal-title { font-size:18px; color:#2d2419; font-weight:850; letter-spacing:-0.02em; }
+.ab-goal-meta { font-size:12px; color:#6b5f55; margin-top:3px; font-weight:650; }
+.ab-goal-avg { flex:0 0 auto; font-size:24px; font-weight:850; font-variant-numeric:tabular-nums; color:#4f46e5; text-align:right; }
+.ab-goal-panel.safe .ab-goal-avg { color:#16a34a; }
+.ab-goal-panel.warn .ab-goal-avg { color:#d97706; }
+.ab-goal-panel.bad .ab-goal-avg { color:#dc2626; }
+.ab-hud-secondary {
+  flex:1 1 210px; background:#fff; border:1px solid #e2d9ce; border-radius:14px;
+  padding:10px 14px; display:flex; align-items:center; justify-content:center;
+  gap:14px; color:#6b5f55; font-size:12px; font-weight:750;
+  box-shadow:0 1px 4px rgba(0,0,0,0.05);
+}
 .ab-hud-tile {
   flex:1; min-width:90px;
   background:#fff; border:1px solid #e2d9ce; border-radius:12px;
@@ -727,7 +787,7 @@ function MapBoard({
       })}
 
       {/* Idle riders at HQ */}
-      {idleRiderCount > 0 && HOODS.some(h => ['yourTurn', 'automate', 'bias', 'fairerRound'].includes(phase)) && (
+      {idleRiderCount > 0 && ['yourTurn', 'automate', 'bias', 'fairerRound'].includes(phase) && (
         idlePositions.map(([ix, iy], i) => (
           <div key={`idle-${i}`} className="ab-rider-idle"
             style={{ left: `${ix}%`, top: `${iy}%` }}>🛵</div>
@@ -796,8 +856,8 @@ function MapBoard({
 
 // ─── ResultTable ──────────────────────────────────────────────────────────────
 
-function ResultTable({ results, showOrders, minimal }: {
-  results: NResult[]; showOrders?: boolean; minimal?: boolean;
+function ResultTable({ results, showOrders, minimal, hideSatisfaction }: {
+  results: NResult[]; showOrders?: boolean; minimal?: boolean; hideSatisfaction?: boolean;
 }) {
   return (
     <table className="ab-rtable">
@@ -806,7 +866,7 @@ function ResultTable({ results, showOrders, minimal }: {
           <th>Neighborhood</th><th>Riders</th>
           {showOrders && <th>Orders</th>}
           <th>Avg Wait</th>
-          {!minimal && <th>Satisfaction</th>}
+          {!minimal && !hideSatisfaction && <th>Satisfaction</th>}
           {!minimal && <th>Delivered</th>}
         </tr>
       </thead>
@@ -821,7 +881,7 @@ function ResultTable({ results, showOrders, minimal }: {
               <td style={{ fontWeight: r.drivers === 0 ? 600 : undefined, color: r.drivers === 0 ? '#dc2626' : undefined }}>
                 {timeLabel(r.time)}
               </td>
-              {!minimal && <td><span className={satBadge(r.sat)}>{r.sat === 0 ? '0%' : `${r.sat}%`}</span></td>}
+              {!minimal && !hideSatisfaction && <td><span className={satBadge(r.sat)}>{r.sat === 0 ? '0%' : `${r.sat}%`}</span></td>}
               {!minimal && (
                 <td style={{ fontVariantNumeric: 'tabular-nums' }}>
                   {r.delivered}/{r.orders}
@@ -912,7 +972,7 @@ function PhaseExplore({
               <div style={{ fontSize: 13, color: '#6b5f55', lineHeight: 1.6, marginBottom: 10 }}>{activeHood.exploreInfo}</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {[
-                  { icon: '⏱', txt: `~${activeHood.baseTime} min trip` },
+                  { icon: '⏱', txt: `~${liveTripSeconds(activeHood.id)} sec round trip` },
                   { icon: '📦', txt: `${activeHood.baseOrders} orders/shift` },
                   { icon: '💰', txt: `$${activeHood.earnings}/delivery` },
                   { icon: '🎯', txt: activeHood.difficulty },
@@ -933,7 +993,7 @@ function PhaseExplore({
               {isDemoDone && (
                 <div className="ab-trip-result">
                   <div className="ab-trip-stat" style={{ background: activeHood.bgColor, border: `1.5px solid ${activeHood.color}40` }}>
-                    <div className="ab-trip-stat-val" style={{ color: activeHood.textColor }}>{activeHood.baseTime} min</div>
+                    <div className="ab-trip-stat-val" style={{ color: activeHood.textColor }}>{liveTripSeconds(activeHood.id)} sec</div>
                     <div className="ab-trip-stat-lbl" style={{ color: activeHood.textColor }}>Round trip</div>
                   </div>
                   <div className="ab-trip-stat" style={{ background: '#f0fdf4', border: '1.5px solid #86efac' }}>
@@ -965,7 +1025,7 @@ function PhaseGoal({ onAct }: { onAct: (l: string, e: boolean) => void }) {
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(155px, 1fr))', gap: 10, marginBottom: 16 }}>
         {[
           { icon: '💰', head: 'More revenue', body: 'Faster trips = riders complete more orders per shift = higher earnings.' },
-          { icon: '😊', head: 'Happier customers', body: 'Short waits earn better ratings and bring customers back.' },
+          { icon: '📦', head: 'More completed orders', body: 'Short rides return riders sooner, so more orders can be served during the shift.' },
           { icon: '⚡', head: 'Less idle time', body: 'Optimizing speed keeps riders moving — less wasted time between orders.' },
         ].map(({ icon, head, body }) => (
           <div key={head} style={{ background: '#f8f5f1', border: '1px solid #e8e0d5', borderRadius: 14, padding: '14px 16px' }}>
@@ -977,11 +1037,13 @@ function PhaseGoal({ onAct }: { onAct: (l: string, e: boolean) => void }) {
       </div>
       <div style={{ background: '#eef2ff', border: '2px solid #c7d2fe', borderRadius: 14, padding: '14px 18px', textAlign: 'center', marginBottom: 12 }}>
         <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your Goal This Shift</div>
-        <div style={{ fontSize: 22, fontWeight: 800, color: '#3730a3' }}>"Minimize average delivery time"</div>
-        <div style={{ fontSize: 12, color: '#4f46e5', marginTop: 6 }}>The faster you serve the city, the better you score.</div>
+        <div style={{ fontSize: 22, fontWeight: 800, color: '#3730a3' }}>"Keep average trip time under {LIVE_GOALS.avgTrip}s"</div>
+        <div style={{ fontSize: 12, color: '#4f46e5', marginTop: 6 }}>
+          The company wants shorter average trips because faster rides usually mean more completed deliveries and more earnings.
+        </div>
       </div>
       <div className="ab-callout amber">
-        You have <strong>8 riders</strong> and <strong>90 seconds</strong>. <strong>Click any neighborhood on the map to dispatch a rider there.</strong> Riders return to HQ automatically after each delivery. Your choices will matter later.
+        You have <strong>{TOTAL_RIDERS} riders</strong> and <strong>{YOUR_TURN_DURATION} seconds</strong>. <strong>Click any neighborhood with demand to dispatch one rider.</strong> Downtown is fast. East Hills ties a rider up much longer. Your choices will matter later.
       </div>
     </div>
   );
@@ -992,19 +1054,18 @@ function PhaseGoal({ onAct }: { onAct: (l: string, e: boolean) => void }) {
 // This panel shows current status and feedback.
 
 function PhaseYourTurn({
-  onAct, ytIdleRiders, ytDelivered, ytEarnings, ytAvgWait, ytSatisfaction,
-  ytFeedback, ytRoundDone, ytTimer, ytDemand,
+  onAct, ytIdleRiders, ytDelivered, ytEarnings, ytAvgWait,
+  ytFeedback, ytRoundDone, ytDemand, speedAlert,
 }: {
   onAct: (l: string, e: boolean) => void;
   ytIdleRiders: number;
   ytDelivered: number;
   ytEarnings: number;
   ytAvgWait: number;
-  ytSatisfaction: number;
   ytFeedback: string | null;
   ytRoundDone: boolean;
-  ytTimer: number;
   ytDemand: Record<string, number>;
+  speedAlert: string | null;
 }) {
   useEffect(() => {
     if (ytRoundDone) onAct('See What the Algorithm Learned →', true);
@@ -1034,6 +1095,12 @@ function PhaseYourTurn({
         </div>
       )}
 
+      {!ytRoundDone && speedAlert && !ytFeedback && (
+        <div className="ab-yt-feedback warn">
+          {speedAlert}
+        </div>
+      )}
+
       {/* Per-hood live status */}
       {!ytRoundDone && (
         <div className="ab-yt-hood-stats">
@@ -1046,7 +1113,7 @@ function PhaseYourTurn({
                 <div style={{ fontSize: 11, color: demand > 0 ? h.textColor : '#b0a499' }}>
                   {demand > 0 ? `📦 ${demand} waiting` : 'No demand'}
                 </div>
-                <div style={{ fontSize: 10, color: '#a8998c' }}>~{h.baseTime} min trip · ${h.earnings}/delivery</div>
+                <div style={{ fontSize: 10, color: '#a8998c' }}>~{liveTripSeconds(h.id)} sec round trip · ${h.earnings}/delivery</div>
               </div>
             );
           })}
@@ -1059,11 +1126,12 @@ function PhaseYourTurn({
           <div style={{ fontSize: 22, marginBottom: 4 }}>⏱ Round Complete!</div>
           <div style={{ fontSize: 14, color: '#166534' }}>
             You completed <strong>{ytDelivered} deliveries</strong> and earned <strong>${ytEarnings}</strong>.
-            {ytAvgWait > 0 && <> Average trip time: <strong>{Math.round(ytAvgWait)} min</strong>.</>}
+            {ytAvgWait > 0 && <> Average trip time: <strong>{Math.round(ytAvgWait)} sec</strong>.</>}
           </div>
-          {ytSatisfaction >= 55
-            ? <div style={{ fontSize: 13, color: '#15803d', marginTop: 6 }}>Strong numbers — SpeedEats wants to automate this strategy at scale.</div>
-            : <div style={{ fontSize: 13, color: '#166534', marginTop: 6 }}>The data is in. Let's see what the algorithm learned from your choices.</div>}
+          {ytAvgWait > 0 && ytAvgWait <= LIVE_GOALS.avgTrip
+            ? <div style={{ fontSize: 13, color: '#15803d', marginTop: 6 }}>Goal met. Your average ride time stayed below the target.</div>
+            : <div style={{ fontSize: 13, color: '#991b1b', marginTop: 6 }}>Goal missed. Your average ride time stayed above the target. Long trips kept riders busy for too long.</div>}
+          <div style={{ fontSize: 13, color: '#166534', marginTop: 6 }}>Service was not evenly distributed. Let's see what happens when this strategy becomes automatic.</div>
         </div>
       )}
     </div>
@@ -1089,7 +1157,7 @@ function PhaseAutomate({
   return (
     <div className="ab-card">
       <div className="ab-card-title">🤖 {complete ? 'Algorithm Ready' : 'Building the Algorithm…'}</div>
-      <div className="ab-card-sub">SpeedEats is automating dispatch. The system studied your shifts to learn the optimal strategy.</div>
+      <div className="ab-card-sub">SpeedEats is automating dispatch around one objective: keep average trip time under {LIVE_GOALS.avgTrip}s.</div>
       {!complete ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#8a7a6d', fontSize: 13, marginBottom: 14 }}>
           <div className="ab-spinner" /> Analyzing your dispatch patterns…
@@ -1098,10 +1166,10 @@ function PhaseAutomate({
         <div className="ab-strategy-box">
           <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4f46e5', marginBottom: 6 }}>Your Dispatch Pattern</div>
           <div style={{ fontSize: 14, color: '#3730a3' }}>{describeAssignment(assignments)}</div>
-          <div style={{ fontSize: 12, color: '#6366f1', marginTop: 8 }}>Combined with historical data, the system derived:</div>
+          <div style={{ fontSize: 12, color: '#6366f1', marginTop: 8 }}>You learned to favor shorter trips because that helped keep the average under {LIVE_GOALS.avgTrip}s. The system derived:</div>
           <div className="ab-strategy-rule">
-            📋 Rule: Assign riders in proportion to past order volume.<br />
-            More historical orders → more riders sent there today.
+            📋 Rule: Prioritize deliveries that keep average trip time under {LIVE_GOALS.avgTrip}s.<br />
+            Shorter trips protect the average first.
           </div>
         </div>
       )}
@@ -1143,7 +1211,6 @@ function PhaseBias({
 }) {
   const ehResult = algoResults.find(r => r.id === 'easthills');
   const dtResult = algoResults.find(r => r.id === 'downtown');
-  const algSum = summarize(algoResults);
 
   useEffect(() => {
     if (biasSubPhase === 'event') {
@@ -1177,7 +1244,7 @@ function PhaseBias({
           </div>
         </div>
         <div className="ab-callout amber">
-          The algorithm was built to minimize average delivery time. Will it notice East Hills needs more help today?
+          Goal: keep average trip time under {LIVE_GOALS.avgTrip}s. Will the algorithm protect that target when East Hills needs more help today?
         </div>
       </div>
     );
@@ -1187,7 +1254,7 @@ function PhaseBias({
     return (
       <div className="ab-card">
         <div className="ab-card-title">🤖 Algorithm Running…</div>
-        <div className="ab-card-sub">Assigning riders exactly as trained — proportional to historical order volume.</div>
+        <div className="ab-card-sub">Assigning riders exactly as trained — prioritizing shorter trips to protect the {LIVE_GOALS.avgTrip}s average.</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#8a7a6d', fontSize: 13, marginBottom: 14 }}>
           <div className="ab-spinner" /> Processing today's demand…
         </div>
@@ -1214,16 +1281,16 @@ function PhaseBias({
   return (
     <div className="ab-card">
       <div className="ab-card-title">📊 What the Algorithm Did</div>
-      <div className="ab-card-sub">The algorithm optimized for average delivery time. Here's what that meant for each neighborhood.</div>
-      <ResultTable results={algoResults} showOrders />
+      <div className="ab-card-sub">The algorithm protected the {LIVE_GOALS.avgTrip}s trip-time goal. Here's what that meant for each neighborhood.</div>
+      <ResultTable results={algoResults} showOrders hideSatisfaction />
       <div className="ab-callout red" style={{ marginTop: 14 }}>
         <strong>The numbers:</strong> {dtResult?.drivers} riders to Downtown (6 orders) vs. {ehResult?.drivers ?? 1} rider to East Hills (8 orders). Average looks okay — but 8 people in East Hills were left behind.
       </div>
       <div className="ab-reflect-grid" style={{ marginTop: 14 }}>
         {[
-          { icon: '📉', title: 'Trained on the Past', desc: 'East Hills always had fewer orders historically — the algorithm baked that in. It couldn\'t see when today\'s reality changed.' },
-          { icon: '🔄', title: 'Feedback Loop', desc: 'Fewer riders → worse service → fewer orders placed. The bias creates the data that justifies the bias.' },
-          { icon: '📊', title: 'Hidden in Averages', desc: 'Overall average wait still looks fine. But averages hide who suffers. East Hills is invisible in the headline metric.' },
+          { icon: '⏱', title: 'Goal Protected', desc: `The system kept chasing the ${LIVE_GOALS.avgTrip}s average, so short routes stayed attractive even during the demand spike.` },
+          { icon: '🔄', title: 'Feedback Loop', desc: 'Fewer riders → longer waits → fewer future orders. The bias creates the data that justifies the bias.' },
+          { icon: '📊', title: 'Hidden in Averages', desc: 'The average can look fine while one neighborhood waits. East Hills is invisible in the headline metric.' },
         ].map(({ icon, title, desc }) => (
           <div key={title} className="ab-reflect-tile">
             <div className="ab-reflect-icon">{icon}</div>
@@ -1251,21 +1318,21 @@ function PhaseReflect({
   return (
     <div className="ab-card">
       <div className="ab-card-title">🎓 Why It Went Wrong</div>
-      <div className="ab-card-sub">Same city. Same 8 riders. A perfectly reasonable goal — but a systematically unfair outcome.</div>
+      <div className="ab-card-sub">Same city. Same {TOTAL_RIDERS} riders. A perfectly reasonable goal — but a systematically unfair outcome.</div>
       <div style={{ background: '#f8f5f1', border: '1px solid #e8e0d5', borderRadius: 14, padding: '14px 18px', marginBottom: 14 }}>
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8998c', marginBottom: 8 }}>What You Did</div>
         <div style={{ fontSize: 14, color: '#2d2419' }}>{describeAssignment(assignments)}</div>
         <div style={{ fontSize: 12, color: '#8a7a6d', marginTop: 6, lineHeight: 1.5 }}>
-          That made sense for the goal — Downtown trips are faster, so more Downtown riders = better average time.
+          That made sense for the goal — shorter trips helped protect the {LIVE_GOALS.avgTrip}s average.
         </div>
       </div>
       <div style={{ background: '#fef2f2', border: '1.5px solid #fecaca', borderRadius: 14, padding: '14px 18px', marginBottom: 14 }}>
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#dc2626', marginBottom: 8 }}>What the Algorithm Repeated</div>
         <div style={{ fontSize: 14, color: '#991b1b' }}>
-          East Hills: {ehResult?.drivers ?? 1} rider for {ALGO_ORDERS_SURGE.easthills} orders · {ehResult ? timeLabel(ehResult.time) : '—'} wait · {ehResult?.sat ?? 0}% satisfaction
+          East Hills: {ehResult?.drivers ?? 1} rider for {ALGO_ORDERS_SURGE.easthills} orders · {ehResult ? timeLabel(ehResult.time) : '—'} wait
         </div>
         <div style={{ fontSize: 12, color: '#b91c1c', marginTop: 6, lineHeight: 1.5 }}>
-          The algorithm did exactly what it was designed to do. It just optimized for the wrong goal at scale.
+          The system protected the {LIVE_GOALS.avgTrip}s average, but East Hills residents waited longer and became frustrated. The company also left money on the table because unmet demand turned into lost orders.
         </div>
       </div>
       <div style={{ background: '#1e1b4b', borderRadius: 16, padding: '20px 22px', marginBottom: 14, color: '#fff' }}>
@@ -1274,7 +1341,7 @@ function PhaseReflect({
           "A neutral-looking goal can still create biased outcomes."
         </div>
         <div style={{ fontSize: 13, color: '#c7d2fe', lineHeight: 1.65 }}>
-          "Minimize average delivery time" sounds fair. But applied across neighborhoods with different distances and histories, it systematically advantages easy areas — and leaves the rest behind.
+          "Keep average trip time under {LIVE_GOALS.avgTrip}s" sounds fair. But applied across neighborhoods with different distances and histories, it systematically advantages easy areas — and leaves the rest behind.
         </div>
       </div>
       <div className="ab-callout indigo">
@@ -1384,7 +1451,7 @@ function PhaseFinalReflect({ onAct, algoResults, fairerResults }: {
   return (
     <div className="ab-card">
       <div className="ab-card-title">🎓 What Changed — And Why It Matters</div>
-      <div className="ab-card-sub">Same East Hills surge. Same 8 riders. Different goal. Very different outcomes.</div>
+      <div className="ab-card-sub">Same East Hills surge. Same {TOTAL_RIDERS} riders. Different goal. Very different outcomes.</div>
       <div className="ab-compare-wrap">
         <table className="ab-compare-table">
           <thead><tr><th className="label-col">Metric</th><th className="bad-col">Speed-Only</th><th className="good-col">Balanced</th></tr></thead>
@@ -1475,9 +1542,6 @@ export function AlgorithmBias() {
     return Math.round(ytCompletedTimes.reduce((a, v) => a + v, 0) / ytCompletedTimes.length);
   }, [ytCompletedTimes]);
 
-  // Rough satisfaction from avg wait
-  const ytSatisfaction = useMemo(() => calcSat(ytAvgWait), [ytAvgWait]);
-
   // ── Start Your Turn ──
   useEffect(() => {
     if (phase !== 'yourTurn') return;
@@ -1531,6 +1595,23 @@ export function AlgorithmBias() {
     }
   }, [ytTimer, ytRunning, ytRoundDone, ytWaveCount, phase]);
 
+  // ── Continuous order pressure during Your Turn ──
+  useEffect(() => {
+    if (phase !== 'yourTurn' || !ytRunning || ytRoundDone) return;
+    const interval = setInterval(() => {
+      setYtDemand(prev => {
+        const next = { ...prev };
+        const ordersToAdd = totalDemand(prev) < TOTAL_RIDERS + 5 ? 2 : 1;
+        for (let i = 0; i < ordersToAdd; i++) {
+          const hoodId = weightedDemandHood();
+          next[hoodId] = Math.min(DEMAND_CAPS[hoodId], (next[hoodId] ?? 0) + 1);
+        }
+        return next;
+      });
+    }, 2200);
+    return () => clearInterval(interval);
+  }, [ytRunning, ytRoundDone, phase]);
+
   // ── Your Turn: rider animation + delivery completion ──
   useEffect(() => {
     if (!ytRunning || phase !== 'yourTurn') return;
@@ -1568,7 +1649,7 @@ export function AlgorithmBias() {
         const h = hoodById(hoodId);
         setYtDelivered(prev => prev + 1);
         setYtEarnings(prev => prev + h.earnings);
-        setYtCompletedTimes(prev => [...prev, h.baseTime]);
+        setYtCompletedTimes(prev => [...prev, liveTripSeconds(hoodId)]);
       }
 
       setYtRenderTick(t => t + 1); // trigger re-render for animation
@@ -1586,34 +1667,28 @@ export function AlgorithmBias() {
   const handleDispatch = useCallback((hoodId: string) => {
     if (phase !== 'yourTurn' || ytRoundDone || !ytRunning) return;
 
-    setYtDemand(prevDemand => {
-      const demand = prevDemand[hoodId] ?? 0;
-      setYtIdleRiders(prevIdle => {
-        if (prevIdle <= 0) {
-          showFeedback('All riders are out — wait for one to return! 🛵');
-          return prevIdle;
-        }
-        if (demand <= 0) {
-          showFeedback('No active demand here right now. Wait for orders.');
-          return prevIdle;
-        }
-        // Dispatch!
-        const newRider: LiveRider = {
-          id: ytRiderIdRef.current++,
-          hoodId,
-          progress: 0,
-          served: false,
-        };
-        ytLiveRidersRef.current = [...ytLiveRidersRef.current, newRider];
-        setYtDispatchLog(prev => [...prev, hoodId]);
-        setYtFeedback(null);
-        setYtRenderTick(t => t + 1);
-        return prevIdle - 1;
-      });
-      if ((ytDemand[hoodId] ?? 0) <= 0) return prevDemand;
-      return { ...prevDemand, [hoodId]: Math.max(0, demand - 1) };
-    });
-  }, [phase, ytRoundDone, ytRunning, ytDemand, showFeedback]);
+    if (ytIdleRiders <= 0) {
+      showFeedback('All riders are out — wait for one to return! 🛵');
+      return;
+    }
+    if ((ytDemand[hoodId] ?? 0) <= 0) {
+      showFeedback('No active demand here right now. Wait for orders.');
+      return;
+    }
+
+    const newRider: LiveRider = {
+      id: ytRiderIdRef.current++,
+      hoodId,
+      progress: 0,
+      served: false,
+    };
+    ytLiveRidersRef.current = [...ytLiveRidersRef.current, newRider];
+    setYtIdleRiders(prev => Math.max(0, prev - 1));
+    setYtDemand(prev => ({ ...prev, [hoodId]: Math.max(0, (prev[hoodId] ?? 0) - 1) }));
+    setYtDispatchLog(prev => [...prev, hoodId]);
+    setYtFeedback(null);
+    setYtRenderTick(t => t + 1);
+  }, [phase, ytRoundDone, ytRunning, ytDemand, ytIdleRiders, showFeedback]);
 
   // ── Automate: step-by-step assignment animation ──
   useEffect(() => {
@@ -1774,7 +1849,18 @@ export function AlgorithmBias() {
     null;
 
   const timerSecs = Math.ceil(ytTimer);
-  const isTimerUrgent = ytTimer <= 20 && ytTimer > 0;
+  const avgTripStatus = ytAvgWait === 0 || ytAvgWait < LIVE_GOALS.avgTrip - 2
+    ? 'safe'
+    : ytAvgWait <= LIVE_GOALS.avgTrip
+      ? 'warn'
+      : 'bad';
+  const speedAlert = isYourTurn && !ytRoundDone && ytTimer <= 30 && ytAvgWait > 0
+    ? ytAvgWait > LIVE_GOALS.avgTrip
+      ? `Goal at risk — average trip is above ${LIVE_GOALS.avgTrip}s.`
+      : avgTripStatus === 'warn'
+        ? 'Speed target at risk — shorter rides return riders sooner.'
+        : null
+    : null;
 
   return (
     <div className="ab-page">
@@ -1784,27 +1870,19 @@ export function AlgorithmBias() {
       {/* Live HUD — Your Turn only */}
       {isYourTurn && (
         <div className="ab-hud" style={{ marginTop: 8 }}>
-          <div className={`ab-timer-tile ${isTimerUrgent ? 'urgent' : ''}`}>
-            <div className="ab-timer-val">{ytRoundDone ? '0s' : `${timerSecs}s`}</div>
-            <div className="ab-timer-label">Time Left</div>
-          </div>
-          <div className="ab-hud-tile">
-            <div className="ab-hud-val ok">{ytDelivered}</div>
-            <div className="ab-hud-label">Delivered</div>
-          </div>
-          <div className="ab-hud-tile">
-            <div className="ab-hud-val" style={{ color: '#16a34a' }}>${ytEarnings}</div>
-            <div className="ab-hud-label">Earnings</div>
-          </div>
-          <div className="ab-hud-tile">
-            <div className={`ab-hud-val ${ytAvgWait === 0 ? '' : ytAvgWait <= 12 ? 'ok' : ytAvgWait <= 18 ? 'warn' : 'bad'}`}>
-              {ytAvgWait > 0 ? `${ytAvgWait}m` : '—'}
+          <div className={`ab-goal-panel ${avgTripStatus}`}>
+            <div className="ab-goal-main">
+              <div className="ab-goal-kicker">Goal</div>
+              <div className="ab-goal-title">Keep avg trip under {LIVE_GOALS.avgTrip}s</div>
+              <div className="ab-goal-meta">
+                {ytRoundDone ? 'Round complete' : `${timerSecs}s left`} · {ytAvgWait > 0 ? `${ytAvgWait}s avg` : 'avg pending'} · {ytIdleRiders}/{TOTAL_RIDERS} riders ready
+              </div>
             </div>
-            <div className="ab-hud-label">Avg Trip</div>
+            <div className="ab-goal-avg">{ytAvgWait > 0 ? `${ytAvgWait}s` : '--'}</div>
           </div>
-          <div className="ab-hud-tile">
-            <div className={`ab-hud-val ${ytIdleRiders > 0 ? 'ok' : 'bad'}`}>{ytIdleRiders}/{TOTAL_RIDERS}</div>
-            <div className="ab-hud-label">Riders Ready</div>
+          <div className="ab-hud-secondary">
+            <span>Delivered {ytDelivered}</span>
+            <span>Earnings ${ytEarnings}</span>
           </div>
         </div>
       )}
@@ -1849,11 +1927,10 @@ export function AlgorithmBias() {
           ytDelivered={ytDelivered}
           ytEarnings={ytEarnings}
           ytAvgWait={ytAvgWait}
-          ytSatisfaction={ytSatisfaction}
           ytFeedback={ytFeedback}
           ytRoundDone={ytRoundDone}
-          ytTimer={ytTimer}
           ytDemand={ytDemand}
+          speedAlert={speedAlert}
         />
       )}
       {phase === 'automate' && (
