@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { gamesByLevel } from '../data/games';
+import { BiasRecap } from '../components/BiasRecap';
 
 export function Home() {
   return (
@@ -106,6 +107,15 @@ export function Home() {
             </ul>
           </div>
         ))}
+      </section>
+
+      <section id="recap" className="recap-section">
+        <h2>Test your knowledge</h2>
+        <p className="section-lede">
+          Once you've played a few games, see if you can match each bias to
+          its core idea. Drag and drop, or tap.
+        </p>
+        <BiasRecap />
       </section>
     </>
   );
