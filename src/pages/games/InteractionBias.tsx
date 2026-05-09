@@ -32,12 +32,20 @@ export function InteractionBias() {
     <section className="game-page">
       <Link to="/#games" className="back-link">← All games</Link>
 
-      {/* 1. 统一 Header 构图 */}
       <header className="game-header">
         <p className="eyebrow">{LEVEL_LABELS[game.level]} · by {game.author}</p>
         <h1>{game.title}</h1>
         <p className="lede">{game.short}</p>
+
       </header>
+
+      <p className="lede">In the digital age, we are accustomed to letting data make decisions for us.</p>
+      <div style={{ marginTop: '1.5rem', color: '#555' }}>
+        <p>Artificial Intelligence can scrape millions of likes, comments, and posts to paint a perfect picture of "public opinion" in a matter of seconds. We firmly believe that as long as the dataset is large enough, the algorithm must be absolutely objective.</p>
+        <p style={{ fontWeight: 'bold', margin: '1rem 0' }}>But does data really represent everyone?</p>
+        <p>Where do the voices go of those who don’t post, don’t hit "like," or don't even know how to use digital devices?</p>
+        <p style={{ marginTop: '1rem', fontStyle: 'italic' }}>Begin your journey below. You will step into the shoes of the AI Project Lead for the Riverside District, tasked with using a state-of-the-art algorithm to plan a new park. Please remember: For every dataset you see, there is a hidden cost you don't.</p>
+      </div>
 
       {/* 2. Game Section */}
       <div className="game-section" style={{ marginTop: '2rem' }}>
