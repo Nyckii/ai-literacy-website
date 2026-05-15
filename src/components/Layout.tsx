@@ -1,5 +1,6 @@
 import { useEffect } from 'react';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
+import './Layout.scss';
 
 export function Layout() {
   const location = useLocation();
@@ -40,16 +41,56 @@ export function Layout() {
       </main>
 
       <footer className="site-footer">
-        <p>ETH Zürich · FS26 · Design in Educational Technology</p>
-        <p>
+        <div className="footer-grid">
+          <div className="footer-brand">
+            <Link to="/" className="brand">
+              <span className="brand-mark" aria-hidden />
+              <span className="brand-name">Bias Arcade</span>
+            </Link>
+            <p className="footer-tagline">
+              An interactive AI literacy project from ETH Zürich, built in
+              collaboration with PEACH.
+            </p>
+          </div>
+
+          <div className="footer-col">
+            <h4 className="footer-col-title">Browse</h4>
+            <ul className="footer-links">
+              <li><Link to="/">Home</Link></li>
+              <li><Link to="/#games">Games</Link></li>
+              <li><Link to="/about">About</Link></li>
+              <li><Link to="/resources">Resources</Link></li>
+              <li><Link to="/faq">FAQ</Link></li>
+            </ul>
+          </div>
+
+          <div className="footer-col">
+            <h4 className="footer-col-title">Team — Group 2</h4>
+            <ul className="footer-team">
+              <li>Xiaozihan Wang</li>
+              <li>Akankshya Ingale</li>
+              <li>Nagyung Kim</li>
+              <li>Leroy Borgeaud dit Avocat</li>
+              <li>Nicolas Stucki</li>
+            </ul>
+            <p className="footer-course">
+              FS26 · Design in Educational Technology
+            </p>
+          </div>
+        </div>
+
+        <div className="footer-bottom">
+          <p>© 2026 Bias Arcade</p>
           <a
             href="https://github.com/Nyckii/ai-literacy-website"
             target="_blank"
             rel="noreferrer"
           >
-            Source on GitHub
+            Source on GitHub →
           </a>
-        </p>
+        </div>
+
+        <div className="rainbow-strip rainbow-strip-bottom" aria-hidden />
       </footer>
     </div>
   );

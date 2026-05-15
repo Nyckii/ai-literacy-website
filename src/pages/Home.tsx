@@ -1,3 +1,13 @@
+import {
+  Brain,
+  Eye,
+  Lightning,
+  MagnifyingGlass,
+  Question,
+  Robot,
+  Scales,
+  Sparkle,
+} from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { gamesByStyle } from "../data/games";
@@ -20,24 +30,38 @@ export function Home() {
   return (
     <>
       <section className="hero">
-        <p className="eyebrow">Bias Arcade</p>
-        <h1>
-          When AI sounds certain<span className="hero-dots">…</span>
-          <br />
-          Is it secretly <span className="hero-underline">biased</span>?
-        </h1>
-        <p className="lede">
-          Short, gamified interactions that surface what bias in AI actually
-          looks like — and where it comes from.
-        </p>
-        <div className="hero-cta">
-          <a href="#games" className="btn btn-coral">
-            Start playing
-            <span aria-hidden>↓</span>
-          </a>
-          <Link to="/about" className="btn btn-ghost">
-            Learn more
-          </Link>
+        <div className="hero-text">
+          <p className="eyebrow">Bias Arcade</p>
+          <h1>
+            When AI sounds certain<span className="hero-dots">…</span>
+            <br />
+            Is it secretly <span className="hero-underline">biased</span>?
+          </h1>
+          <p className="lede">
+            Short, gamified interactions that surface what bias in AI actually
+            looks like — and where it comes from.
+          </p>
+          <div className="hero-cta">
+            <a href="#games" className="btn btn-coral">
+              Start playing
+              <span aria-hidden>↓</span>
+            </a>
+            <Link to="/about" className="btn btn-ghost">
+              Learn more
+            </Link>
+          </div>
+        </div>
+
+        <div className="hero-art" aria-hidden>
+          <div className="hero-tile tile-pink"><Brain weight="bold" /></div>
+          <div className="hero-tile tile-yellow"><Eye weight="bold" /></div>
+          <div className="hero-tile tile-mint"><Robot weight="bold" /></div>
+          <div className="hero-tile tile-lavender"><MagnifyingGlass weight="bold" /></div>
+          <div className="hero-tile hero-tile-center">AI Bias</div>
+          <div className="hero-tile tile-coral"><Lightning weight="bold" /></div>
+          <div className="hero-tile tile-sky"><Scales weight="bold" /></div>
+          <div className="hero-tile tile-purple"><Question weight="bold" /></div>
+          <div className="hero-tile tile-rose"><Sparkle weight="bold" /></div>
         </div>
       </section>
 

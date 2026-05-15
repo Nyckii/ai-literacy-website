@@ -1,0 +1,120 @@
+// Layout.scss — site-wide chrome (footer for now)
+// Header / rainbow strip styles still live in index.css.
+
+$footer-max: 1080px;
+
+.site-footer {
+  margin-top: clamp(48px, 8vw, 96px);
+  border-top: 2px solid var(--ink);
+  background: var(--surface);
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  position: relative;
+}
+
+.footer-grid {
+  max-width: $footer-max;
+  margin: 0 auto;
+  padding: clamp(40px, 6vw, 64px) clamp(20px, 5vw, 56px) clamp(24px, 4vw, 36px);
+  display: grid;
+  grid-template-columns: 1.4fr 1fr 1.4fr;
+  gap: clamp(28px, 4vw, 56px);
+
+  @media (max-width: 760px) {
+    grid-template-columns: 1fr;
+    gap: 32px;
+  }
+}
+
+.footer-brand {
+  .brand {
+    margin-bottom: 14px;
+  }
+}
+
+.footer-tagline {
+  margin: 0;
+  font-size: 0.94rem;
+  line-height: 1.55;
+  color: var(--text-muted);
+  max-width: 32ch;
+}
+
+.footer-col-title {
+  margin: 0 0 14px;
+  font-family: var(--display);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink);
+}
+
+.footer-links,
+.footer-team {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.94rem;
+}
+
+.footer-links a {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.12s ease;
+
+  &:hover {
+    color: var(--accent);
+  }
+}
+
+.footer-team li {
+  color: var(--text);
+  font-weight: 500;
+}
+
+.footer-course {
+  margin: 14px 0 0;
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+.footer-bottom {
+  max-width: $footer-max;
+  margin: 0 auto;
+  padding: 20px clamp(20px, 5vw, 56px);
+  border-top: 1px dashed var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+
+  p {
+    margin: 0;
+  }
+
+  a {
+    color: var(--ink);
+    font-weight: 600;
+    text-decoration: none;
+    transition: color 0.12s ease;
+
+    &:hover {
+      color: var(--accent);
+    }
+  }
+}
+
+// Bottom rainbow strip overrides the sticky positioning of the top one
+.rainbow-strip-bottom {
+  position: static;
+  margin: 0;
+}
