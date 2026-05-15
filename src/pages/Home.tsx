@@ -31,6 +31,7 @@ export function Home() {
   const playedCount = games.filter(
     (g) => (progressBySlug[g.slug] ?? 0) >= 100,
   ).length;
+  const allPlayed = playedCount === totalGames;
 
   return (
     <>
@@ -77,7 +78,10 @@ export function Home() {
           are independent.
         </p>
 
-        <div className="games-progress" aria-label={`${playedCount} of ${totalGames} games played`}>
+        <div
+          className={`games-progress ${allPlayed ? "is-complete" : ""}`}
+          aria-label={`${playedCount} of ${totalGames} games played`}
+        >
           <div className="games-progress-dots" aria-hidden>
             {Array.from({ length: totalGames }).map((_, i) => (
               <span
@@ -86,9 +90,16 @@ export function Home() {
               />
             ))}
           </div>
-          <span className="games-progress-text">
-            {playedCount} / {totalGames} played
-          </span>
+          {allPlayed ? (
+            <Link to="/bias-recap" className="games-progress-cta">
+              <span className="games-progress-cta-arrow" aria-hidden>→</span>
+              Test your knowledge
+            </Link>
+          ) : (
+            <span className="games-progress-text">
+              {playedCount} / {totalGames} played
+            </span>
+          )}
         </div>
 
         {gamesByStyle.map(({ style, label, description, items }) => (
