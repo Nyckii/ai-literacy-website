@@ -20,10 +20,11 @@ export function Layout() {
 
   return (
     <div className="layout">
+      <div className="rainbow-strip" aria-hidden />
       <header className="site-header">
         <Link to="/" className="brand">
           <span className="brand-mark" aria-hidden />
-          <span>AI Literacy</span>
+          <span className="brand-name">Bias Arcade</span>
         </Link>
         <nav className="site-nav">
           <NavLink to="/" end>Home</NavLink>

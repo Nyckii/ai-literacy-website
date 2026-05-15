@@ -1,19 +1,38 @@
 :root {
-  --bg: #f7f6f3;
+  /* Bias Arcade palette — derived from the teaser poster */
+  --bg: #fafafa;
   --surface: #ffffff;
-  --text: #141413;
-  --text-muted: #5c5b57;
-  --border: #dedcd6;
-  --accent: #1b4d4a;
-  --accent-soft: #e4efee;
-  --accent-strong: #123634;
-  --shadow-sm: 0 1px 2px rgba(15, 20, 18, 0.06);
-  --shadow-md: 0 10px 28px -12px rgba(15, 20, 18, 0.14);
-  --radius: 8px;
-  --radius-lg: 12px;
+  --text: #0b1733;              /* deep navy headlines */
+  --text-muted: #5c6275;
+  --border: #e4e2dc;
+  --accent: #ff3b46;            /* coral "Bias Arcade" red */
+  --accent-soft: #ffe1e3;
+  --accent-strong: #d92633;
+  --ink: #0b1733;               /* navy used in pill CTAs */
+  --ink-strong: #060d1f;
+
+  /* Arcade tile pastels */
+  --tile-pink:     #ffd0d6;
+  --tile-yellow:   #ffe27a;
+  --tile-mint:     #b9f0d7;
+  --tile-lavender: #d9cdf6;
+  --tile-purple:   #c0a8e8;
+  --tile-coral:    #ffb3b8;
+  --tile-sky:      #bfe7f0;
+  --tile-rose:     #ffc2cd;
+
+  --shadow-sm: 0 1px 2px rgba(11, 23, 51, 0.06);
+  --shadow-md: 0 14px 32px -14px rgba(11, 23, 51, 0.18);
+  --shadow-tile: 0 6px 0 rgba(11, 23, 51, 0.08);
+  --radius: 10px;
+  --radius-lg: 18px;
+  --radius-xl: 24px;
 
   --sans:
-    ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
+    "Helvetica Neue", Arial, sans-serif;
+  --display:
+    "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto,
     "Helvetica Neue", Arial, sans-serif;
   --serif: ui-serif, Georgia, "Times New Roman", serif;
   --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
@@ -58,15 +77,20 @@ h4 {
 }
 
 h1 {
-  font-size: clamp(2.15rem, 4vw, 3.15rem);
-  line-height: 1.12;
-  font-weight: 600;
-  letter-spacing: -0.02em;
+  font-family: var(--display);
+  font-size: clamp(2.4rem, 5.2vw, 4rem);
+  line-height: 1.04;
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  color: var(--ink);
 }
 
 h2 {
-  font-size: clamp(1.5rem, 2.6vw, 2rem);
-  font-weight: 600;
+  font-family: var(--display);
+  font-size: clamp(1.6rem, 2.8vw, 2.15rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--ink);
 }
 
 h3 {
@@ -111,14 +135,37 @@ code {
   flex-direction: column;
 }
 
-.site-header {
+/* Poster-style rainbow band at the very top */
+.rainbow-strip {
+  height: 8px;
+  background: linear-gradient(
+    to right,
+    #ff6b7a 0%,
+    #ff6b7a 16.66%,
+    #ffd93d 16.66%,
+    #ffd93d 33.33%,
+    #7be0a4 33.33%,
+    #7be0a4 50%,
+    #6bcfd9 50%,
+    #6bcfd9 66.66%,
+    #5db4d9 66.66%,
+    #5db4d9 83.33%,
+    #b9f0d7 83.33%,
+    #b9f0d7 100%
+  );
   position: sticky;
   top: 0;
+  z-index: 11;
+}
+
+.site-header {
+  position: sticky;
+  top: 8px;
   z-index: 10;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 14px clamp(20px, 5vw, 56px);
+  padding: 16px clamp(20px, 5vw, 56px);
   background: var(--bg);
   border-bottom: 1px solid var(--border);
 }
@@ -127,22 +174,32 @@ code {
   display: inline-flex;
   align-items: center;
   gap: 10px;
-  font-weight: 600;
-  color: var(--text);
-  font-size: 0.98rem;
+  font-family: var(--display);
+  font-weight: 800;
+  color: var(--accent);
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
   text-decoration: none;
 }
 
 .brand:hover {
-  color: var(--text);
+  color: var(--accent-strong);
+}
+
+.brand-name {
+  color: var(--accent);
 }
 
 .brand-mark {
   display: inline-block;
-  width: 3px;
-  height: 1.1em;
-  border-radius: 1px;
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
   background: var(--accent);
+  box-shadow:
+    14px 0 0 var(--tile-yellow),
+    28px 0 0 var(--tile-mint);
+  margin-right: 28px;
 }
 
 .site-nav {
@@ -184,23 +241,44 @@ code {
 /* ---------- Hero ---------- */
 
 .eyebrow {
-  font-family: var(--sans);
-  font-size: 0.82rem;
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  color: var(--text-muted);
-  margin: 0 0 14px;
+  font-family: var(--display);
+  font-size: 1rem;
+  font-weight: 800;
+  letter-spacing: 0;
+  color: var(--accent);
+  margin: 0 0 12px;
+  text-transform: none;
 }
 
 .hero {
-  padding: clamp(24px, 6vw, 64px) 0 clamp(40px, 7vw, 88px);
-  border-bottom: 1px solid var(--border);
-  margin-bottom: clamp(40px, 7vw, 80px);
+  padding: clamp(24px, 6vw, 56px) 0 clamp(40px, 7vw, 80px);
+  margin-bottom: clamp(40px, 7vw, 72px);
+  position: relative;
+}
+
+.hero h1 {
+  max-width: 18ch;
+}
+
+.hero-dots {
+  color: var(--accent);
+}
+
+.hero-underline {
+  background-image: linear-gradient(
+    to top,
+    var(--accent) 0,
+    var(--accent) 0.18em,
+    transparent 0.18em
+  );
+  background-repeat: no-repeat;
+  background-position: 0 92%;
+  padding: 0 0.05em;
 }
 
 .hero .lede {
-  margin-top: 18px;
-  font-size: clamp(1.05rem, 1.6vw, 1.25rem);
+  margin-top: 22px;
+  font-size: clamp(1.05rem, 1.5vw, 1.2rem);
   color: var(--text-muted);
   max-width: 60ch;
 }
@@ -210,45 +288,68 @@ code {
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 10px 18px;
-  border-radius: var(--radius);
-  font-weight: 500;
-  font-size: 0.94rem;
-  border: 1px solid transparent;
+  gap: 10px;
+  padding: 14px 22px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  letter-spacing: 0.01em;
+  border: 1.5px solid transparent;
   transition:
     background 0.15s ease,
     color 0.15s ease,
-    border-color 0.15s ease;
+    border-color 0.15s ease,
+    transform 0.1s ease;
   cursor: pointer;
   text-decoration: none;
 }
 
+.btn:active {
+  transform: translateY(1px);
+}
+
+/* Primary CTA: navy/black pill, like the poster's mini-games band */
 .btn-primary {
-  background: var(--accent);
+  background: var(--ink);
   color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-weight: 800;
+  font-size: 0.88rem;
+  padding: 16px 26px;
 }
 
 .btn-primary:hover {
-  background: var(--accent-strong);
+  background: var(--ink-strong);
   color: #fff;
 }
 
 .btn-ghost {
-  background: var(--surface);
-  color: var(--text);
-  border-color: var(--border);
+  background: transparent;
+  color: var(--ink);
+  border-color: var(--ink);
 }
 
 .btn-ghost:hover {
-  border-color: var(--text-muted);
-  background: color-mix(in srgb, var(--bg) 60%, var(--surface));
-  color: var(--text);
+  background: var(--ink);
+  color: #fff;
+}
+
+/* Coral accent button (alternative) */
+.btn-coral {
+  background: var(--accent);
+  color: #fff;
+}
+.btn-coral:hover {
+  background: var(--accent-strong);
+  color: #fff;
 }
 
 /* ---------- About ---------- */
@@ -315,11 +416,20 @@ code {
 }
 
 .games-group {
-  margin-bottom: 48px;
+  margin-bottom: 56px;
 }
 
 .games-group-label {
-  margin-bottom: 18px;
+  display: inline-block;
+  margin-bottom: 22px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
 }
 
 .game-grid {
@@ -327,40 +437,67 @@ code {
   padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
-  gap: 18px;
+  gap: 20px;
 }
 
+/* Arcade tile cards — bright pastel backgrounds, chunky radius, offset shadow */
 .game-card {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   height: 100%;
-  min-height: 200px;
-  padding: 20px;
+  min-height: 210px;
+  padding: 22px 22px 20px;
   border-radius: var(--radius-lg);
-  background: var(--surface);
-  border: 1px solid var(--border);
-  color: var(--text);
-  box-shadow: var(--shadow-sm);
+  background: var(--tile-pink);
+  border: 2px solid var(--ink);
+  color: var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
   transition:
-    border-color 0.15s ease,
-    box-shadow 0.15s ease;
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.15s ease;
   text-decoration: none;
 }
 
 .game-card:hover {
-  border-color: color-mix(in srgb, var(--accent) 55%, var(--border));
-  box-shadow: var(--shadow-md);
-  color: var(--text);
+  transform: translate(-2px, -2px);
+  box-shadow: 10px 10px 0 var(--ink);
+  color: var(--ink);
 }
 
+.game-card:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+
+/* Color-cycle tiles per position so each row looks like an arcade grid */
+.game-grid > li:nth-child(8n + 1) .game-card { background: var(--tile-pink); }
+.game-grid > li:nth-child(8n + 2) .game-card { background: var(--tile-yellow); }
+.game-grid > li:nth-child(8n + 3) .game-card { background: var(--tile-mint); }
+.game-grid > li:nth-child(8n + 4) .game-card { background: var(--tile-lavender); }
+.game-grid > li:nth-child(8n + 5) .game-card { background: var(--tile-coral); }
+.game-grid > li:nth-child(8n + 6) .game-card { background: var(--tile-sky); }
+.game-grid > li:nth-child(8n + 7) .game-card { background: var(--tile-purple); color: #fff; }
+.game-grid > li:nth-child(8n + 7) .game-card .author,
+.game-grid > li:nth-child(8n + 7) .game-card .game-card-body p { color: rgba(255, 255, 255, 0.85); }
+.game-grid > li:nth-child(8n + 7) .game-card .arrow { color: #fff; }
+.game-grid > li:nth-child(8n + 8) .game-card { background: var(--tile-rose); }
+
 .game-card-body h4 {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
+  font-family: var(--display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.1;
+  color: inherit;
 }
 
 .game-card-body p {
-  color: var(--text-muted);
-  font-size: 0.95rem;
+  color: color-mix(in srgb, var(--ink) 75%, transparent);
+  font-size: 0.94rem;
+  line-height: 1.45;
 }
 
 .game-card-foot {
@@ -368,17 +505,42 @@ code {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: 0.85rem;
-  color: var(--text-muted);
+  gap: 10px;
+  font-size: 0.82rem;
+  color: color-mix(in srgb, var(--ink) 65%, transparent);
+}
+
+.game-card-foot .author {
+  font-weight: 600;
+}
+
+.progress-pill {
+  border-radius: 999px;
+  padding: 4px 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
+  border: 1.5px solid var(--ink);
+}
+
+.progress-pill.is-todo {
+  background: rgba(255, 255, 255, 0.55);
+  color: var(--ink);
+}
+
+.progress-pill.is-done {
+  background: var(--ink);
+  color: #fff;
 }
 
 .game-card .arrow {
-  font-size: 1rem;
-  color: var(--text-muted);
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--ink);
 }
 
 .game-card:hover .arrow {
-  color: var(--accent);
+  transform: translateX(2px);
 }
 
 /* ---------- Game pages ---------- */
@@ -2536,7 +2698,7 @@ code {
 .recap-section {
   margin-top: clamp(40px, 6vw, 64px);
   padding-top: clamp(40px, 6vw, 64px);
-  border-top: 1px solid var(--border);
+  border-top: 2px dashed var(--border);
 }
 
 .recap-section > h2 {
@@ -2549,6 +2711,36 @@ code {
 
 .recap-section .qz-card {
   margin-top: 0;
+}
+
+/* Boss-level card: navy with coral accent */
+.recap-section > .game-card {
+  background: var(--ink);
+  color: #fff;
+  border-color: var(--ink);
+  box-shadow: 6px 6px 0 var(--accent);
+  max-width: 520px;
+}
+
+.recap-section > .game-card:hover {
+  box-shadow: 10px 10px 0 var(--accent);
+}
+
+.recap-section > .game-card:active {
+  box-shadow: 2px 2px 0 var(--accent);
+}
+
+.recap-section > .game-card h4 {
+  color: #fff;
+}
+
+.recap-section > .game-card .game-card-body p {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.recap-section > .game-card .arrow {
+  color: var(--accent);
+  font-size: 1.4rem;
 }
 
 /* ---------- Bias Recap quiz ---------- */
