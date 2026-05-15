@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { markGameCompleted } from '../../lib/gameProgress';
 
 // ---------------------------------------------------------------------------
 // Data
@@ -139,6 +140,10 @@ export function RepresentationBias() {
     if (stage !== 'training') return;
     const t = setTimeout(() => setStage('results'), 2600);
     return () => clearTimeout(t);
+  }, [stage]);
+
+  useEffect(() => {
+    if (stage === 'results') markGameCompleted('representation-bias');
   }, [stage]);
 
   // --- Drag handlers (newsstand → training box) ---

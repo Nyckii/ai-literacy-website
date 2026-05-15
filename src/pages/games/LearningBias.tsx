@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { markGameCompleted } from '../../lib/gameProgress';
 
 // ============================================================
 // IMAGE IMPORTS
@@ -1416,6 +1417,10 @@ export function LearningBias() {
   };
 
   const showNav = phase !== 'intro' && phase !== 'complete';
+
+  useEffect(() => {
+    if (phase === 'complete') markGameCompleted('learning-bias');
+  }, [phase]);
 
   return (
     <div

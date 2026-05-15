@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import './ExclusionBias.css';
+import { markGameCompleted } from '../../lib/gameProgress';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -931,6 +932,10 @@ export function ExclusionBias() {
   const [phase, setPhase] = useState<Phase>('intro');
   const [scanResults, setScanResults] = useState<ScanResult[]>([]);
   const [extraData, setExtraData] = useState<Record<Group, number>>(zeroExtra);
+
+  useEffect(() => {
+    if (phase === 'learn') markGameCompleted('exclusion-bias');
+  }, [phase]);
 
   const handleScanComplete = useCallback((results: ScanResult[]) => {
     setScanResults(results);

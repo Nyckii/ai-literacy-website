@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { markGameCompleted } from '../../lib/gameProgress';
 
 type Stage = 'intro' | 'home' | 'predicting' | 'deploy' | 'revealed';
 type DestId = 'us' | 'in' | 'id' | 'ch1955';
@@ -204,6 +205,10 @@ export function MappingBias() {
     if (stage !== 'home') return;
     const t = setTimeout(() => setPredictAnim(true), 120);
     return () => clearTimeout(t);
+  }, [stage]);
+
+  useEffect(() => {
+    if (stage === 'revealed') markGameCompleted('mapping-bias');
   }, [stage]);
 
   const active = useMemo(

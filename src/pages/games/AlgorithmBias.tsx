@@ -5,6 +5,7 @@
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import mapImg from './assets/AlgorithmBiasImg/city-delivery-map.png';
+import { markGameCompleted } from '../../lib/gameProgress';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1479,6 +1480,10 @@ function PhaseFinalReflect({ onAct, algoResults, fairerResults }: {
 
 export function AlgorithmBias() {
   const [phase, setPhase] = useState<GamePhase>('explore');
+
+  useEffect(() => {
+    if (phase === 'reflect') markGameCompleted('algorithm-bias');
+  }, [phase]);
 
   // Button state
   const [btnLabel, setBtnLabel] = useState('');

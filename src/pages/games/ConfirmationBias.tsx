@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import './ConfirmationBias.css';
+import { markGameCompleted } from '../../lib/gameProgress';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -1275,6 +1276,10 @@ export function ConfirmationBias() {
   const [history, setHistory] = useState<RoundRecord[]>([]);
   const [aiStep, setAiStep] = useState(0);
   const [time, setTime] = useState(getTime);
+
+  useEffect(() => {
+    if (phase === 'learn') markGameCompleted('confirmation-bias');
+  }, [phase]);
 
   useEffect(() => {
     const t = setInterval(() => setTime(getTime()), 30_000);

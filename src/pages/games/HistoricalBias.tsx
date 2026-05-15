@@ -1,6 +1,23 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { getGameProgress, markGameCompleted } from '../../lib/gameProgress';
 
 export function HistoricalBias() {
+  useEffect(() => {
+    if (getGameProgress('historical-bias') >= 100) return;
+    const onScroll = () => {
+      const reachedBottom =
+        window.scrollY + window.innerHeight >=
+        document.documentElement.scrollHeight - 80;
+      if (!reachedBottom) return;
+      markGameCompleted('historical-bias');
+      window.removeEventListener('scroll', onScroll);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, []);
+
   return (
     <section className="game-page hb-page">
       <Link to="/#games" className="back-link">← All games</Link>

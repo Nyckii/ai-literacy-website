@@ -1,7 +1,8 @@
-import { useRef } from 'react';
+import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { games, LEVEL_LABELS } from '../../data/games';
 import './InteractionBias.css';
+import { getGameProgress, markGameCompleted } from '../../lib/gameProgress';
 
 interface FlipCardProps {
   icon: string;
@@ -13,6 +14,21 @@ export function InteractionBias() {
   const slug = "interaction-bias";
   const game = games.find((g) => g.slug === slug);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (getGameProgress(slug) >= 100) return;
+    const onScroll = () => {
+      const reachedBottom =
+        window.scrollY + window.innerHeight >=
+        document.documentElement.scrollHeight - 80;
+      if (!reachedBottom) return;
+      markGameCompleted(slug);
+      window.removeEventListener('scroll', onScroll);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [slug]);
 
   const toggleFullScreen = () => {
     if (containerRef.current) {

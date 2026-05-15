@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { markGameCompleted } from '../../lib/gameProgress';
 
 type Stage = 'intro' | 'reading' | 'scoring' | 'revealed';
 
@@ -143,6 +144,10 @@ export function MeasurementBias() {
     if (stage !== 'scoring') return;
     const t = setTimeout(() => setStage('revealed'), 1800);
     return () => clearTimeout(t);
+  }, [stage]);
+
+  useEffect(() => {
+    if (stage === 'revealed') markGameCompleted('measurement-bias');
   }, [stage]);
 
   const reset = () => {

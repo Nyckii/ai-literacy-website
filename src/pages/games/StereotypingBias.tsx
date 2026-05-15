@@ -1,11 +1,28 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { games, LEVEL_LABELS } from '../../data/games';
 import { MirrorLabGame } from './MirrorLabGame';
 import './StereotypingBias.css';
+import { getGameProgress, markGameCompleted } from '../../lib/gameProgress';
 
 export function StereotypingBias() {
   const slug = 'stereotyping-bias';
   const game = games.find((g) => g.slug === slug);
+
+  useEffect(() => {
+    if (getGameProgress(slug) >= 100) return;
+    const onScroll = () => {
+      const reachedBottom =
+        window.scrollY + window.innerHeight >=
+        document.documentElement.scrollHeight - 80;
+      if (!reachedBottom) return;
+      markGameCompleted(slug);
+      window.removeEventListener('scroll', onScroll);
+    };
+    onScroll();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [slug]);
 
   if (!game) {
     return (
