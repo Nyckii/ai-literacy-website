@@ -1,0 +1,440 @@
+// MeasurementBias.scss — arcade-styled essay grader
+
+// ── Local helpers ──────────────────────────────────────────────────────
+$chunky-shadow: 4px 4px 0 var(--ink);
+$chunky-shadow-lg: 6px 6px 0 var(--ink);
+
+@mixin arcade-card($bg: var(--surface)) {
+  background: $bg;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius-lg);
+  box-shadow: $chunky-shadow;
+}
+
+@mixin arcade-pill($bg: var(--ink), $color: #fff) {
+  display: inline-block;
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: $bg;
+  color: $color;
+  font-family: var(--display);
+  font-size: 0.74rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+// ── Page ───────────────────────────────────────────────────────────────
+.mb-page {
+  max-width: 920px;
+}
+
+// ── Intro card ─────────────────────────────────────────────────────────
+.mb-card {
+  @include arcade-card(var(--tile-mint));
+  padding: 28px 32px;
+}
+
+.mb-intro {
+  h2 {
+    font-size: 1.4rem;
+    margin-bottom: 14px;
+  }
+  .btn {
+    margin-top: 16px;
+  }
+}
+
+.mb-prompt {
+  margin: 20px 0;
+  padding: 16px 20px;
+  background: #fff;
+  border: 2px solid var(--ink);
+  border-radius: var(--radius);
+  font-style: italic;
+  color: var(--ink);
+  box-shadow: 3px 3px 0 var(--accent);
+}
+
+// ── Side-by-side essays ────────────────────────────────────────────────
+.mb-essays {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-bottom: 32px;
+
+  @media (max-width: 820px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mb-essay {
+  @include arcade-card();
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+}
+
+.mb-essay-head {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 14px;
+  border-bottom: 2px dashed var(--border);
+}
+
+.mb-essay-head-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mb-essay-label {
+  @include arcade-pill();
+  align-self: flex-start;
+}
+
+.mb-essay-dialect {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+}
+
+.mb-essay-body {
+  flex: 1;
+  font-size: 0.96rem;
+  line-height: 1.6;
+  color: var(--text);
+
+  p {
+    margin: 0 0 0.8em;
+  }
+  p:last-child {
+    margin-bottom: 0;
+  }
+}
+
+// ── Dialect tabs ───────────────────────────────────────────────────────
+.mb-tabs {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.mb-tab {
+  padding: 6px 12px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  background: #fff;
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: 0.78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition:
+    background 0.12s ease,
+    color 0.12s ease,
+    transform 0.1s ease;
+
+  &:hover {
+    background: var(--tile-yellow);
+  }
+
+  &.mb-tab-active {
+    background: var(--ink);
+    color: #fff;
+  }
+}
+
+// ── Score bar ──────────────────────────────────────────────────────────
+.mb-scorebar {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 2px dashed var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.mb-scorebar-track {
+  height: 10px;
+  width: 100%;
+  border-radius: 999px;
+  background: #fff;
+  border: 2px solid var(--ink);
+  overflow: hidden;
+}
+
+.mb-scorebar-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+}
+
+.mb-scorebar-num {
+  font-family: var(--display);
+  font-size: 0.92rem;
+  font-weight: 800;
+  color: var(--ink);
+  align-self: flex-end;
+}
+
+// ── Actions / loading ──────────────────────────────────────────────────
+.mb-actions {
+  text-align: center;
+  margin: 28px 0;
+}
+
+.mb-disclaimer {
+  margin: 14px auto 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  max-width: 56ch;
+}
+
+.mb-loading {
+  display: inline-block;
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 1rem;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  padding: 10px 18px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--tile-yellow);
+
+  &::after {
+    content: '...';
+    color: var(--accent);
+    margin-left: 4px;
+  }
+}
+
+// ── Reveal section ─────────────────────────────────────────────────────
+.mb-reveal {
+  margin-top: 8px;
+
+  h2 {
+    font-size: 1.5rem;
+    margin: 40px 0 18px;
+  }
+}
+
+.mb-reveal-headline {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: stretch;
+  gap: 0;
+  border-radius: var(--radius-lg);
+  border: 2px solid var(--ink);
+  background: var(--surface);
+  box-shadow: $chunky-shadow-lg;
+  overflow: hidden;
+  text-align: center;
+
+  > div {
+    padding: 28px 22px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    justify-content: center;
+  }
+
+  > div:first-child {
+    background: var(--tile-mint);
+  }
+  > div:last-child {
+    background: var(--tile-pink);
+  }
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mb-tag {
+  @include arcade-pill();
+  align-self: center;
+}
+
+.mb-verdict {
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.25;
+
+  &.mb-verdict-bad {
+    color: var(--accent-strong);
+  }
+}
+
+.mb-total {
+  font-family: var(--display);
+  font-size: 2.6rem;
+  font-weight: 800;
+  color: var(--ink);
+  letter-spacing: -0.025em;
+  margin: 0;
+  line-height: 1;
+}
+
+.mb-gap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 28px;
+  background: var(--ink);
+  color: var(--accent);
+  font-family: var(--display);
+  font-size: 1.6rem;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  border-left: 2px solid var(--ink);
+  border-right: 2px solid var(--ink);
+  white-space: nowrap;
+
+  @media (max-width: 720px) {
+    padding: 14px 0;
+    border-left: none;
+    border-right: none;
+    border-top: 2px solid var(--ink);
+    border-bottom: 2px solid var(--ink);
+  }
+}
+
+// ── Rubric rows ────────────────────────────────────────────────────────
+.mb-rubric {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.mb-row {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr auto auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  background: #fff;
+  border: 2px solid var(--ink);
+
+  @media (max-width: 720px) {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+}
+
+.mb-row-equal {
+  background: var(--tile-mint);
+}
+
+.mb-row-label {
+  font-weight: 700;
+  font-size: 0.96rem;
+  color: var(--ink);
+}
+
+.mb-row-num {
+  font-family: var(--display);
+  font-size: 0.96rem;
+  font-weight: 800;
+  min-width: 36px;
+  text-align: center;
+  color: var(--ink);
+
+  @media (max-width: 720px) {
+    text-align: left;
+  }
+}
+
+.mb-row-num-b {
+  color: var(--text-muted);
+}
+
+.mb-row-note {
+  grid-column: 1 / -1;
+  margin: 6px 0 0;
+  font-size: 0.85rem;
+  color: var(--text-muted);
+  font-style: italic;
+}
+
+// ── Relative bars ──────────────────────────────────────────────────────
+.mb-rb {
+  @media (max-width: 720px) {
+    text-align: left;
+  }
+}
+
+.mb-rb-track {
+  height: 8px;
+  border-radius: 999px;
+  background: #fff;
+  border: 1.5px solid var(--ink);
+  overflow: hidden;
+}
+
+.mb-rb-A .mb-rb-track {
+  transform: scaleX(-1);
+
+  @media (max-width: 720px) {
+    transform: none;
+  }
+}
+
+.mb-rb-fill {
+  height: 100%;
+  background: var(--accent);
+}
+
+// ── Explainer + side note ──────────────────────────────────────────────
+.mb-explainer {
+  @include arcade-card();
+  margin-top: 36px;
+  padding: 28px 30px;
+
+  h2 {
+    margin-top: 0;
+  }
+  p {
+    margin-bottom: 14px;
+  }
+  .btn {
+    margin-top: 6px;
+  }
+}
+
+.mb-note {
+  @include arcade-card(var(--tile-yellow));
+  margin-top: 26px;
+  padding: 22px 26px;
+
+  h3 {
+    font-family: var(--display);
+    font-size: 1rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    color: var(--ink);
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  p {
+    font-size: 0.96rem;
+    color: var(--ink);
+  }
+
+  .muted {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-top: 14px;
+    font-style: normal;
+  }
+}

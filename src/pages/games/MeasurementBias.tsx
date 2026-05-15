@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { markGameCompleted } from '../../lib/gameProgress';
+import './MeasurementBias.scss';
 
 type Stage = 'intro' | 'reading' | 'scoring' | 'revealed';
 
