@@ -515,6 +515,7 @@ code {
 
 /* Arcade tile cards — bright pastel backgrounds, chunky radius, offset shadow */
 .game-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
@@ -587,33 +588,86 @@ code {
   font-weight: 600;
 }
 
-.progress-pill {
-  border-radius: 999px;
-  padding: 4px 10px;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.02em;
-  border: 1.5px solid var(--ink);
-}
-
-.progress-pill.is-todo {
-  background: rgba(255, 255, 255, 0.55);
-  color: var(--ink);
-}
-
-.progress-pill.is-done {
-  background: var(--ink);
+/* Played stamp — diagonal arcade-victory badge in the top-right corner */
+.played-stamp {
+  position: absolute;
+  top: 14px;
+  right: 12px;
+  padding: 5px 14px;
+  background: var(--accent);
   color: #fff;
+  font-family: var(--display);
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 2px solid var(--ink);
+  border-radius: 4px;
+  transform: rotate(10deg);
+  box-shadow: 2px 2px 0 var(--ink);
+  z-index: 2;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Make room for the stamp inside the card */
+.game-card.is-done .game-card-body h4 {
+  padding-right: 72px;
 }
 
 .game-card .arrow {
   font-size: 1.1rem;
   font-weight: 800;
   color: var(--ink);
+  transition: transform 0.12s ease;
 }
 
 .game-card:hover .arrow {
   transform: translateX(2px);
+}
+
+/* ── Global progress (N / 10 played) ────────────────── */
+.games-progress {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  margin: -16px 0 32px;
+  padding: 14px 18px;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  background: var(--surface);
+  box-shadow: 3px 3px 0 var(--ink);
+  width: fit-content;
+  max-width: 100%;
+}
+
+.games-progress-dots {
+  display: flex;
+  gap: 7px;
+}
+
+.progress-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid var(--ink);
+  background: transparent;
+  transition: background 0.18s ease, transform 0.18s ease;
+}
+
+.progress-dot.is-filled {
+  background: var(--accent);
+}
+
+.games-progress-text {
+  font-family: var(--display);
+  font-weight: 800;
+  font-size: 0.82rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink);
+  white-space: nowrap;
 }
 
 /* ---------- Game pages ---------- */
