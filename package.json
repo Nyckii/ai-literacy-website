@@ -14,6 +14,8 @@
     "typecheck": "tsc -b --noEmit"
   },
   "dependencies": {
+    "@phosphor-icons/react": "^2.1.10",
+    "country-flag-icons": "^1.6.17",
     "react": "^19.2.5",
     "react-dom": "^19.2.5",
     "react-router-dom": "^7.14.2"

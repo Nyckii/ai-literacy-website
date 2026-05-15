@@ -1,6 +1,22 @@
+import CHFlag from 'country-flag-icons/react/3x2/CH';
+import IDFlag from 'country-flag-icons/react/3x2/ID';
+import INFlag from 'country-flag-icons/react/3x2/IN';
+import USFlag from 'country-flag-icons/react/3x2/US';
 import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { markGameCompleted } from '../../lib/gameProgress';
+
+const FLAGS = { US: USFlag, IN: INFlag, ID: IDFlag, CH: CHFlag } as const;
+type CountryCode = keyof typeof FLAGS;
+
+function CountryFlag({ code, title }: { code: CountryCode; title?: string }) {
+  const Flag = FLAGS[code];
+  return (
+    <span className="mp-flag-chip" aria-hidden>
+      <Flag title={title ?? code} />
+    </span>
+  );
+}
 
 type Stage = 'intro' | 'home' | 'predicting' | 'deploy' | 'revealed';
 type DestId = 'us' | 'in' | 'id' | 'ch1955';
@@ -21,7 +37,7 @@ type TrainingFeature = {
 
 type Destination = {
   id: DestId;
-  flag: string;
+  flag: CountryCode;
   label: string;
   short: string;
   axis: 'space' | 'time';
@@ -84,7 +100,7 @@ const TRAINING_FEATURES: TrainingFeature[] = [
 const DESTINATIONS: Destination[] = [
   {
     id: 'us',
-    flag: '🇺🇸',
+    flag: 'US',
     label: 'United States, 2024',
     short: 'USA',
     axis: 'space',
@@ -106,7 +122,7 @@ const DESTINATIONS: Destination[] = [
   },
   {
     id: 'in',
-    flag: '🇮🇳',
+    flag: 'IN',
     label: 'India, 2024',
     short: 'India',
     axis: 'space',
@@ -132,7 +148,7 @@ const DESTINATIONS: Destination[] = [
   },
   {
     id: 'id',
-    flag: '🇮🇩',
+    flag: 'ID',
     label: 'Indonesia, 2024',
     short: 'Indonesia',
     axis: 'space',
@@ -158,7 +174,7 @@ const DESTINATIONS: Destination[] = [
   },
   {
     id: 'ch1955',
-    flag: '🇨🇭',
+    flag: 'CH',
     label: 'Switzerland, 1955',
     short: 'Switzerland (1955)',
     axis: 'time',
@@ -364,7 +380,7 @@ export function MappingBias() {
                         .join(' ')}
                       onClick={() => selectDestination(d.id)}
                     >
-                      <span className="mp-deploy-flag">{d.flag}</span>
+                      <CountryFlag code={d.flag} title={d.short} />
                       <span className="mp-deploy-name">{d.short}</span>
                       {d.axis === 'time' && (
                         <span className="mp-deploy-badge">time-shift</span>
@@ -424,7 +440,9 @@ function HomeActual({
   return (
     <>
       <header className="mp-actual-head">
-        <span className="mp-actual-label">Actual market · 🇨🇭 Switzerland, 2024</span>
+        <span className="mp-actual-label">
+          Actual market · <CountryFlag code="CH" title="Switzerland" /> Switzerland, 2024
+        </span>
         <span className="mp-actual-tag mp-actual-tag-good">in-domain ✓</span>
       </header>
 
@@ -461,7 +479,7 @@ function DestinationActual({ destination }: { destination: Destination }) {
     <>
       <header className="mp-actual-head">
         <span className="mp-actual-label">
-          Actual market · {flag} {label}
+          Actual market · <CountryFlag code={flag} title={label} /> {label}
         </span>
         <span className="mp-actual-tag mp-actual-tag-bad">out-of-domain</span>
       </header>
@@ -651,7 +669,7 @@ function Reveal({ onReset }: { onReset: () => void }) {
             <g className="mp-dot mp-dot-home">
               <circle cx="200" cy="200" r="8" />
               <text x="210" y="222" className="mp-dot-label">
-                🇨🇭 Switzerland · 2024 (trained here)
+                Switzerland · 2024 (trained here)
               </text>
             </g>
 
@@ -668,7 +686,7 @@ function Reveal({ onReset }: { onReset: () => void }) {
                   className="mp-dot-label"
                   textAnchor={d.position.x > 200 ? 'start' : 'end'}
                 >
-                  {d.flag} {d.short}
+                  {d.short}
                 </text>
               </g>
             ))}
