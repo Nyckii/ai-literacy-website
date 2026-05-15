@@ -28,8 +28,10 @@ export function Layout() {
         </Link>
         <nav className="site-nav">
           <NavLink to="/" end>Home</NavLink>
-          <NavLink to="/#about">About</NavLink>
           <NavLink to="/#games">Games</NavLink>
+          <NavLink to="/about">About</NavLink>
+          <NavLink to="/resources">Resources</NavLink>
+          <NavLink to="/faq">FAQ</NavLink>
         </nav>
       </header>
 

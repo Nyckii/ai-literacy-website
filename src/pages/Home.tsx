@@ -35,72 +35,9 @@ export function Home() {
             Find the answers in our mini-games
             <span aria-hidden>→</span>
           </a>
-          <a href="#about" className="btn btn-ghost">
+          <Link to="/about" className="btn btn-ghost">
             Learn more
-          </a>
-        </div>
-      </section>
-
-      <section id="about" className="about">
-        <div className="about-block">
-          <h2>The problem</h2>
-          <p>
-            LLMs show up everywhere now: coursework, writing, search, decisions
-            big and small. But they carry biases from their training data,
-            design choices, and the way people prompt them.
-          </p>
-          <p>
-            The tricky part: these biases are hard to spot. The output sounds
-            confident and neutral even when it isn’t.
-          </p>
-        </div>
-
-        <div className="about-block">
-          <h2>Who this is for</h2>
-          <p>
-            University students who use AI tools, or study them. No technical
-            background needed. The point is to help students notice bias in AI
-            outputs, trace where it comes from, and read AI answers with a
-            sharper eye.
-          </p>
-        </div>
-
-        <div className="about-block">
-          <h2>Learning objectives</h2>
-          <ul>
-            <li>
-              Identify the main sources of LLM bias: data, algorithms,
-              interaction, and social context.
-            </li>
-            <li>
-              Tell different types of bias apart — stereotyping, confirmation,
-              historical, representation.
-            </li>
-            <li>Explain why biased output often sounds objective.</li>
-            <li>Think more critically about how you use AI yourself.</li>
-          </ul>
-        </div>
-
-        <div className="about-block">
-          <h2>AI framework</h2>
-          <dl className="framework">
-            <div>
-              <dt>Attitudes</dt>
-              <dd>Responsible · Curious · Empathetic</dd>
-            </div>
-            <div>
-              <dt>Skills</dt>
-              <dd>
-                Critical thinking · Self &amp; social awareness · Communication
-              </dd>
-            </div>
-            <div>
-              <dt>Knowledge</dt>
-              <dd>
-                K1.1, K1.2, K2.2 <span className="muted">(TBD)</span>
-              </dd>
-            </div>
-          </dl>
+          </Link>
         </div>
       </section>
 
