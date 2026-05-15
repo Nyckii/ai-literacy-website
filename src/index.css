@@ -251,8 +251,8 @@ code {
 }
 
 .hero {
-  padding: clamp(24px, 6vw, 56px) 0 clamp(40px, 7vw, 80px);
-  margin-bottom: clamp(40px, 7vw, 72px);
+  padding: clamp(16px, 4vw, 36px) 0 clamp(28px, 4vw, 40px);
+  margin-bottom: 0;
   position: relative;
 }
 
@@ -406,6 +406,10 @@ code {
 
 /* ---------- Games ---------- */
 
+.games {
+  margin-top: clamp(32px, 5vw, 48px);
+}
+
 .games h2 {
   margin-bottom: 8px;
 }
@@ -419,9 +423,17 @@ code {
   margin-bottom: 56px;
 }
 
+.games-group-head {
+  margin-bottom: 20px;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 14px;
+}
+
 .games-group-label {
-  display: inline-block;
-  margin-bottom: 22px;
+  flex-shrink: 0;
+  margin: 0;
   padding: 6px 12px;
   border-radius: 999px;
   background: var(--ink);
@@ -432,11 +444,19 @@ code {
   text-transform: uppercase;
 }
 
+.games-group-desc {
+  flex: 1 1 280px;
+  margin: 0;
+  font-size: 0.94rem;
+  color: var(--text-muted);
+  max-width: 60ch;
+}
+
 .game-grid {
   list-style: none;
   padding: 0;
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
   gap: 20px;
 }
 

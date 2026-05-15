@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { gamesByLevel } from "../data/games";
+import { gamesByStyle } from "../data/games";
 import {
   getAllGameProgress,
   subscribeToGameProgress,
@@ -31,9 +31,9 @@ export function Home() {
           looks like — and where it comes from.
         </p>
         <div className="hero-cta">
-          <a href="#games" className="btn btn-primary">
-            Find the answers in our mini-games
-            <span aria-hidden>→</span>
+          <a href="#games" className="btn btn-coral">
+            Start playing
+            <span aria-hidden>↓</span>
           </a>
           <Link to="/about" className="btn btn-ghost">
             Learn more
@@ -48,9 +48,12 @@ export function Home() {
           are independent.
         </p>
 
-        {gamesByLevel.map(({ level, label, items }) => (
-          <div key={level} className="games-group">
-            <h3 className="games-group-label">{label}</h3>
+        {gamesByStyle.map(({ style, label, description, items }) => (
+          <div key={style} className="games-group">
+            <div className="games-group-head">
+              <h3 className="games-group-label">{label}</h3>
+              <p className="games-group-desc">{description}</p>
+            </div>
             <ul className="game-grid">
               {items.map((g) => {
                 const progress = progressBySlug[g.slug] ?? 0;

@@ -1,13 +1,6 @@
+// Pedagogical taxonomy — where the bias sits in the AI lifecycle.
+// Used by individual game pages and the Bias Recap quiz.
 export type BiasLevel = "individual" | "multi-level" | "group";
-
-export type Game = {
-  slug: string;
-  title: string;
-  level: BiasLevel;
-  author: string;
-  short: string;
-  description: string;
-};
 
 export const LEVEL_LABELS: Record<BiasLevel, string> = {
   individual: "Individual-level biases",
@@ -15,11 +8,40 @@ export const LEVEL_LABELS: Record<BiasLevel, string> = {
   group: "Group-level biases",
 };
 
+// UX taxonomy — how the player encounters the bias.
+// Used by the home page to group games by interaction style.
+export type GameStyle = "narrative" | "task" | "visual";
+
+export const STYLE_LABELS: Record<GameStyle, string> = {
+  narrative: "Narrative & Immersive",
+  task: "Task-Oriented Simulation",
+  visual: "Visual Experiment",
+};
+
+export const STYLE_DESCRIPTIONS: Record<GameStyle, string> = {
+  narrative:
+    "Dialogue-heavy, character-driven games focused on social context.",
+  task: "Step into a decision-maker's seat and balance conflicting goals.",
+  visual:
+    "Minimalist controls, high-impact visual results — built for the Aha! moment.",
+};
+
+export type Game = {
+  slug: string;
+  title: string;
+  level: BiasLevel;
+  style: GameStyle;
+  author: string;
+  short: string;
+  description: string;
+};
+
 export const games: Game[] = [
   {
     slug: "confirmation-bias",
     title: "Confirmation Bias",
     level: "individual",
+    style: "task",
     author: "Akankshya",
     short: "A personalized feed that narrows the more you click.",
     description:
@@ -29,6 +51,7 @@ export const games: Game[] = [
     slug: "measurement-bias",
     title: "Measurement Bias",
     level: "individual",
+    style: "visual",
     author: "Nicolas",
     short: "Same essay, two dialects — watch the AI grade them differently.",
     description:
@@ -38,6 +61,7 @@ export const games: Game[] = [
     slug: "algorithm-bias",
     title: "Algorithm Bias",
     level: "multi-level",
+    style: "task",
     author: "Nagyung",
     short: "Patterns in the data become unfair outcomes in the model.",
     description:
@@ -47,6 +71,7 @@ export const games: Game[] = [
     slug: "learning-bias",
     title: "Learning Bias",
     level: "multi-level",
+    style: "visual",
     author: "Nagyung",
     short: "Models grab the easiest signal, not the most meaningful one.",
     description:
@@ -56,6 +81,7 @@ export const games: Game[] = [
     slug: "interaction-bias",
     title: "Interaction Bias",
     level: "multi-level",
+    style: "narrative",
     author: "Xiaozihan",
     short: "Loud voices speak; the AI thinks everyone agrees.",
     description:
@@ -65,6 +91,7 @@ export const games: Game[] = [
     slug: "stereotyping-bias",
     title: "Stereotyping Bias",
     level: "multi-level",
+    style: "visual",
     author: "Xiaozihan",
     short:
       "Predict how the AI fills in the blank — then see if you were right.",
@@ -75,6 +102,7 @@ export const games: Game[] = [
     slug: "historical-bias",
     title: "Historical Bias",
     level: "group",
+    style: "narrative",
     author: "Leroy",
     short: "Same applicant, different ZIP code, different decision.",
     description:
@@ -84,6 +112,7 @@ export const games: Game[] = [
     slug: "exclusion-bias",
     title: "Exclusion Bias",
     level: "group",
+    style: "visual",
     author: "Akankshya",
     short: "Helpful advice — for a student who isn’t you.",
     description:
@@ -93,6 +122,7 @@ export const games: Game[] = [
     slug: "representation-bias",
     title: "Representation Bias",
     level: "group",
+    style: "visual",
     author: "Leroy",
     short: "Pick your training set, watch the model take a side.",
     description:
@@ -102,6 +132,7 @@ export const games: Game[] = [
     slug: "mapping-bias",
     title: "Mapping Bias",
     level: "group",
+    style: "visual",
     author: "Nicolas",
     short: "A model trained in Switzerland predicting salaries in Indonesia.",
     description:
@@ -109,10 +140,21 @@ export const games: Game[] = [
   },
 ];
 
+// Grouped by pedagogical level (kept for backwards-compat / other consumers).
 export const gamesByLevel = (Object.keys(LEVEL_LABELS) as BiasLevel[]).map(
   (level) => ({
     level,
     label: LEVEL_LABELS[level],
     items: games.filter((g) => g.level === level),
+  }),
+);
+
+// Grouped by interaction style — used by the home page.
+export const gamesByStyle = (Object.keys(STYLE_LABELS) as GameStyle[]).map(
+  (style) => ({
+    style,
+    label: STYLE_LABELS[style],
+    description: STYLE_DESCRIPTIONS[style],
+    items: games.filter((g) => g.style === style),
   }),
 );
