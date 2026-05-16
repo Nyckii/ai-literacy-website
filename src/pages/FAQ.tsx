@@ -2,90 +2,82 @@ type QA = { q: string; a: React.ReactNode };
 
 const faqs: QA[] = [
   {
-    q: "What is the Bias Arcade?",
+    q: "What is Bias Arcade?",
     a: (
       <p>
-        An interactive AI literacy project built at ETH Zürich (FS26). It's a
-        small collection of mini-games that each surface a different kind of
-        bias in AI systems — confirmation, measurement, historical,
-        stereotyping, and more.
+        Bias Arcade is a collection of short interactive games and resources designed to help users understand biases in AI models. Each game explores either how a bias gets built into a system or what happens in the real world when a biased AI makes decisions.
       </p>
     ),
   },
   {
-    q: "Who is it for?",
+    q: "What is the target group of Bias Arcade?",
     a: (
       <p>
-        University students who use or study AI tools. No technical
-        background needed. If you've ever used ChatGPT, you have enough
-        context to play.
+        Bias Arcade is designed for high school and university students, particularly those outside of computer science, as well as educators looking to explore AI bias with their students.
       </p>
     ),
   },
   {
-    q: "How long does a game take?",
+    q: "Do learners need to know how to code to play the games?",
     a: (
       <p>
-        Most games take 3–8 minutes. The games are independent — pick any one
-        to start. The <em>Bias Recap</em> at the end is a short matching
-        quiz once you've played a few.
+        No. The games focus on concepts, consequences and critical thinking. No coding or technical experience is needed to play.
       </p>
     ),
   },
   {
-    q: "Do I need to play in order?",
+    q: "Do learners need any prior knowledge?",
     a: (
       <p>
-        No. The games are grouped by level (individual, multi-level, group)
-        but each one is self-contained. Start wherever the title intrigues
-        you.
+        Some basic familiarity with how AI models work, such as how models are trained and learn from data, is helpful for getting the most out of the games. Under Teacher Resources you will find external materials that can be used to introduce these concepts beforehand.
       </p>
     ),
   },
   {
-    q: "Is the AI in the games real or simulated?",
+    q: "What biases are covered?",
     a: (
       <p>
-        It varies by game. Some surface real model outputs; others use
-        carefully constructed examples drawn from the AI bias research
-        literature. Each game's explainer notes what's real and what's
-        scripted.
+        Bias Arcade currently covers six types of AI bias: historical bias, exclusion bias, confirmation bias, algorithm bias, learning bias, and interaction bias. Each game focuses on one specific bias. A detailed overview with explanation of each bias can be found under the Teacher Resources.
       </p>
     ),
   },
   {
-    q: "Will the games change my opinion about AI?",
+    q: "How long does each game take?",
     a: (
       <p>
-        That's not really the goal. The goal is to give you a sharper eye —
-        so when an AI output sounds confident and neutral, you can ask the
-        right follow-up questions. Whether to use AI is still up to you.
+        Each game has a different duration. The estimated time of each game can be found under Teacher Resources.
       </p>
     ),
   },
   {
-    q: "Where can I read more?",
+    q: "Do I need to play the games in a certain order?",
     a: (
       <p>
-        Check the <a href="/resources">Resources page</a> for the papers
-        and projects this work is grounded in.
+        No, the games can be played in any order and each one is self-contained. Under the Teacher Resources an overview of the games, a lesson plan and suggested discussion questions are available.
       </p>
     ),
   },
   {
-    q: "Can I use the Bias Arcade in my course?",
+    q: "Can Bias Arcade be used in a classroom?",
     a: (
       <p>
-        Yes. The source is on{' '}
-        <a
-          href="https://github.com/Nyckii/ai-literacy-website"
-          target="_blank"
-          rel="noreferrer"
-        >
-          GitHub
-        </a>
-        . If you adapt it for teaching, we'd love to hear how it went —
-        file an issue on the repo.
+        Yes. The games can be played individually or as part of a structured lesson.
+      </p>
+    ),
+  },
+  {
+    q: "Do I need an internet connection for Bias Arcade?",
+    a: (
+      <p>
+        Yes, Bias Arcade is a collection of web-based games, so you will need an internet connection to play the games.
+      </p>
+    ),
+  },
+  {
+    q: "Does Bias Arcade work on mobile devices?",
+    a: (
+      <p>
+        Bias Arcade is designed to work on desktop and laptop browers. Some games may work on phones, but a larger screen is recommended for the best experience.
       </p>
     ),
   },
