@@ -134,41 +134,74 @@ export function Resources() {
         <ul className="resource-list">
           <li>
             <a
-              href="https://arxiv.org/abs/2310.10148"
-              target="_blank"
-              rel="noreferrer"
-            >
-              González-Sendino, R. et al. (2023). <em>A review on bias in
-              automated essay scoring systems.</em>
-            </a>
-            <span className="resource-note">
-              Grounds the <em>Measurement Bias</em> game.
-            </span>
-          </li>
-          <li>
-            <a
               href="https://dl.acm.org/doi/10.1145/3457607"
               target="_blank"
               rel="noreferrer"
             >
-              Mehrabi, N. et al. (2021). <em>A survey on bias and fairness in
-              machine learning.</em> ACM Computing Surveys.
+              A survey on bias and fairness in machine learning
             </a>
             <span className="resource-note">
-              A broad taxonomy of bias types used across most games.
+              A comprehensive survey investigating real-world AI biases, classifying their various sources, and establishing a detailed taxonomy of mathematical fairness definitions to prevent discriminatory outcomes.
             </span>
           </li>
           <li>
             <a
-              href="https://www.fairmlbook.org/"
+              href="https://ailiteracyframework.org/"
               target="_blank"
               rel="noreferrer"
             >
-              Barocas, S., Hardt, M., &amp; Narayanan, A. <em>Fairness and
-              Machine Learning.</em>
+              AI Literacy Framework (AILitFramework)
             </a>
             <span className="resource-note">
-              Free textbook. Strong on historical and representation bias.
+              A structured framework defining the critical dimensions of AI literacy: knowledge, skills, attitudes, and ethical considerations.
+            </span>
+          </li>
+          <li>
+            <a
+              href="https://arxiv.org/html/2407.18745v2"
+              target="_blank"
+              rel="noreferrer"
+            >
+              FairAIED: Navigating Fairness, Bias, and Ethics in Educational AI Applications
+            </a>
+            <span className="resource-note">
+              A systematic review bridging the gap between technical fairness research and educational applications, establishing a harmonized framework for bias sources, mitigation strategies, and multi-level student fairness concerns.
+            </span>
+          </li>
+          <li>
+            <a
+              href="https://www.sciencedirect.com/science/article/pii/S0893395224002667"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Ethical and Bias Considerations in Artificial Intelligence/Machine Learning
+            </a>
+            <span className="resource-note">
+              An analysis of ethical and bias considerations in medical AI, classifying machine learning biases into data, development, and interaction categories to establish fair and transparent clinical deployments.
+            </span>
+          </li>
+          <li>
+            <a
+              href="https://arxiv.org/abs/2301.07483"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Biases in Scholarly Recommender Systems: Impact, Prevalence, and Mitigation
+            </a>
+            <span className="resource-note">
+              A comprehensive study on recommendation bias, showing how algorithmic filters can create academic echo chambers and filter bubbles.
+            </span>
+          </li>
+          <li>
+            <a
+              href="https://www.researchgate.net/publication/343654659_Evolution_and_impact_of_bias_in_human_and_machine_learning_algorithm_interaction"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Evolution and impact of bias in human and machine learning algorithm interaction
+            </a>
+            <span className="resource-note">
+              Explores how user interactions with machine learning feedback loops dynamically evolve and amplify biases over time.
             </span>
           </li>
         </ul>
