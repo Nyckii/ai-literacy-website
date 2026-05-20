@@ -15,12 +15,25 @@ type Article = {
   source: string;
   readTime: string;
   slides: [string, string];
+  image?: string;
 };
 
 type RoundRecord = {
   day: number;
   feedDistribution: Record<Topic, number>;
   reads: number;
+};
+
+type InteractionKind = 'like' | 'unlike' | 'read' | 'dwell';
+
+type InteractionEvent = {
+  id: string;
+  kind: InteractionKind;
+  day: number;
+  topic: Topic;
+  headline: string;
+  source: string;
+  timestamp: string;
 };
 
 // ── Config ────────────────────────────────────────────────────────────────────
@@ -486,6 +499,62 @@ const ARTICLES: Article[] = [
   },
 ];
 
+// Map of article id -> filename placed in src/pages/games/assets/ConfirmationBiasImg/
+const CONFIRMATION_IMG_MAP: Record<string, string> = {
+  t1: 'a-modern-tech-office-senior-developer-in-focus-ai-.jpeg',
+  t2: 'extreme-close-up-of-a-glowing-microchip-circuit-bo.jpeg',
+  t4: 'scientific-lab-microscope-view-bioluminescent-neur.jpeg',
+  t5: 'digital-privacy-threat-visualization-data-streams-.jpeg',
+  t6: 'fiber-optic-cables-glowing-with-quantum-light-fibe.jpeg',
+  t7: 'programmers-desk-with-multiple-code-editors-open-l.jpeg',
+  t8: 'data-visualization-showing-political-spectrum-algo.jpeg',
+
+  s1: 'hydrothermal-vent-on-ocean-floor-bioluminescent-or.jpeg',
+  s2: 'genetic-laboratory-close-up-of-gene-editing-visual.jpeg',
+  s3: 'mars-surface-landscape-with-dried-river-channels-n.jpeg',
+  s4: 'james-webb-space-telescope-view-of-distant-galaxie.jpeg',
+  s5: 'forest-floor-cross-section-showing-root-and-fungal.jpeg',
+  s6: 'electron-microscope-image-of-neural-connections-br.jpeg',
+  s7: 'brain-imaging-with-neural-pathways-lighting-up-con.jpeg',
+  s8: 'coral-bleaching-underwater-warm-ocean-water-dying-.jpeg',
+
+  sp1: 'basketball-arena-final-moment-players-celebrating-.jpeg',
+  sp2: 'modern-athletic-training-facility-coach-and-athlet.jpeg',
+  sp3: 'professional-esports-tournament-players-at-gaming-.jpeg',
+  sp4: 'athletic-trainer-tending-to-injured-player-trainin.jpeg',
+  sp5: 'sports-analytics-dashboard-with-statistics-coaches.jpeg',
+  sp6: 'olympic-sprinter-mid-race-track-and-field-athlete-.jpeg',
+  sp7: 'young-college-athlete-with-social-media-presence-p.jpeg',
+  sp8: 'female-athletes-in-competition-womens-sports-arena.jpeg',
+
+  p1: 'senate-chamber-politicians-in-debate-capitol-build.jpeg',
+  p2: 'modern-office-workers-flexible-work-environment-le.jpeg',
+  p3: 'young-voters-at-polling-place-diverse-young-people.jpeg',
+  p4: 'police-presence-in-neighborhood-surveillance-techn.jpeg',
+  p5: 'city-buses-and-public-transportation-urban-infrast.jpeg',
+  p6: 'young-couple-looking-at-expensive-apartment-listin.jpeg',
+  p7: 'digital-manipulation-visualization-deepfake-concep.jpeg',
+  p8: 'person-holding-cash-financial-security-social-poli.jpeg',
+
+  h1: 'fast-food-items-on-plate-processed-snacks-unhealth.jpeg',
+  h2: 'person-exhausted-in-bed-sleeplessness-exhaustion-v.jpeg',
+  h3: 'overwhelmed-student-surrounded-by-books-and-screen.jpeg',
+  h4: 'gut-health-visualization-microbiome-illustration-d.jpeg',
+  h5: 'medical-laboratory-with-researchers-microscope-res.jpeg',
+  h6: 'person-with-phone-showing-poor-posture-tech-neck-e.jpeg',
+  h7: 'person-in-cold-water-bath-ice-immersion-wellness-p.jpeg',
+  h8: 'counselors-office-therapy-session-setup-mental-hea.jpeg',
+
+  c1: 'young-creator-filming-on-phone-documentary-filmmak.jpeg',
+  c2: 'vinyl-records-on-turntable-analog-music-lover-reco.jpeg',
+  c3: 'ai-generated-artwork-displayed-in-gallery-art-comp.jpeg',
+  c4: 'image-1142405098958900.jpeg',
+  c5: 'public-space-with-hostile-design-bench-with-anti-h.jpeg',
+  c6: 'image-1142405098958900.jpeg',
+  c7: 'influencer-doing-honest-product-review-authentic-c.jpeg',
+  c8: 'street-mural-art-being-removed-or-covered-communit.jpeg',
+};
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 function shuffle<T>(arr: T[]): T[] {
@@ -587,11 +656,18 @@ function getAiMessage(topic: Topic, upcomingRound: number) {
   return messages[upcomingRound] ?? messages[2];
 }
 
+const INTERACTION_META: Record<InteractionKind, { label: string; emoji: string }> = {
+  like: { label: 'Liked', emoji: '❤️' },
+  unlike: { label: 'Unliked', emoji: '🤍' },
+  read: { label: 'Read', emoji: '📖' },
+  dwell: { label: 'Dwelled', emoji: '👁' },
+};
+
 // ── IntroScreen ───────────────────────────────────────────────────────────────
 
 function IntroScreen({ onStart }: { onStart: () => void }) {
   return (
-    <div className="cb-intro">
+    <div className="cb-intro cb-intro--full-bleed">
       <div className="cb-intro-content">
         <p className="eyebrow">Confirmation Bias · Interactive Game</p>
         <h1 className="cb-intro-title">
@@ -665,6 +741,82 @@ function IntroScreen({ onStart }: { onStart: () => void }) {
   );
 }
 
+function HistoryPanel({
+  roundLabel,
+  diversity,
+  likedCount,
+  readCount,
+  dwellCount,
+  history,
+}: {
+  roundLabel: string;
+  diversity: number;
+  likedCount: number;
+  readCount: number;
+  dwellCount: number;
+  history: InteractionEvent[];
+}) {
+  const recent = history.slice(-7).reverse();
+
+  return (
+    <aside className="cb-history-panel" aria-label="Interaction history">
+      <div className="cb-history-panel__header">
+        <div>
+          <p className="cb-history-eyebrow">Interaction history</p>
+          <h2 className="cb-history-title">The model is watching your trail</h2>
+        </div>
+        <span className="cb-history-day">{roundLabel}</span>
+      </div>
+
+      <div className="cb-history-stats">
+        <div className="cb-history-stat">
+          <span>Likes</span>
+          <strong>{likedCount}</strong>
+        </div>
+        <div className="cb-history-stat">
+          <span>Reads</span>
+          <strong>{readCount}</strong>
+        </div>
+        <div className="cb-history-stat">
+          <span>Dwell</span>
+          <strong>{dwellCount}</strong>
+        </div>
+      </div>
+
+      <div className="cb-history-meter" aria-hidden="true">
+        <div className="cb-history-meter__label">
+          <span>Feed diversity</span>
+          <strong>{diversity}%</strong>
+        </div>
+        <div className="cb-history-meter__track">
+          <div className="cb-history-meter__fill" style={{ width: `${Math.max(12, diversity)}%` }} />
+        </div>
+      </div>
+
+      <div className="cb-history-log">
+        {recent.length > 0 ? recent.map(item => (
+          <article key={item.id} className="cb-history-item">
+            <div className="cb-history-item__icon">{INTERACTION_META[item.kind].emoji}</div>
+            <div className="cb-history-item__body">
+              <div className="cb-history-item__top">
+                <strong>{INTERACTION_META[item.kind].label}</strong>
+                <span>{item.timestamp}</span>
+              </div>
+              <p>{item.source}</p>
+              <span>{item.headline}</span>
+            </div>
+          </article>
+        )) : (
+          <div className="cb-history-empty">
+            <strong>No signals yet</strong>
+            <p>Like, read, or linger on a post and the trail appears here.</p>
+          </div>
+        )}
+      </div>
+    </aside>
+  );
+}
+
 // ── InstagramPost (carousel) ──────────────────────────────────────────────────
 
 function InstagramPost({
@@ -686,6 +838,10 @@ function InstagramPost({
   const handle = toHandle(article.source);
   const likeCount = fakeLikes(article.id) + (isLiked ? 1 : 0);
   const commentCount = 12 + (fakeLikes(article.id) % 200);
+
+  // Resolve a local image URL if the user added one under ./assets/ConfirmationBiasImg
+  const imgFile = CONFIRMATION_IMG_MAP[article.id];
+  const coverImage = imgFile ? new URL(`./assets/ConfirmationBiasImg/${imgFile}`, import.meta.url).href : undefined;
 
   const [slide, setSlide] = useState(0);
   const [hasRead, setHasRead] = useState(false);
@@ -782,9 +938,15 @@ function InstagramPost({
         >
           {/* Slide 0 — visual cover */}
           <div className="cb-ig-slide cb-ig-slide--cover">
-            <div className="cb-ig-image-glow" />
-            <span className="cb-ig-image-emoji" aria-hidden="true">{meta.emoji}</span>
-            <span className="cb-ig-image-hashtag">#{meta.label.toLowerCase()}</span>
+            {coverImage ? (
+              <img src={coverImage} alt={article.headline} className="cb-ig-cover-img" />
+            ) : (
+              <>
+                <div className="cb-ig-image-glow" />
+                <span className="cb-ig-image-emoji" aria-hidden="true">{meta.emoji}</span>
+                <span className="cb-ig-image-hashtag">#{meta.label.toLowerCase()}</span>
+              </>
+            )}
             {slide === 0 && (
               <div className="cb-ig-swipe-hint">
                 <span>swipe for article</span>
@@ -1274,8 +1436,11 @@ export function ConfirmationBias() {
   const [readThisRound, setReadThisRound] = useState<Set<string>>(new Set());
   const [dwelledThisRound, setDwelledThisRound] = useState<Set<string>>(new Set());
   const [history, setHistory] = useState<RoundRecord[]>([]);
+  const [interactionHistory, setInteractionHistory] = useState<InteractionEvent[]>([]);
   const [aiStep, setAiStep] = useState(0);
   const [time, setTime] = useState(getTime);
+  const [showLikeToast, setShowLikeToast] = useState(false);
+  const likeToastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (phase === 'learn') markGameCompleted('confirmation-bias');
@@ -1302,7 +1467,23 @@ export function ConfirmationBias() {
   const diversity = currentFeed.length > 0
     ? Math.round((1 - maxCount / currentFeed.length) * 100)
     : 100;
-  const diversityColor = diversity > 60 ? '#22c55e' : diversity > 30 ? '#f97316' : '#ef4444';
+  let diversityColor = '#ef4444';
+  if (diversity > 60) {
+    diversityColor = '#22c55e';
+  } else if (diversity > 30) {
+    diversityColor = '#f97316';
+  }
+
+  const pushInteraction = useCallback((entry: Omit<InteractionEvent, 'id' | 'timestamp'>) => {
+    setInteractionHistory(prev => [
+      ...prev,
+      {
+        ...entry,
+        id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+        timestamp: getTime(),
+      },
+    ]);
+  }, []);
 
   const startGame = useCallback(() => {
     window.scrollTo({ top: 0, behavior: 'instant' });
@@ -1311,6 +1492,7 @@ export function ConfirmationBias() {
   }, []);
 
   const handleLike = useCallback((article: Article) => {
+    const isAlreadyLiked = likedThisRound.has(article.id);
     setLikedThisRound(prev => {
       const next = new Set(prev);
       if (next.has(article.id)) {
@@ -1322,7 +1504,14 @@ export function ConfirmationBias() {
       }
       return next;
     });
-  }, []);
+    pushInteraction({
+      kind: isAlreadyLiked ? 'unlike' : 'like',
+      day: config.day,
+      topic: article.topic,
+      headline: article.headline,
+      source: article.source,
+    });
+  }, [config.day, likedThisRound, pushInteraction]);
 
   const handleRead = useCallback((article: Article) => {
     setReadThisRound(prev => {
@@ -1332,7 +1521,14 @@ export function ConfirmationBias() {
       setTopicScores(s => ({ ...s, [article.topic]: s[article.topic] + 2 }));
       return next;
     });
-  }, []);
+    pushInteraction({
+      kind: 'read',
+      day: config.day,
+      topic: article.topic,
+      headline: article.headline,
+      source: article.source,
+    });
+  }, [config.day, pushInteraction]);
 
   const handleDwell = useCallback((article: Article) => {
     setDwelledThisRound(prev => {
@@ -1342,7 +1538,14 @@ export function ConfirmationBias() {
       setTopicScores(s => ({ ...s, [article.topic]: s[article.topic] + 1 }));
       return next;
     });
-  }, []);
+    pushInteraction({
+      kind: 'dwell',
+      day: config.day,
+      topic: article.topic,
+      headline: article.headline,
+      source: article.source,
+    });
+  }, [config.day, pushInteraction]);
 
   const handleNextRound = useCallback(() => {
     const dist = computeDistribution(currentFeed);
@@ -1356,7 +1559,7 @@ export function ConfirmationBias() {
       setAiStep(0);
       setPhase('transitioning');
     }
-  }, [currentFeed, config, roundIndex, readThisRound]);
+  }, [config.day, currentFeed, readThisRound.size, roundIndex]);
 
   useEffect(() => {
     if (phase !== 'transitioning') return;
@@ -1420,68 +1623,92 @@ export function ConfirmationBias() {
   const totalEngaged = likedThisRound.size + readThisRound.size + dwelledThisRound.size;
 
   return (
-    <div className="cb-game">
-      {/* Top controls */}
-      <div className="cb-game-header">
-        <div className="cb-gh-round">
-          <span className="cb-gh-label">Session {roundIndex + 1} of 4</span>
-          <div className="cb-round-dots">
-            {ROUND_CONFIG.map((r, i) => (
-              <div
-                key={r.roundNum}
-                className={`cb-round-dot ${i < roundIndex ? 'done' : ''} ${i === roundIndex ? 'active' : ''}`}
-                title={r.label}
+    <div className="cb-game cb-game--full-bleed">
+      <div className="cb-game-shell">
+        <div className="cb-game-main">
+          <IpadFrame day={config.day} time={time} feedCounts={feedCounts} totalPosts={currentFeed.length}>
+            {currentFeed.map((article, i) => (
+              <InstagramPost
+                key={`${article.id}-${roundIndex}`}
+                article={article}
+                isLiked={likedThisRound.has(article.id)}
+                delay={i * 60}
+                onLike={() => handleLike(article)}
+                onRead={() => handleRead(article)}
+                onDwell={() => handleDwell(article)}
               />
             ))}
-          </div>
-          <span className="cb-gh-day">{config.label}</span>
+          </IpadFrame>
         </div>
-        <div className="cb-gh-diversity">
-          <div className="cb-diversity-bar">
-            {TOPICS.map(t => {
-              const count = feedCounts[t];
-              return count > 0 ? (
-                <div key={t} className="cb-diversity-seg"
-                  style={{ flex: count, background: TOPIC_META[t].color }}
-                  title={`${TOPIC_META[t].label}: ${count}`} />
-              ) : null;
-            })}
-          </div>
-          <span className="cb-diversity-score" style={{ color: diversityColor }}>
-            {diversity}% diverse
-          </span>
-        </div>
-      </div>
 
-      {/* iPad */}
-      <IpadFrame day={config.day} time={time} feedCounts={feedCounts} totalPosts={currentFeed.length}>
-        {currentFeed.map((article, i) => (
-          <InstagramPost
-            key={`${article.id}-${roundIndex}`}
-            article={article}
-            isLiked={likedThisRound.has(article.id)}
-            delay={i * 60}
-            onLike={() => handleLike(article)}
-            onRead={() => handleRead(article)}
-            onDwell={() => handleDwell(article)}
+        <div className="cb-game-side">
+          <div className="cb-game-header">
+            <div className="cb-gh-round">
+              <span className="cb-gh-label">Session {roundIndex + 1} of 4</span>
+              <div className="cb-round-dots">
+                {ROUND_CONFIG.map((r, i) => (
+                  <div
+                    key={r.roundNum}
+                    className={`cb-round-dot ${i < roundIndex ? 'done' : ''} ${i === roundIndex ? 'active' : ''}`}
+                    title={r.label}
+                  />
+                ))}
+              </div>
+              <span className="cb-gh-day">{config.label}</span>
+            </div>
+            <div className="cb-gh-diversity">
+              <div className="cb-diversity-bar">
+                {TOPICS.map(t => {
+                  const count = feedCounts[t];
+                  return count > 0 ? (
+                    <div key={t} className="cb-diversity-seg"
+                      style={{ flex: count, background: TOPIC_META[t].color }}
+                      title={`${TOPIC_META[t].label}: ${count}`} />
+                  ) : null;
+                })}
+              </div>
+              <span className="cb-diversity-score" style={{ color: diversityColor }}>
+                {diversity}% diverse
+              </span>
+            </div>
+          </div>
+
+          <HistoryPanel
+            roundLabel={config.label}
+            diversity={diversity}
+            likedCount={likedThisRound.size}
+            readCount={readThisRound.size}
+            dwellCount={dwelledThisRound.size}
+            history={interactionHistory}
           />
-        ))}
-      </IpadFrame>
 
-      {/* Footer */}
-      <div className="cb-game-footer">
-        <p className="cb-footer-hint">
-          {totalEngaged === 0
-            ? '❤️ Like or swipe through posts — the algorithm watches everything'
-            : `❤️ ${likedThisRound.size} liked · 📖 ${readThisRound.size} read · 👁 ${dwelledThisRound.size} viewed — the algorithm sees it all`}
-        </p>
-        <button
-          className="btn btn-primary cb-next-btn"
-          onClick={handleNextRound}
-          disabled={!canProceed}
-        >
-          {roundIndex >= 3 ? 'See my echo chamber →' : 'Let the AI update my feed →'}
-        </button>
+          <div className="cb-game-footer">
+            {showLikeToast && (
+              <div className="cb-like-toast" role="alert">
+                ❤️ Like at least one post first — the AI needs your signal!
+              </div>
+            )}
+            <p className="cb-footer-hint">
+              {totalEngaged === 0
+                ? '❤️ Like or swipe through posts — the algorithm watches everything'
+                : `❤️ ${likedThisRound.size} liked · 📖 ${readThisRound.size} read · 👁 ${dwelledThisRound.size} viewed — the algorithm sees it all`}
+            </p>
+            <button
+              className="btn btn-primary cb-next-btn"
+              onClick={() => {
+                if (!canProceed) {
+                  setShowLikeToast(true);
+                  if (likeToastTimerRef.current) clearTimeout(likeToastTimerRef.current);
+                  likeToastTimerRef.current = setTimeout(() => setShowLikeToast(false), 3000);
+                } else {
+                  handleNextRound();
+                }
+              }}
+            >
+              {roundIndex >= 3 ? 'See my echo chamber →' : 'Let the AI update my feed →'}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
