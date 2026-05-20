@@ -1,3 +1,27 @@
+import { DownloadSimple, FileDoc } from "@phosphor-icons/react";
+
+interface DownloadItem {
+  title: string;
+  description: string;
+  filename: string;
+  fileSize: string;
+  fileType: "docx" | "pdf" | "generic";
+  url: string;
+  accentClass: string;
+}
+
+const DOWNLOADS: DownloadItem[] = [
+  {
+    title: "Bias & Fairness Worksheet",
+    description: "A printable worksheet that guides students through analyzing the four types of AI bias: measurement, historical, representation, and evaluation. Perfect for classroom activities.",
+    filename: "Biases.docx",
+    fileSize: "28 KB",
+    fileType: "docx",
+    url: "/downloads/Biases.docx",
+    accentClass: "tile-lavender",
+  },
+];
+
 export function Resources() {
   return (
     <article className="content-page">
@@ -11,7 +35,102 @@ export function Resources() {
       </header>
 
       <section className="content-block">
+        <h2>Downloadable materials</h2>
+        <div className="download-grid">
+          {DOWNLOADS.map((item, index) => {
+            const Icon = item.fileType === "docx" ? FileDoc : FileDoc;
+            return (
+              <div key={index} className="download-card">
+                <div className="download-card-body">
+                  <div className={`download-card-icon ${item.accentClass}`}>
+                    <Icon size={24} weight="bold" />
+                  </div>
+                  <div className="download-card-content">
+                    <span className="download-card-badge">{item.fileType.toUpperCase()}</span>
+                    <h3 className="download-card-title">{item.title}</h3>
+                    <p className="download-card-desc">{item.description}</p>
+                  </div>
+                </div>
+                <div className="download-card-footer">
+                  <span className="download-card-size">{item.fileSize}</span>
+                  <a
+                    href={item.url}
+                    download={item.filename}
+                    className="btn btn-ghost btn-download"
+                    aria-label={`Download ${item.title}`}
+                  >
+                    <DownloadSimple size={16} weight="bold" />
+                    Download
+                  </a>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      <section className="content-block">
+        <h2>Additional resources</h2>
+        <p className="section-description">
+          Explore external projects, interactive tools, and curriculum designs from the broader educational technology and AI ethics community.
+        </p>
+        <ul className="resource-list">
+          <li>
+            <a
+              href="https://www.survivalofthebestfit.com/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Survival of the Best Fit
+            </a>
+            <span className="resource-note">
+              An interactive game exploring the impacts of historical bias on automated hiring algorithms.
+            </span>
+          </li>
+          <li>
+            <a
+              href="https://pair.withgoogle.com/explorables/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Google PAIR — AI Explorables
+            </a>
+            <span className="resource-note">
+              Interactive visual explanations and demos about fairness, model behavior, and machine learning.
+            </span>
+          </li>
+          <li>
+            <a
+              href="https://www.media.mit.edu/projects/gender-shades/overview/"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Gender Shades (MIT Media Lab)
+            </a>
+            <span className="resource-note">
+              An influential research audit highlighting representation bias in commercial facial recognition algorithms.
+            </span>
+          </li>
+          <li>
+            <a
+              href="https://ethz.ch/en.html"
+              target="_blank"
+              rel="noreferrer"
+            >
+              ETH Zürich — PEACH
+            </a>
+            <span className="resource-note">
+              The Educational Technology research group hosting this course and exploring learning designs.
+            </span>
+          </li>
+        </ul>
+      </section>
+
+      <section className="content-block">
         <h2>Foundational papers</h2>
+        <p className="section-description">
+          A curated collection of academic research and literature that formed the theoretical groundwork for the games and concepts inside the Bias Arcade.
+        </p>
         <ul className="resource-list">
           <li>
             <a
@@ -56,76 +175,6 @@ export function Resources() {
       </section>
 
       <section className="content-block">
-        <h2>Interactive projects</h2>
-        <ul className="resource-list">
-          <li>
-            <a
-              href="https://www.survivalofthebestfit.com/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Survival of the Best Fit
-            </a>
-            <span className="resource-note">
-              Inspiration for the <em>Historical Bias</em> game.
-            </span>
-          </li>
-          <li>
-            <a
-              href="https://pair.withgoogle.com/explorables/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Google PAIR — AI Explorables
-            </a>
-            <span className="resource-note">
-              Short interactive demos on fairness, hidden bias, and model
-              behavior.
-            </span>
-          </li>
-          <li>
-            <a
-              href="https://www.media.mit.edu/projects/gender-shades/overview/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Gender Shades (MIT Media Lab)
-            </a>
-            <span className="resource-note">
-              The audit that put representation bias in face recognition on
-              the public agenda.
-            </span>
-          </li>
-        </ul>
-      </section>
-
-      <section className="content-block">
-        <h2>Frameworks &amp; curricula</h2>
-        <ul className="resource-list">
-          <li>
-            <a
-              href="https://ethz.ch/en.html"
-              target="_blank"
-              rel="noreferrer"
-            >
-              ETH Zürich — PEACH
-            </a>
-            <span className="resource-note">
-              Educational technology research group hosting this course.
-            </span>
-          </li>
-          <li>
-            <span>
-              <strong>AI literacy framework (this project)</strong> — Attitudes,
-              Skills, Knowledge dimensions. See the
-              {' '}
-              <a href="/about">About page</a>.
-            </span>
-          </li>
-        </ul>
-      </section>
-
-      <section className="content-block">
         <h2>Source code</h2>
         <p>
           The Bias Arcade is open source. Read the games, file issues, or
@@ -144,3 +193,4 @@ export function Resources() {
     </article>
   );
 }
+

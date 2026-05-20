@@ -3101,3 +3101,140 @@ code {
 .faq-a p {
   margin: 0;
 }
+
+/* ---------- Downloadable Materials Section ---------- */
+
+.download-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.download-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 22px;
+  border-radius: var(--radius-lg);
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease;
+}
+
+.download-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.download-card-body {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.download-card-icon {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius);
+  border: 2px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+}
+
+.download-card-icon.tile-lavender {
+  background: var(--tile-lavender);
+}
+
+.download-card-icon.tile-pink {
+  background: var(--tile-pink);
+}
+
+.download-card-icon.tile-yellow {
+  background: var(--tile-yellow);
+}
+
+.download-card-icon.tile-mint {
+  background: var(--tile-mint);
+}
+
+.download-card-content {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.download-card-badge {
+  align-self: flex-start;
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: color-mix(in srgb, var(--border) 45%, var(--surface));
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+  letter-spacing: 0.05em;
+  line-height: 1;
+}
+
+.download-card-title {
+  font-family: var(--display);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--ink);
+  margin: 0;
+  line-height: 1.25;
+}
+
+.download-card-desc {
+  font-size: 0.88rem;
+  color: var(--text-muted);
+  line-height: 1.45;
+  margin: 0;
+}
+
+.download-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1.5px dashed var(--border);
+}
+
+.download-card-size {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--text-muted);
+  font-weight: 600;
+}
+
+.btn-download {
+  padding: 8px 16px !important;
+  font-size: 0.82rem !important;
+  gap: 6px !important;
+}
+
+@media (max-width: 600px) {
+  .download-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.section-description {
+  font-size: 0.95rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  margin-top: -4px;
+  max-width: 65ch;
+  line-height: 1.5;
+}
+
+
