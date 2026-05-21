@@ -177,7 +177,7 @@ export function Resources() {
               Ethical and Bias Considerations in Artificial Intelligence/Machine Learning
             </a>
             <span className="resource-note">
-              An analysis of ethical and bias considerations in medical AI, classifying machine learning biases into data, development, and interaction categories to establish fair and transparent clinical deployments.
+              A review of ethical considerations and bias in medical AI systems, outlining key sources of bias in data, model development, and clinical deployment. The paper highlights the need for transparent, fair, and carefully evaluated machine learning systems to ensure reliable and equitable healthcare outcomes.
             </span>
           </li>
           <li>
@@ -189,7 +189,7 @@ export function Resources() {
               Biases in Scholarly Recommender Systems: Impact, Prevalence, and Mitigation
             </a>
             <span className="resource-note">
-              A comprehensive study on recommendation bias, showing how algorithmic filters can create academic echo chambers and filter bubbles.
+              A review of bias in scholarly recommender systems, examining how recommendation algorithms can shape research visibility, amplify inequalities, and influence scientific discovery. The paper explores the prevalence and impact of these biases while discussing strategies for creating fairer and more transparent recommendation systems.
             </span>
           </li>
           <li>
@@ -201,7 +201,7 @@ export function Resources() {
               Evolution and impact of bias in human and machine learning algorithm interaction
             </a>
             <span className="resource-note">
-              Explores how user interactions with machine learning feedback loops dynamically evolve and amplify biases over time.
+              A study of how bias evolves through repeated interactions between humans and machine learning systems, showing how biased data, predictions, and user behavior can reinforce one another over time. The paper introduces an iterative framework for analyzing algorithmic bias and highlights the long-term risks of personalization and filtering mechanisms on fairness and information discovery.
             </span>
           </li>
         </ul>
