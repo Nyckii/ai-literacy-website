@@ -472,39 +472,6 @@ code {
   margin-bottom: 36px;
 }
 
-.games-group {
-  margin-bottom: 56px;
-}
-
-.games-group-head {
-  margin-bottom: 20px;
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 14px;
-}
-
-.games-group-label {
-  flex-shrink: 0;
-  margin: 0;
-  padding: 6px 12px;
-  border-radius: 999px;
-  background: var(--ink);
-  color: #fff;
-  font-size: 0.78rem;
-  font-weight: 800;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-
-.games-group-desc {
-  flex: 1 1 280px;
-  margin: 0;
-  font-size: 0.94rem;
-  color: var(--text-muted);
-  max-width: 60ch;
-}
-
 .game-grid {
   list-style: none;
   padding: 0;
@@ -513,7 +480,7 @@ code {
   gap: 20px;
 }
 
-/* Arcade tile cards — bright pastel backgrounds, chunky radius, offset shadow */
+/* Arcade tile cards — dot-grid "screen" texture, chunky radius, offset shadow */
 .game-card {
   position: relative;
   display: flex;
@@ -523,10 +490,14 @@ code {
   min-height: 210px;
   padding: 22px 22px 20px;
   border-radius: var(--radius-lg);
-  background: var(--tile-pink);
-  border: 2px solid var(--ink);
+  background:
+    radial-gradient(rgba(11, 23, 51, 0.07) 1.3px, transparent 1.4px) 0 0 / 15px
+      15px,
+    var(--surface);
   color: var(--ink);
+  border: 2px solid var(--ink);
   box-shadow: 6px 6px 0 var(--ink);
+  overflow: hidden;
   transition:
     transform 0.12s ease,
     box-shadow 0.12s ease,
@@ -534,10 +505,28 @@ code {
   text-decoration: none;
 }
 
+/* Glossy arcade-screen sheen across the top */
+.game-card::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 46%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.5),
+    rgba(255, 255, 255, 0)
+  );
+  pointer-events: none;
+}
+
 .game-card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 10px 10px 0 var(--ink);
+  transform: translate(-3px, -3px);
+  box-shadow: 11px 11px 0 var(--accent);
   color: var(--ink);
+  background:
+    radial-gradient(rgba(255, 59, 70, 0.18) 1.4px, transparent 1.5px) 0 0 / 15px
+      15px,
+    var(--surface);
 }
 
 .game-card:active {
@@ -545,18 +534,11 @@ code {
   box-shadow: 2px 2px 0 var(--ink);
 }
 
-/* Color-cycle tiles per position so each row looks like an arcade grid */
-.game-grid > li:nth-child(8n + 1) .game-card { background: var(--tile-pink); }
-.game-grid > li:nth-child(8n + 2) .game-card { background: var(--tile-yellow); }
-.game-grid > li:nth-child(8n + 3) .game-card { background: var(--tile-mint); }
-.game-grid > li:nth-child(8n + 4) .game-card { background: var(--tile-lavender); }
-.game-grid > li:nth-child(8n + 5) .game-card { background: var(--tile-coral); }
-.game-grid > li:nth-child(8n + 6) .game-card { background: var(--tile-sky); }
-.game-grid > li:nth-child(8n + 7) .game-card { background: var(--tile-purple); color: #fff; }
-.game-grid > li:nth-child(8n + 7) .game-card .author,
-.game-grid > li:nth-child(8n + 7) .game-card .game-card-body p { color: rgba(255, 255, 255, 0.85); }
-.game-grid > li:nth-child(8n + 7) .game-card .arrow { color: #fff; }
-.game-grid > li:nth-child(8n + 8) .game-card { background: var(--tile-rose); }
+.game-card-body,
+.game-card-foot {
+  position: relative;
+  z-index: 1;
+}
 
 .game-card-body h4 {
   margin-bottom: 10px;
@@ -616,14 +598,36 @@ code {
 }
 
 .game-card .arrow {
-  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  border: 2px solid var(--ink);
+  background: var(--surface);
+  box-shadow: 2px 2px 0 var(--ink);
+  font-size: 1.05rem;
   font-weight: 800;
+  line-height: 1;
   color: var(--ink);
-  transition: transform 0.12s ease;
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.12s ease,
+    color 0.12s ease;
 }
 
 .game-card:hover .arrow {
-  transform: translateX(2px);
+  background: var(--accent);
+  color: #fff;
+  transform: translate(-1px, -1px);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.game-card:active .arrow {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--ink);
 }
 
 /* ── Global progress (N / 10 played) ────────────────── */

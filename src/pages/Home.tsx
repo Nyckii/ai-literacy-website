@@ -10,7 +10,7 @@ import {
 } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { games, gamesByStyle } from "../data/games";
+import { games } from "../data/games";
 import {
   getAllGameProgress,
   subscribeToGameProgress,
@@ -102,43 +102,35 @@ export function Home() {
           )}
         </div>
 
-        {gamesByStyle.map(({ style, label, description, items }) => (
-          <div key={style} className="games-group">
-            <div className="games-group-head">
-              <h3 className="games-group-label">{label}</h3>
-              <p className="games-group-desc">{description}</p>
-            </div>
-            <ul className="game-grid">
-              {items.map((g) => {
-                const isDone = (progressBySlug[g.slug] ?? 0) >= 100;
-                return (
-                  <li key={g.slug}>
-                    <Link
-                      to={`/games/${g.slug}`}
-                      className={`game-card ${isDone ? "is-done" : ""}`}
-                    >
-                      {isDone && (
-                        <span className="played-stamp" aria-label="Played">
-                          Played
-                        </span>
-                      )}
-                      <div className="game-card-body">
-                        <h4>{g.title}</h4>
-                        <p>{g.short}</p>
-                      </div>
-                      <div className="game-card-foot">
-                        <span className="author">by {g.author}</span>
-                        <span className="arrow" aria-hidden>
-                          →
-                        </span>
-                      </div>
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        ))}
+        <ul className="game-grid">
+          {games.map((g) => {
+            const isDone = (progressBySlug[g.slug] ?? 0) >= 100;
+            return (
+              <li key={g.slug}>
+                <Link
+                  to={`/games/${g.slug}`}
+                  className={`game-card ${isDone ? "is-done" : ""}`}
+                >
+                  {isDone && (
+                    <span className="played-stamp" aria-label="Played">
+                      Played
+                    </span>
+                  )}
+                  <div className="game-card-body">
+                    <h4>{g.title}</h4>
+                    <p>{g.short}</p>
+                  </div>
+                  <div className="game-card-foot">
+                    <span className="author">by {g.author}</span>
+                    <span className="arrow" aria-hidden>
+                      →
+                    </span>
+                  </div>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </section>
 
       <section id="recap" className="recap-section">
