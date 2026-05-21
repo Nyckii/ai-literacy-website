@@ -111,6 +111,23 @@ export const games: Game[] = [
   },
 ];
 
+// Featured games for the pre/post study — ordered to mirror the questionnaire
+// steps (Step 1 → Learning, Step 2 → Algorithm, Step 3 → Interaction).
+export const FEATURED_SLUGS = [
+  "learning-bias",
+  "algorithm-bias",
+  "interaction-bias",
+] as const;
+
+export const featuredGames: Game[] = FEATURED_SLUGS.map(
+  (slug) => games.find((g) => g.slug === slug)!,
+);
+
+// Everything else — surfaced in a secondary "More games" section.
+export const moreGames: Game[] = games.filter(
+  (g) => !FEATURED_SLUGS.includes(g.slug as (typeof FEATURED_SLUGS)[number]),
+);
+
 // Grouped by pedagogical level (kept for backwards-compat / other consumers).
 export const gamesByLevel = (Object.keys(LEVEL_LABELS) as BiasLevel[]).map(
   (level) => ({

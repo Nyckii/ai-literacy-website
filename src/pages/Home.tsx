@@ -10,11 +10,38 @@ import {
 } from "@phosphor-icons/react";
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { games } from "../data/games";
+import { featuredGames, moreGames, type Game } from "../data/games";
 import {
   getAllGameProgress,
   subscribeToGameProgress,
 } from "../lib/gameProgress";
+
+function GameCard({ game, isDone }: { game: Game; isDone: boolean }) {
+  return (
+    <li>
+      <Link
+        to={`/games/${game.slug}`}
+        className={`game-card ${isDone ? "is-done" : ""}`}
+      >
+        {isDone && (
+          <span className="played-stamp" aria-label="Played">
+            Played
+          </span>
+        )}
+        <div className="game-card-body">
+          <h4>{game.title}</h4>
+          <p>{game.short}</p>
+        </div>
+        <div className="game-card-foot">
+          <span className="author">by {game.author}</span>
+          <span className="arrow" aria-hidden>
+            →
+          </span>
+        </div>
+      </Link>
+    </li>
+  );
+}
 
 export function Home() {
   const [progressBySlug, setProgressBySlug] = useState<Record<string, number>>(
@@ -27,10 +54,11 @@ export function Home() {
     });
   }, []);
 
-  const totalGames = games.length;
-  const playedCount = games.filter(
-    (g) => (progressBySlug[g.slug] ?? 0) >= 100,
-  ).length;
+  const isDone = (slug: string) => (progressBySlug[slug] ?? 0) >= 100;
+
+  // Progress tracks the featured study games.
+  const totalGames = featuredGames.length;
+  const playedCount = featuredGames.filter((g) => isDone(g.slug)).length;
   const allPlayed = playedCount === totalGames;
 
   return (
@@ -74,8 +102,8 @@ export function Home() {
       <section id="games" className="games">
         <h2>The games</h2>
         <p className="section-lede">
-          Each interaction targets one type of bias. Pick any to start — they
-          are independent.
+          Start with these three — each targets one type of bias. Play them in
+          order or pick any to begin.
         </p>
 
         <div
@@ -103,33 +131,21 @@ export function Home() {
         </div>
 
         <ul className="game-grid">
-          {games.map((g) => {
-            const isDone = (progressBySlug[g.slug] ?? 0) >= 100;
-            return (
-              <li key={g.slug}>
-                <Link
-                  to={`/games/${g.slug}`}
-                  className={`game-card ${isDone ? "is-done" : ""}`}
-                >
-                  {isDone && (
-                    <span className="played-stamp" aria-label="Played">
-                      Played
-                    </span>
-                  )}
-                  <div className="game-card-body">
-                    <h4>{g.title}</h4>
-                    <p>{g.short}</p>
-                  </div>
-                  <div className="game-card-foot">
-                    <span className="author">by {g.author}</span>
-                    <span className="arrow" aria-hidden>
-                      →
-                    </span>
-                  </div>
-                </Link>
-              </li>
-            );
-          })}
+          {featuredGames.map((g) => (
+            <GameCard key={g.slug} game={g} isDone={isDone(g.slug)} />
+          ))}
+        </ul>
+      </section>
+
+      <section id="more-games" className="games games-more">
+        <h3 className="games-more-title">More biases to explore</h3>
+        <p className="section-lede">
+          Optional — more interactions covering other types of bias.
+        </p>
+        <ul className="game-grid">
+          {moreGames.map((g) => (
+            <GameCard key={g.slug} game={g} isDone={isDone(g.slug)} />
+          ))}
         </ul>
       </section>
 

@@ -480,6 +480,36 @@ code {
   gap: 20px;
 }
 
+/* Secondary "More biases to explore" section — visually de-emphasised */
+.games-more {
+  margin-top: 64px;
+  padding-top: 40px;
+  border-top: 2px dashed var(--border);
+}
+
+.games-more-title {
+  margin-bottom: 8px;
+  font-family: var(--display);
+  font-size: 1.4rem;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+/* Smaller, quieter cards so the featured three stay the focus */
+.games-more .game-card {
+  min-height: 168px;
+  padding: 18px 18px 16px;
+  opacity: 0.92;
+}
+
+.games-more .game-card-body h4 {
+  font-size: 1.15rem;
+}
+
+.games-more .game-card:hover {
+  opacity: 1;
+}
+
 /* Arcade tile cards — dot-grid "screen" texture, chunky radius, offset shadow */
 .game-card {
   position: relative;
