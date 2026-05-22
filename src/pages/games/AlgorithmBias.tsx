@@ -4,6 +4,7 @@
 // Your Turn uses click-on-map dispatch: click a neighborhood to send one available rider there.
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import mapImg from './assets/AlgorithmBiasImg/city-delivery-map.png';
 import { markGameCompleted } from '../../lib/gameProgress';
 
@@ -711,16 +712,6 @@ function MapBoard({
           );
         })}
 
-        {/* Pulse rings on unvisited hoods in Explore */}
-        {isExplore && HOODS.map((h, i) => !visitedSet.has(h.id) && (
-          <ellipse key={`pulse-${h.id}`}
-            cx={h.pos.x * AR} cy={h.pos.y}
-            rx={h.radius * AR * 1.45} ry={h.radius * 1.45}
-            fill="none" stroke={h.color} strokeWidth="0.8"
-            style={{ animation: `ab-pulse-ring 2.4s ease-out ${i * 0.6}s infinite` }}
-            opacity="0.45"
-          />
-        ))}
 
         {/* Highlight ring for algo assignment */}
         {highlightHoodId && (() => {
@@ -1479,6 +1470,7 @@ function PhaseFinalReflect({ onAct, algoResults, fairerResults }: {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function AlgorithmBias() {
+  const navigate = useNavigate();
   const [phase, setPhase] = useState<GamePhase>('explore');
 
   useEffect(() => {
@@ -1822,6 +1814,10 @@ export function AlgorithmBias() {
 
   function handleActionClick() {
     if (actionFnRef.current) { actionFnRef.current(); return; }
+    if (phase === 'reflect' || phase === 'finalReflect') {
+      navigate('/');
+      return;
+    }
     if (phase === 'bias') {
       if (biasSubPhase === 'event') { setBiasSubPhase('running'); return; }
       if (biasSubPhase === 'results') { advance('reflect'); return; }
