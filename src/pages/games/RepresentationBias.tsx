@@ -182,7 +182,7 @@ export function RepresentationBias() {
       <Link to="/#games" className="back-link">← All games</Link>
 
       <header className="game-header">
-        <p className="eyebrow">Data-level biases · by Leroy</p>
+        <p className="eyebrow">Data-level biases</p>
         <h1>The Newsstand</h1>
         {stage !== 'results' && (
           <p className="lede">

@@ -162,7 +162,7 @@ export function MeasurementBias() {
       <Link to="/#games" className="back-link">← All games</Link>
 
       <header className="game-header">
-        <p className="eyebrow">Individual-level biases · by Nicolas</p>
+        <p className="eyebrow">Individual-level biases</p>
         <h1>The Essay Grader</h1>
         <p className="lede">
           A college uses an Automated Essay Scoring system to pre-screen

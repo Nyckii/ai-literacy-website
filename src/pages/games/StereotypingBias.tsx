@@ -40,7 +40,7 @@ export function StereotypingBias() {
   
       <header className="game-header">
         <p className="eyebrow">
-          {LEVEL_LABELS[game.level as keyof typeof LEVEL_LABELS]} · by {game.author}
+          {LEVEL_LABELS[game.level as keyof typeof LEVEL_LABELS]}
         </p>
         <h1>{game.title}</h1>
         <p className="lede">{game.short}</p>

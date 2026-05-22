@@ -20,7 +20,7 @@ export function GamePlaceholder({ slug }: Props) {
       <Link to="/#games" className="back-link">← All games</Link>
 
       <header className="game-header">
-        <p className="eyebrow">{LEVEL_LABELS[game.level]} · by {game.author}</p>
+        <p className="eyebrow">{LEVEL_LABELS[game.level]}</p>
         <h1>{game.title}</h1>
         <p className="lede">{game.short}</p>
       </header>
@@ -31,8 +31,7 @@ export function GamePlaceholder({ slug }: Props) {
 
         <div className="placeholder-card">
           <p>
-            <strong>Under construction.</strong> {game.author} is building this
-            interaction. Replace the body of{' '}
+            <strong>Under construction.</strong> Replace the body of{' '}
             <code>src/pages/games/{game.slug}.tsx</code> with the actual game.
           </p>
         </div>

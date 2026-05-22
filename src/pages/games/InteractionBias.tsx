@@ -51,7 +51,7 @@ export function InteractionBias() {
       <Link to="/#games" className="back-link">← All games</Link>
 
       <header className="game-header">
-        <p className="eyebrow">{LEVEL_LABELS[game.level]} · by {game.author}</p>
+        <p className="eyebrow">{LEVEL_LABELS[game.level]}</p>
         <h1>{game.title}</h1>
         <p className="lede">{game.short}</p>
 

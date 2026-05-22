@@ -33,7 +33,6 @@ function GameCard({ game, isDone }: { game: Game; isDone: boolean }) {
           <p>{game.short}</p>
         </div>
         <div className="game-card-foot">
-          <span className="author">by {game.author}</span>
           <span className="arrow" aria-hidden>
             →
           </span>

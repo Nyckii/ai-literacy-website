@@ -253,7 +253,7 @@ export function MappingBias() {
       <Link to="/#games" className="back-link">← All games</Link>
 
       <header className="game-header">
-        <p className="eyebrow">Group-level biases · by Nicolas</p>
+        <p className="eyebrow">Group-level biases</p>
         <h1>Out of Bounds</h1>
         <p className="lede">
           You trained a salary predictor on Swiss labor data. It works.
