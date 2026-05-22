@@ -37,7 +37,7 @@ const faqs: QA[] = [
     q: "What biases are covered?",
     a: (
       <p>
-        Bias Arcade currently covers six types of AI bias: historical bias, exclusion bias, confirmation bias, algorithm bias, learning bias, and interaction bias. Each game focuses on one specific bias. A detailed overview with explanation of each bias can be found under the Teacher Resources.
+        Bias Arcade currently covers six types of AI bias: historical bias, exclusion bias, confirmation bias, algorithmic bias, learning bias, and interaction bias. Each game focuses on one specific bias. A detailed overview with explanation of each bias can be found under the Teacher Resources.
       </p>
     ),
   },

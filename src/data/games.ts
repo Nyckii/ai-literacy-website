@@ -35,11 +35,11 @@ export const games: Game[] = [
   },
   {
     slug: "algorithm-bias",
-    title: "Algorithm Bias",
+    title: "Algorithmic Bias",
     level: "multi-level",
     short: "Patterns in the data become unfair outcomes in the model.",
     description:
-      "Algorithm bias refers to systematic and unfair outcomes produced by an AI system, often reflecting imbalances present in the data, design choices, or broader social context. Even when the model accurately learns patterns from its training data, those patterns may encode existing inequalities.",
+      "Algorithmic bias refers to systematic and unfair outcomes produced by an AI system, often reflecting imbalances present in the data, design choices, or broader social context. Even when the model accurately learns patterns from its training data, those patterns may encode existing inequalities.",
   },
   {
     slug: "learning-bias",
@@ -101,7 +101,7 @@ export const games: Game[] = [
 ];
 
 // Featured games shown in the main section and quizzed in the recap. The study
-// trio mirrors the questionnaire steps (Step 1 → Learning, Step 2 → Algorithm,
+// trio mirrors the questionnaire steps (Step 1 → Learning, Step 2 → Algorithmic,
 // Step 3 → Interaction); Confirmation Bias leads as an accessible opener.
 export const FEATURED_SLUGS = [
   "confirmation-bias",

@@ -113,7 +113,7 @@ export function About() {
           <li><strong>Multi-level biases:</strong> Simultaneously operate at both individual and group levels.</li>
         </ul>
         <p>
-          We selected six biases spanning all three levels: historical bias and exclusion bias at the group level, confirmation bias at the individual level, and algorithm bias, learning bias, and interaction bias from the multi-level category. This choice was intentional and reflects a core goal of Bias Arcade, which is to show users that bias enters AI systems in multiple ways.
+          We selected six biases spanning all three levels: historical bias and exclusion bias at the group level, confirmation bias at the individual level, and algorithmic bias, learning bias, and interaction bias from the multi-level category. This choice was intentional and reflects a core goal of Bias Arcade, which is to show users that bias enters AI systems in multiple ways.
         </p>
       </section>
 

@@ -36,7 +36,7 @@ const ALL_ENTRIES: Entry[] = [
   },
   {
     slug: 'algorithm-bias',
-    title: 'Algorithm Bias',
+    title: 'Algorithmic Bias',
     level: 'multi-level',
     essence:
       'An unfair outcome doesn\'t require an unfair model. When imbalances live in the data, the design, or the context the system runs in, even a model that "works correctly" produces predictions that disadvantage some groups over others.',

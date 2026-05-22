@@ -1440,10 +1440,10 @@ function PhaseReflect({
       {/* Checkout — the formal definition the player leaves with */}
       <div style={{ background: '#fff', border: '2px solid #0b1733', borderRadius: 16, padding: '18px 20px', boxShadow: '6px 6px 0 #0b1733' }}>
         <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#ff3b46', marginBottom: 8 }}>
-          So, what is Algorithm Bias?
+          So, what is Algorithmic Bias?
         </div>
         <div style={{ fontSize: 14, color: '#2d2419', lineHeight: 1.65 }}>
-          <strong>Algorithm bias</strong> is when an AI system produces systematically unfair outcomes, often by
+          <strong>Algorithmic bias</strong> is when an AI system produces systematically unfair outcomes, often by
           reflecting imbalances in its data, its design, or the world it runs in. The model can be working exactly as
           built — accurately learning the patterns it was given — and <em>still</em> encode and amplify existing
           inequalities. As you saw, the harm doesn't need a malicious goal or a buggy model. A reasonable objective,
