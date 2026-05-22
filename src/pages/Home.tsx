@@ -102,7 +102,7 @@ export function Home() {
       <section id="games" className="games">
         <h2>The games</h2>
         <p className="section-lede">
-          Start with these three, each targets one type of bias. Play them in
+          Start with these four, each targets one type of bias. Play them in
           order or pick any to begin.
         </p>
 

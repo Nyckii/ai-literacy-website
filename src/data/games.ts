@@ -111,9 +111,11 @@ export const games: Game[] = [
   },
 ];
 
-// Featured games for the pre/post study, ordered to mirror the questionnaire
-// steps (Step 1 → Learning, Step 2 → Algorithm, Step 3 → Interaction).
+// Featured games shown in the main section and quizzed in the recap. The study
+// trio mirrors the questionnaire steps (Step 1 → Learning, Step 2 → Algorithm,
+// Step 3 → Interaction); Confirmation Bias leads as an accessible opener.
 export const FEATURED_SLUGS = [
+  "confirmation-bias",
   "learning-bias",
   "algorithm-bias",
   "interaction-bias",
@@ -123,12 +125,10 @@ export const featuredGames: Game[] = FEATURED_SLUGS.map(
   (slug) => games.find((g) => g.slug === slug)!,
 );
 
-// A small secondary set kept in the main loop under "More games".
-// Any game not in FEATURED_SLUGS or MORE_SLUGS is reachable only by direct URL.
-export const MORE_SLUGS = ["historical-bias", "confirmation-bias"] as const;
-
-export const moreGames: Game[] = MORE_SLUGS.map(
-  (slug) => games.find((g) => g.slug === slug)!,
+// Everything that isn't a featured study game, shown under "More biases to
+// explore" in their natural order (Confirmation Bias leads).
+export const moreGames: Game[] = games.filter(
+  (g) => !(FEATURED_SLUGS as readonly string[]).includes(g.slug),
 );
 
 // Grouped by pedagogical level (kept for backwards-compat / other consumers).
