@@ -55,25 +55,25 @@ const TOTAL_TRAINING = Object.values(GROUP_META).reduce((s, g) => s + g.training
 // ── Patient Pool ──────────────────────────────────────────────────────────────
 
 const PATIENTS: Patient[] = [
-  // Ciru — very high accuracy
+  // Ciru, very high accuracy
   { id: 'p01', group: 'ciru',    name: 'Elan Voss',     age: 34, hasCondition: true,  aiConfidence: 97, aiDiagnosis: true  },
   { id: 'p02', group: 'ciru',    name: 'Mira Thane',    age: 52, hasCondition: false, aiConfidence: 93, aiDiagnosis: false },
   { id: 'p03', group: 'ciru',    name: 'Dax Mercer',    age: 61, hasCondition: true,  aiConfidence: 95, aiDiagnosis: true  },
-  // Mauve — high accuracy
+  // Mauve, high accuracy
   { id: 'p04', group: 'mauve',   name: 'Kael Soren',    age: 41, hasCondition: true,  aiConfidence: 89, aiDiagnosis: true  },
   { id: 'p05', group: 'mauve',   name: 'Lira Dune',     age: 29, hasCondition: false, aiConfidence: 86, aiDiagnosis: false },
   { id: 'p06', group: 'mauve',   name: 'Iris Quen',     age: 45, hasCondition: true,  aiConfidence: 83, aiDiagnosis: true  },
-  // Sage — moderate, one wrong
+  // Sage, moderate, one wrong
   { id: 'p07', group: 'sage',    name: 'Noa Pellan',    age: 38, hasCondition: false, aiConfidence: 71, aiDiagnosis: true  }, // WRONG
   { id: 'p08', group: 'sage',    name: 'Faye Brix',     age: 48, hasCondition: false, aiConfidence: 74, aiDiagnosis: false },
   { id: 'p09', group: 'sage',    name: 'Orin Cael',     age: 27, hasCondition: true,  aiConfidence: 67, aiDiagnosis: false }, // WRONG
-  // Coral — low accuracy
+  // Coral, low accuracy
   { id: 'p10', group: 'coral',   name: 'Zara Mith',     age: 55, hasCondition: true,  aiConfidence: 58, aiDiagnosis: false }, // WRONG
   { id: 'p11', group: 'coral',   name: 'Rune Asha',     age: 33, hasCondition: false, aiConfidence: 51, aiDiagnosis: true  }, // WRONG
-  // Amber — very low accuracy
+  // Amber, very low accuracy
   { id: 'p12', group: 'amber',   name: 'Cleo Vandal',   age: 62, hasCondition: true,  aiConfidence: 44, aiDiagnosis: false }, // WRONG
   { id: 'p13', group: 'amber',   name: 'Sable Yun',     age: 44, hasCondition: true,  aiConfidence: 41, aiDiagnosis: false }, // WRONG
-  // Scarlet — extremely low accuracy
+  // Scarlet, extremely low accuracy
   { id: 'p14', group: 'scarlet', name: 'Theron Kiz',    age: 39, hasCondition: true,  aiConfidence: 38, aiDiagnosis: false }, // WRONG
   { id: 'p15', group: 'scarlet', name: 'Lyra Mone',     age: 58, hasCondition: true,  aiConfidence: 31, aiDiagnosis: false }, // WRONG
   { id: 'p16', group: 'scarlet', name: 'Idris Fell',    age: 31, hasCondition: false, aiConfidence: 34, aiDiagnosis: true  }, // WRONG
@@ -143,7 +143,7 @@ function IntroScreen({ onStart }: { onStart: () => void }) {
         </h1>
         <p className="eb-intro-sub">
           MediScan AI has been trained to detect a dangerous health condition.
-          But the training data has a problem — not everyone is equally represented.
+          But the training data has a problem, not everyone is equally represented.
           You're the quality auditor. Find out who the AI fails.
         </p>
 
@@ -152,7 +152,7 @@ function IntroScreen({ onStart }: { onStart: () => void }) {
             <div className="eb-step-num">1</div>
             <div>
               <strong>Scan 16 patients</strong>
-              <span>Watch the AI diagnose each one — and note where it struggles</span>
+              <span>Watch the AI diagnose each one, and note where it struggles</span>
             </div>
           </div>
           <div className="eb-intro-step">
@@ -210,7 +210,7 @@ function IntroScreen({ onStart }: { onStart: () => void }) {
               );
             })}
           </div>
-          <p className="eb-isp-note">Accuracy varies dramatically by group — but why?</p>
+          <p className="eb-isp-note">Accuracy varies dramatically by group, but why?</p>
         </div>
       </div>
     </div>
@@ -449,7 +449,7 @@ function TrainingReveal({
       <h1 className="eb-tr-title">Why does the AI fail certain groups?</h1>
       <p className="eb-tr-sub">
         The AI's performance mirrors its training data. Groups with fewer training examples
-        simply weren't learned as well — the AI has never seen enough of them to recognize their patterns.
+        simply weren't learned as well, the AI has never seen enough of them to recognize their patterns.
       </p>
 
       <div className="eb-tr-split">
@@ -560,7 +560,7 @@ function ScaleReveal({
       <h1 className="eb-scale-title">Small bias. Massive harm.</h1>
       <p className="eb-scale-sub">
         MediScan AI is now deployed to 1 million patients across the healthcare system.
-        The same inaccuracies you saw in 16 patients — amplified by a factor of 62,500.
+        The same inaccuracies you saw in 16 patients, amplified by a factor of 62,500.
       </p>
 
       <div className="eb-scale-counter-wrap">
@@ -605,7 +605,7 @@ function ScaleReveal({
           <p>
             A Ciru patient has a <strong style={{ color: '#3b82f6' }}>6% error rate</strong>.
             A Scarlet patient? <strong style={{ color: '#ef4444' }}>71% error rate</strong>.
-            Same AI. Same condition. Completely different outcome — because of what was excluded from training.
+            Same AI. Same condition. Completely different outcome, because of what was excluded from training.
           </p>
         </div>
       )}
@@ -642,7 +642,7 @@ function RetrainPhase({
       <h1 className="eb-rt-title">Fix the training data</h1>
       <p className="eb-rt-sub">
         You have a budget of <strong>{BUDGET} data points</strong> to collect from underrepresented groups.
-        Every 10 data points improves that group's accuracy. Spend wisely — there's not enough for everything.
+        Every 10 data points improves that group's accuracy. Spend wisely, there's not enough for everything.
       </p>
 
       <div className="eb-rt-budget">
@@ -809,7 +809,7 @@ function RescanReveal({
         <span>⚠</span>
         <p>
           Even with more data, some gaps remain. <strong>100 data points aren't enough</strong> to fix
-          years of underrepresentation. Closing these gaps requires structural change — not just
+          years of underrepresentation. Closing these gaps requires structural change, not just
           a quick data top-up.
         </p>
       </div>
@@ -836,7 +836,7 @@ function LearnScreen({ onRestart }: { onRestart: () => void }) {
         <h1>What you just witnessed</h1>
         <p className="lede">
           Exclusion bias happens when the people who build AI systems don't include
-          enough diverse data — and the consequences fall hardest on the groups who
+          enough diverse data, and the consequences fall hardest on the groups who
           were never represented in the first place.
         </p>
       </div>
@@ -847,11 +847,11 @@ function LearnScreen({ onRestart }: { onRestart: () => void }) {
           <p>
             Exclusion bias occurs when certain groups are significantly underrepresented
             in the data used to train an AI. The model never learns their patterns,
-            so it performs poorly for them — not out of malice, but out of ignorance.
+            so it performs poorly for them, not out of malice, but out of ignorance.
           </p>
           <p>
             In MediScan's case, the AI wasn't designed to fail the Scarlet group.
-            It was designed on incomplete data — and that gap became a systematic failure.
+            It was designed on incomplete data, and that gap became a systematic failure.
           </p>
         </div>
 
@@ -859,7 +859,7 @@ function LearnScreen({ onRestart }: { onRestart: () => void }) {
           <h2>This is happening right now</h2>
           <ul>
             <li>Pulse oximeters were found to overestimate oxygen levels in darker-skinned patients, delaying critical care</li>
-            <li>Dermatology AI models showed up to 34% lower accuracy on dark skin — because training datasets were over 80% lighter skin tones</li>
+            <li>Dermatology AI models showed up to 34% lower accuracy on dark skin, because training datasets were over 80% lighter skin tones</li>
             <li>Speech recognition systems had 35% higher word error rates for Black speakers vs. white speakers</li>
             <li>Facial recognition had error rates up to 34% for darker-skinned women vs. 1% for lighter-skinned men</li>
           </ul>
@@ -874,7 +874,7 @@ function LearnScreen({ onRestart }: { onRestart: () => void }) {
           </p>
           <p>
             The people excluded from training data are often the same people who face
-            systemic barriers in healthcare, tech, and research — compounding existing inequality.
+            systemic barriers in healthcare, tech, and research, compounding existing inequality.
           </p>
         </div>
 
@@ -894,11 +894,11 @@ function LearnScreen({ onRestart }: { onRestart: () => void }) {
         <div className="eb-learn-card eb-learn-card--tip">
           <h2>What better looks like</h2>
           <ul>
-            <li><strong>Audit your data before training</strong> — measure representation across demographic groups</li>
-            <li><strong>Set minimum representation thresholds</strong> — no group below 10% without justification</li>
-            <li><strong>Test across subgroups</strong> — don't report only overall accuracy; report per-group accuracy</li>
-            <li><strong>Involve affected communities</strong> — include them in data collection, not just evaluation</li>
-            <li><strong>Make accuracy gaps public</strong> — transparency lets users assess risk</li>
+            <li><strong>Audit your data before training</strong>, measure representation across demographic groups</li>
+            <li><strong>Set minimum representation thresholds</strong>, no group below 10% without justification</li>
+            <li><strong>Test across subgroups</strong>, don't report only overall accuracy; report per-group accuracy</li>
+            <li><strong>Involve affected communities</strong>, include them in data collection, not just evaluation</li>
+            <li><strong>Make accuracy gaps public</strong>, transparency lets users assess risk</li>
           </ul>
         </div>
 
@@ -906,7 +906,7 @@ function LearnScreen({ onRestart }: { onRestart: () => void }) {
           <h2>The key insight</h2>
           <p>
             An AI is only as fair as the data it learns from. "Exclusion" doesn't just mean
-            actively leaving people out — it also means failing to actively include them.
+            actively leaving people out, it also means failing to actively include them.
           </p>
           <p>
             In a world where AI increasingly makes decisions about healthcare, hiring, credit,

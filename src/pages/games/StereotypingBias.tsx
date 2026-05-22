@@ -53,7 +53,7 @@ export function StereotypingBias() {
           <h2>A Test of "First Instinct"</h2>
           <p>
             We often consider ourselves objective enough, and we believe AI is synonymous with pure rationality.
-            But the truth is, all of AI's knowledge originates from us—from a world that is already full of prejudices.
+            But the truth is, all of AI's knowledge originates from us, from a world that is already full of prejudices.
           </p>
           <p>
             Please complete the short game below. Let's find out together: <strong>Is AI truly objective?</strong>

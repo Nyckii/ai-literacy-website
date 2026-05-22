@@ -78,7 +78,7 @@ export function Resources() {
               target="_blank"
               rel="noreferrer"
             >
-              Google PAIR — AI Explorables
+              Google PAIR, AI Explorables
             </a>
             <span className="resource-note">
               Interactive visual explanations and demos about fairness, model behavior, and machine learning.

@@ -1,9 +1,10 @@
-// AlgorithmBias.tsx — "Fair or Fast?" Delivery Bias Game
+// AlgorithmBias.tsx, "Fair or Fast?" Delivery Bias Game
 // Flow: Explore → Goal → Your Turn → Automate → Bias → Reflect
 // Fix It stage (fixIt / fairerRound / finalReflect) is preserved in code but hidden from UI.
 // Your Turn uses click-on-map dispatch: click a neighborhood to send one available rider there.
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import mapImg from './assets/AlgorithmBiasImg/city-delivery-map.png';
 import { markGameCompleted } from '../../lib/gameProgress';
 
@@ -36,7 +37,7 @@ interface NResult {
   time: number; sat: number; delivered: number;
 }
 
-// Individual live rider — used during "Your Turn" for real-time dispatch
+// Individual live rider, used during "Your Turn" for real-time dispatch
 interface LiveRider {
   id: number;
   hoodId: string;
@@ -75,8 +76,8 @@ const HOODS: Hood[] = [
     pos: { x: 25, y: 65 }, radius: 9,
     baseOrders: 6, baseTime: 8, minTime: 4, earnings: 10,
     tagline: 'Dense · Fast · Profitable',
-    difficulty: 'Easy — short trips',
-    exploreInfo: 'Packed skyscrapers, busy restaurants, tight grid roads. Riders can zip in and out — very short trips, high order volume.',
+    difficulty: 'Easy, short trips',
+    exploreInfo: 'Packed skyscrapers, busy restaurants, tight grid roads. Riders can zip in and out, very short trips, high order volume.',
   },
   {
     id: 'midtown', name: 'Midtown', emoji: '🏢',
@@ -84,7 +85,7 @@ const HOODS: Hood[] = [
     pos: { x: 25, y: 33 }, radius: 8,
     baseOrders: 4, baseTime: 13, minTime: 6, earnings: 11,
     tagline: 'Mixed · Steady · Moderate',
-    difficulty: 'Medium — moderate trips',
+    difficulty: 'Medium, moderate trips',
     exploreInfo: 'Office towers and apartment blocks mixed together. Steady orders through the day, manageable distances from HQ.',
   },
   {
@@ -93,7 +94,7 @@ const HOODS: Hood[] = [
     pos: { x: 42, y: 17 }, radius: 7,
     baseOrders: 3, baseTime: 17, minTime: 8, earnings: 13,
     tagline: 'Quiet · Spread out · Longer rides',
-    difficulty: 'Harder — homes spread out',
+    difficulty: 'Harder, homes spread out',
     exploreInfo: 'Peaceful residential streets where houses are far apart. Fewer orders per shift, but each delivery covers more ground.',
   },
   {
@@ -102,8 +103,8 @@ const HOODS: Hood[] = [
     pos: { x: 73, y: 47 }, radius: 9,
     baseOrders: 3, baseTime: 23, minTime: 10, earnings: 16,
     tagline: 'Remote · Winding roads · Hardest',
-    difficulty: 'Hardest — longest trips',
-    exploreInfo: 'The most remote neighborhood. Long winding roads mean every delivery is a journey — but residents here need service just as much as anyone.',
+    difficulty: 'Hardest, longest trips',
+    exploreInfo: 'The most remote neighborhood. Long winding roads mean every delivery is a journey, but residents here need service just as much as anyone.',
   },
 ];
 
@@ -588,7 +589,7 @@ function describeAssignment(asgn: Record<string, number>): string {
 }
 
 function hoodTripHint(h: Hood) {
-  return `${h.name} — ${h.difficulty} · click to send 1 rider`;
+  return `${h.name}, ${h.difficulty} · click to send 1 rider`;
 }
 
 // ─── Step Indicator ───────────────────────────────────────────────────────────
@@ -711,16 +712,6 @@ function MapBoard({
           );
         })}
 
-        {/* Pulse rings on unvisited hoods in Explore */}
-        {isExplore && HOODS.map((h, i) => !visitedSet.has(h.id) && (
-          <ellipse key={`pulse-${h.id}`}
-            cx={h.pos.x * AR} cy={h.pos.y}
-            rx={h.radius * AR * 1.45} ry={h.radius * 1.45}
-            fill="none" stroke={h.color} strokeWidth="0.8"
-            style={{ animation: `ab-pulse-ring 2.4s ease-out ${i * 0.6}s infinite` }}
-            opacity="0.45"
-          />
-        ))}
 
         {/* Highlight ring for algo assignment */}
         {highlightHoodId && (() => {
@@ -821,7 +812,7 @@ function MapBoard({
           ? `dispatch ${hasDemand ? 'has-demand' : 'no-demand'} ${noRiders ? 'no-riders' : ''}`
           : '';
         const title = isYourTurn
-          ? hasDemand ? hoodTripHint(h) : `${h.name} — no demand right now`
+          ? hasDemand ? hoodTripHint(h) : `${h.name}, no demand right now`
           : h.name;
         return (
           <button key={`hs-${h.id}`}
@@ -1008,7 +999,7 @@ function PhaseExplore({
         </div>
       ) : (
         <div className="ab-explore-empty">
-          {allDone ? '✅ All areas explored — press the button to continue!' : 'Click a neighborhood on the map, or a tab above, to explore it.'}
+          {allDone ? '✅ All areas explored, press the button to continue!' : 'Click a neighborhood on the map, or a tab above, to explore it.'}
         </div>
       )}
     </div>
@@ -1027,7 +1018,7 @@ function PhaseGoal({ onAct }: { onAct: (l: string, e: boolean) => void }) {
         {[
           { icon: '💰', head: 'More revenue', body: 'Faster trips = riders complete more orders per shift = higher earnings.' },
           { icon: '📦', head: 'More completed orders', body: 'Short rides return riders sooner, so more orders can be served during the shift.' },
-          { icon: '⚡', head: 'Less idle time', body: 'Optimizing speed keeps riders moving — less wasted time between orders.' },
+          { icon: '⚡', head: 'Less idle time', body: 'Optimizing speed keeps riders moving, less wasted time between orders.' },
         ].map(({ icon, head, body }) => (
           <div key={head} style={{ background: '#f8f5f1', border: '1px solid #e8e0d5', borderRadius: 14, padding: '14px 16px' }}>
             <div style={{ fontSize: 22, marginBottom: 6 }}>{icon}</div>
@@ -1082,9 +1073,9 @@ function PhaseYourTurn({
       {!ytRoundDone && (
         <div className="ab-yt-instruction">
           {allBusy
-            ? <><span style={{ color: '#dc2626' }}>All riders are on the road</span> — wait for one to return 🛵</>
+            ? <><span style={{ color: '#dc2626' }}>All riders are on the road</span>, wait for one to return 🛵</>
             : !hasDemand
-              ? <><span>No active demand right now</span> — more orders arriving soon 📦</>
+              ? <><span>No active demand right now</span>, more orders arriving soon 📦</>
               : <><span>Click a neighborhood</span> on the map to dispatch a rider 🛵</>}
         </div>
       )}
@@ -1175,7 +1166,7 @@ function PhaseAutomate({
         </div>
       )}
       <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8998c', margin: '8px 0' }}>
-        Algorithm Assignment — 8 Riders
+        Algorithm Assignment, 8 Riders
       </div>
       <div className="ab-algo-tiles">
         {HOODS.map(h => {
@@ -1193,7 +1184,7 @@ function PhaseAutomate({
       </div>
       {complete && (
         <div className="ab-callout indigo" style={{ marginTop: 14 }}>
-          Once you click <strong>"Run the Algorithm,"</strong> this rule runs every shift automatically — with no human review. The algorithm makes all dispatch decisions from now on.
+          Once you click <strong>"Run the Algorithm,"</strong> this rule runs every shift automatically, with no human review. The algorithm makes all dispatch decisions from now on.
         </div>
       )}
     </div>
@@ -1229,12 +1220,12 @@ function PhaseBias({
     return (
       <div className="ab-card">
         <div className="ab-news-banner">
-          <div className="ab-news-tag">📡 Breaking — Today's Orders</div>
-          <div className="ab-news-text">East Hills received 8 orders — nearly triple its usual 3.</div>
+          <div className="ab-news-tag">📡 Breaking: Today's Orders</div>
+          <div className="ab-news-text">East Hills received 8 orders, nearly triple its usual 3.</div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
           <div style={{ background: '#fef2f2', border: '1.5px solid #fecaca', borderRadius: 12, padding: '14px 16px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#dc2626', marginBottom: 6 }}>East Hills — Today</div>
+            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#dc2626', marginBottom: 6 }}>East Hills: Today</div>
             <div style={{ fontSize: 28, fontWeight: 800, color: '#dc2626' }}>8 orders</div>
             <div style={{ fontSize: 12, color: '#b91c1c', marginTop: 2 }}>vs. usual 3 orders/shift</div>
           </div>
@@ -1255,7 +1246,7 @@ function PhaseBias({
     return (
       <div className="ab-card">
         <div className="ab-card-title">🤖 Algorithm Running…</div>
-        <div className="ab-card-sub">Assigning riders exactly as trained — prioritizing shorter trips to protect the {LIVE_GOALS.avgTrip}s average.</div>
+        <div className="ab-card-sub">Assigning riders exactly as trained, prioritizing shorter trips to protect the {LIVE_GOALS.avgTrip}s average.</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#8a7a6d', fontSize: 13, marginBottom: 14 }}>
           <div className="ab-spinner" /> Processing today's demand…
         </div>
@@ -1285,7 +1276,7 @@ function PhaseBias({
       <div className="ab-card-sub">The algorithm protected the {LIVE_GOALS.avgTrip}s trip-time goal. Here's what that meant for each neighborhood.</div>
       <ResultTable results={algoResults} showOrders hideSatisfaction />
       <div className="ab-callout red" style={{ marginTop: 14 }}>
-        <strong>The numbers:</strong> {dtResult?.drivers} riders to Downtown (6 orders) vs. {ehResult?.drivers ?? 1} rider to East Hills (8 orders). Average looks okay — but 8 people in East Hills were left behind.
+        <strong>The numbers:</strong> {dtResult?.drivers} riders to Downtown (6 orders) vs. {ehResult?.drivers ?? 1} rider to East Hills (8 orders). Average looks okay, but 8 people in East Hills were left behind.
       </div>
       <div className="ab-reflect-grid" style={{ marginTop: 14 }}>
         {[
@@ -1319,12 +1310,12 @@ function PhaseReflect({
   return (
     <div className="ab-card">
       <div className="ab-card-title">🎓 Why It Went Wrong</div>
-      <div className="ab-card-sub">Same city. Same {TOTAL_RIDERS} riders. A perfectly reasonable goal — but a systematically unfair outcome.</div>
+      <div className="ab-card-sub">Same city. Same {TOTAL_RIDERS} riders. A perfectly reasonable goal, but a systematically unfair outcome.</div>
       <div style={{ background: '#f8f5f1', border: '1px solid #e8e0d5', borderRadius: 14, padding: '14px 18px', marginBottom: 14 }}>
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8998c', marginBottom: 8 }}>What You Did</div>
         <div style={{ fontSize: 14, color: '#2d2419' }}>{describeAssignment(assignments)}</div>
         <div style={{ fontSize: 12, color: '#8a7a6d', marginTop: 6, lineHeight: 1.5 }}>
-          That made sense for the goal — shorter trips helped protect the {LIVE_GOALS.avgTrip}s average.
+          That made sense for the goal, shorter trips helped protect the {LIVE_GOALS.avgTrip}s average.
         </div>
       </div>
       <div style={{ background: '#fef2f2', border: '1.5px solid #fecaca', borderRadius: 14, padding: '14px 18px', marginBottom: 14 }}>
@@ -1342,7 +1333,7 @@ function PhaseReflect({
           "A neutral-looking goal can still create biased outcomes."
         </div>
         <div style={{ fontSize: 13, color: '#c7d2fe', lineHeight: 1.65 }}>
-          "Keep average trip time under {LIVE_GOALS.avgTrip}s" sounds fair. But applied across neighborhoods with different distances and histories, it systematically advantages easy areas — and leaves the rest behind.
+          "Keep average trip time under {LIVE_GOALS.avgTrip}s" sounds fair. But applied across neighborhoods with different distances and histories, it systematically advantages easy areas, and leaves the rest behind.
         </div>
       </div>
       <div className="ab-callout indigo">
@@ -1366,9 +1357,9 @@ function PhaseReflect({
 // ─── HIDDEN STAGES (code preserved) ──────────────────────────────────────────
 
 const FIX_CHOICES = [
-  { id: 'A' as const, title: 'Keep the speed-only goal', desc: '"Minimize average delivery time" — same as before.', feedback: 'This is the same goal that caused the problem. Optimizing only for average speed still systematically deprioritizes remote neighborhoods.' },
+  { id: 'A' as const, title: 'Keep the speed-only goal', desc: '"Minimize average delivery time", same as before.', feedback: 'This is the same goal that caused the problem. Optimizing only for average speed still systematically deprioritizes remote neighborhoods.' },
   { id: 'B' as const, title: 'Switch to a volume goal', desc: '"Maximize total deliveries completed per shift."', feedback: 'Volume-only optimization still rewards easy, nearby neighborhoods. The algorithm would still neglect East Hills.' },
-  { id: 'C' as const, title: 'Balance speed and guaranteed coverage', desc: '"Minimize average delivery time, while ensuring every neighborhood receives at least 2 riders."', feedback: '✓ By guaranteeing a minimum for every area, the algorithm cannot quietly deprioritize remote neighborhoods — even when they have lower historical demand.' },
+  { id: 'C' as const, title: 'Balance speed and guaranteed coverage', desc: '"Minimize average delivery time, while ensuring every neighborhood receives at least 2 riders."', feedback: '✓ By guaranteeing a minimum for every area, the algorithm cannot quietly deprioritize remote neighborhoods, even when they have lower historical demand.' },
 ];
 
 function PhaseFixIt({ onAct, fixGoalChoice, setFixGoalChoice }: {
@@ -1380,7 +1371,7 @@ function PhaseFixIt({ onAct, fixGoalChoice, setFixGoalChoice }: {
   return (
     <div className="ab-card">
       <div className="ab-card-title">🛠️ Fix the Goal</div>
-      <div className="ab-card-sub">The problem wasn't the algorithm's math — it was the goal it was given. Which objective would you choose?</div>
+      <div className="ab-card-sub">The problem wasn't the algorithm's math, it was the goal it was given. Which objective would you choose?</div>
       <div className="ab-choice-cards">
         {FIX_CHOICES.map(choice => {
           const isChosen = fixGoalChoice === choice.id;
@@ -1417,7 +1408,7 @@ function PhaseFairerRound({ onAct, fairerStep, fairerAssignments }: {
   return (
     <div className="ab-card">
       <div className="ab-card-title">✅ {complete ? 'Fairer Assignment Complete' : 'Running the Balanced Algorithm…'}</div>
-      <div className="ab-card-sub">{complete ? 'Every neighborhood receives at least 2 riders — guaranteed.' : 'The new algorithm ensures a minimum of 2 riders per neighborhood before distributing by demand.'}</div>
+      <div className="ab-card-sub">{complete ? 'Every neighborhood receives at least 2 riders, guaranteed.' : 'The new algorithm ensures a minimum of 2 riders per neighborhood before distributing by demand.'}</div>
       <div className="ab-algo-tiles">
         {HOODS.map(h => {
           const count = fairerAssignments[h.id] ?? 0;
@@ -1434,7 +1425,7 @@ function PhaseFairerRound({ onAct, fairerStep, fairerAssignments }: {
           );
         })}
       </div>
-      {complete && <div className="ab-callout green" style={{ marginTop: 14 }}>East Hills now has <strong>2 riders for 8 orders</strong> — dramatically better than 1.</div>}
+      {complete && <div className="ab-callout green" style={{ marginTop: 14 }}>East Hills now has <strong>2 riders for 8 orders</strong>, dramatically better than 1.</div>}
     </div>
   );
 }
@@ -1451,7 +1442,7 @@ function PhaseFinalReflect({ onAct, algoResults, fairerResults }: {
   const fairSum = summarize(fairerResults);
   return (
     <div className="ab-card">
-      <div className="ab-card-title">🎓 What Changed — And Why It Matters</div>
+      <div className="ab-card-title">🎓 What Changed and Why It Matters</div>
       <div className="ab-card-sub">Same East Hills surge. Same {TOTAL_RIDERS} riders. Different goal. Very different outcomes.</div>
       <div className="ab-compare-wrap">
         <table className="ab-compare-table">
@@ -1470,7 +1461,7 @@ function PhaseFinalReflect({ onAct, algoResults, fairerResults }: {
         </table>
       </div>
       <div className="ab-callout indigo" style={{ marginTop: 14 }}>
-        <strong>What fairness requires:</strong> Explicitly designing for equity — not just efficiency. Ask "Who benefits from this goal, and who doesn't?" before the algorithm runs.
+        <strong>What fairness requires:</strong> Explicitly designing for equity, not just efficiency. Ask "Who benefits from this goal, and who doesn't?" before the algorithm runs.
       </div>
     </div>
   );
@@ -1479,6 +1470,7 @@ function PhaseFinalReflect({ onAct, algoResults, fairerResults }: {
 // ─── Main Component ───────────────────────────────────────────────────────────
 
 export function AlgorithmBias() {
+  const navigate = useNavigate();
   const [phase, setPhase] = useState<GamePhase>('explore');
 
   useEffect(() => {
@@ -1495,7 +1487,7 @@ export function AlgorithmBias() {
   const [activeExploreTab, setActiveExploreTab] = useState<string | null>(null);
   const [demoState, setDemoState] = useState<ExploreDemo | null>(null);
 
-  // ── Stage 3: Your Turn — individual click-to-dispatch mechanic ──
+  // ── Stage 3: Your Turn, individual click-to-dispatch mechanic ──
   const ytLiveRidersRef = useRef<LiveRider[]>([]);
   const [ytIdleRiders, setYtIdleRiders] = useState(TOTAL_RIDERS);
   const [ytRenderTick, setYtRenderTick] = useState(0); // drives map re-render
@@ -1673,7 +1665,7 @@ export function AlgorithmBias() {
     if (phase !== 'yourTurn' || ytRoundDone || !ytRunning) return;
 
     if (ytIdleRiders <= 0) {
-      showFeedback('All riders are out — wait for one to return! 🛵');
+      showFeedback('All riders are out, wait for one to return! 🛵');
       return;
     }
     if ((ytDemand[hoodId] ?? 0) <= 0) {
@@ -1822,6 +1814,10 @@ export function AlgorithmBias() {
 
   function handleActionClick() {
     if (actionFnRef.current) { actionFnRef.current(); return; }
+    if (phase === 'reflect' || phase === 'finalReflect') {
+      navigate('/');
+      return;
+    }
     if (phase === 'bias') {
       if (biasSubPhase === 'event') { setBiasSubPhase('running'); return; }
       if (biasSubPhase === 'results') { advance('reflect'); return; }
@@ -1861,9 +1857,9 @@ export function AlgorithmBias() {
       : 'bad';
   const speedAlert = isYourTurn && !ytRoundDone && ytTimer <= 30 && ytAvgWait > 0
     ? ytAvgWait > LIVE_GOALS.avgTrip
-      ? `Goal at risk — average trip is above ${LIVE_GOALS.avgTrip}s.`
+      ? `Goal at risk, average trip is above ${LIVE_GOALS.avgTrip}s.`
       : avgTripStatus === 'warn'
-        ? 'Speed target at risk — shorter rides return riders sooner.'
+        ? 'Speed target at risk, shorter rides return riders sooner.'
         : null
     : null;
 
@@ -1872,7 +1868,7 @@ export function AlgorithmBias() {
       <style>{STYLES}</style>
       <StepIndicator phase={phase} onBack={p => advance(p)} />
 
-      {/* Live HUD — Your Turn only */}
+      {/* Live HUD, Your Turn only */}
       {isYourTurn && (
         <div className="ab-hud" style={{ marginTop: 8 }}>
           <div className={`ab-goal-panel ${avgTripStatus}`}>

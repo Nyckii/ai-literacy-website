@@ -1,51 +1,203 @@
+/* ============================================================
+   Interaction Bias — arcade-styled wrapper around the embedded
+   "Silent Voices" game. Matches the chunky ink-border + hard
+   offset-shadow language used by the Learning Bias game.
+   (The iframe game itself is untouched.)
+   ============================================================ */
 
+/* Intro narrative card */
+.ib-intro {
+  margin-top: 1.5rem;
+  padding: 24px 26px;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 6px 6px 0 var(--ink);
+  color: var(--text);
+}
+.ib-intro p {
+  margin: 0 0 0.9rem;
+  line-height: 1.65;
+}
+.ib-intro p:last-child {
+  margin-bottom: 0;
+}
+.ib-intro .ib-intro-q {
+  font-weight: 800;
+  color: var(--ink);
+  font-size: 1.05rem;
+}
+.ib-intro .ib-intro-brief {
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 2px dashed var(--border);
+  font-style: italic;
+  color: var(--text-muted);
+}
+
+/* Embedded game frame — arcade cabinet look */
+.ib-game-frame {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  background: #000;
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 6px 6px 0 var(--ink);
+  overflow: hidden;
+}
+
+/* Arcade pill button — coral, ink border, hard shadow that presses on click */
+.fullscreen-toggle {
+  cursor: pointer;
+  font-family: inherit;
+  font-weight: 800;
+  font-size: 0.95rem;
+  letter-spacing: -0.01em;
+  color: #fff;
+  background: var(--accent);
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 11px 22px;
+  box-shadow: 4px 4px 0 var(--ink);
+  transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
+}
+.fullscreen-toggle:hover {
+  background: #ff525c;
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.fullscreen-toggle:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+/* Reflection section headings */
+.game-content-rich-text h2 {
+  font-family: var(--display);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+}
+
+/* Highlight callout — coral accent card */
+.ib-highlight {
+  margin: 1.5rem 0;
+  padding: 18px 22px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  line-height: 1.55;
+  color: var(--ink);
+  background: var(--accent-soft);
+  border: 2px solid var(--ink);
+  border-left-width: 6px;
+  border-radius: 14px;
+}
+
+/* ── Interactive flip cards ───────────────────────────── */
 .flip-cards-container {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 20px;
-    margin-top: 2rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+  margin-top: 2rem;
 }
 
 .custom-flip-card {
-    perspective: 1000px;
-    height: 250px;
+  perspective: 1000px;
+  height: 260px;
 }
 
 .flip-card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    transition: transform 0.6s;
-    transform-style: preserve-3d;
-    cursor: pointer;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s cubic-bezier(0.34, 1.2, 0.64, 1);
+  transform-style: preserve-3d;
+  cursor: pointer;
 }
 
-.custom-flip-card:hover .flip-card-inner {
-    transform: rotateY(180deg);
+.custom-flip-card:hover .flip-card-inner,
+.custom-flip-card:focus-within .flip-card-inner {
+  transform: rotateY(180deg);
 }
 
 .flip-card-front,
 .flip-card-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    backface-visibility: hidden;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #ddd;
-    text-align: center;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 22px;
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 5px 5px 0 var(--ink);
+  text-align: center;
 }
 
 .flip-card-front {
-    background: white;
+  background: var(--surface);
+  color: var(--ink);
+  gap: 12px;
+}
+.flip-card-front p {
+  margin: 0;
+  font-weight: 800;
+  line-height: 1.4;
 }
 
 .flip-card-back {
-    background: #333;
-    color: white;
-    transform: rotateY(180deg);
+  background: var(--ink);
+  color: #fff;
+  transform: rotateY(180deg);
+}
+.flip-card-back p {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: #d8dbe6;
+}
+
+/* ── Core concept ─────────────────────────────────────── */
+.ib-concept-title {
+  border-bottom: 2px solid var(--ink);
+  padding-bottom: 0.75rem;
+}
+
+.ib-definition {
+  margin: 2rem 0;
+  padding: 22px 24px;
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  border-left-width: 6px;
+  border-radius: 14px;
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.ib-definition p {
+  margin: 0;
+  color: var(--text);
+  line-height: 1.65;
+}
+
+/* Theory quote — arcade pull-quote */
+.ib-quote {
+  position: relative;
+  margin-top: 2.5rem;
+  padding: 26px 28px;
+  background: var(--ink);
+  color: #fff;
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 6px 6px 0 var(--ink);
+  font-size: 1.05rem;
+  font-style: italic;
+  line-height: 1.6;
+}
+.ib-quote .ib-quote-mark {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--accent);
 }

@@ -1795,13 +1795,14 @@ code {
   max-width: 880px;
 }
 
+/* Arcade theme — chunky ink borders + hard offset shadows */
 .hb-card {
   margin-bottom: 32px;
   padding: 28px;
   border-radius: var(--radius-lg);
   background: var(--surface);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-sm);
+  border: 2px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
 }
 
 .hb-card h2 {
@@ -1824,10 +1825,11 @@ code {
 .hb-note {
   margin-bottom: 48px;
   padding: 24px;
-  border-radius: var(--radius);
-  background: color-mix(in srgb, var(--accent-soft) 45%, var(--surface));
-  border: 1px solid var(--border);
-  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-lg);
+  background: var(--accent-soft);
+  border: 2px solid var(--ink);
+  border-left-width: 6px;
+  box-shadow: 6px 6px 0 var(--ink);
 }
 
 .hb-note h2 {
@@ -1841,7 +1843,8 @@ code {
   padding: 48px 24px;
   border-radius: var(--radius-lg);
   background: var(--surface);
-  border: 1px solid var(--border);
+  border: 2px solid var(--ink);
+  box-shadow: 6px 6px 0 var(--ink);
 }
 
 .hb-cta h2 {
@@ -1858,7 +1861,24 @@ code {
 
 .hb-cta .btn {
   font-size: 1.05rem;
-  padding: 12px 24px;
+  padding: 14px 26px;
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+
+.hb-cta .btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.hb-cta .btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
 }
 
 /* ---------- Mapping Bias game ---------- */

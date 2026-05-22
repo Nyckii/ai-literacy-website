@@ -1784,14 +1784,14 @@
 .cb-transition-card {
   width: 100%;
   max-width: 540px;
-  padding: 32px 36px 36px;
-  background: #0d1117;
+  padding: 30px 34px 34px;
+  background: var(--surface);
   border-radius: 20px;
-  box-shadow: 0 24px 80px -12px rgba(0,0,0,0.5);
+  box-shadow: 8px 8px 0 var(--ink);
   display: flex;
   flex-direction: column;
   gap: 20px;
-  border: 1px solid rgba(255,255,255,0.07);
+  border: 2px solid var(--ink);
 }
 
 .cb-t-header {
@@ -1802,15 +1802,16 @@
 
 .cb-t-dots {
   display: flex;
-  gap: 5px;
+  gap: 6px;
 }
 
 .cb-t-dots span {
   display: block;
-  width: 10px;
-  height: 10px;
+  width: 11px;
+  height: 11px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.18);
+  background: var(--accent);
+  border: 2px solid var(--ink);
   animation: cb-breathe 1.2s ease-in-out infinite;
 }
 
@@ -1819,23 +1820,24 @@
   font-size: 0.74rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
+  color: var(--text-muted);
 }
 
 .cb-t-title {
   font-size: 1.35rem;
-  font-weight: 700;
+  font-weight: 900;
   letter-spacing: -0.02em;
-  color: #fff;
+  color: var(--ink);
   margin: 0;
 }
 
 /* Click profile mini chart */
 .cb-t-profile {
   padding: 14px 16px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
-  border-radius: 10px;
+  background: var(--bg);
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 3px 3px 0 var(--ink);
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -1844,7 +1846,7 @@
 .cb-t-profile-label {
   font-family: var(--mono);
   font-size: 0.73rem;
-  color: rgba(255,255,255,0.4);
+  color: var(--text-muted);
   margin: 0;
   letter-spacing: 0.04em;
 }
@@ -1852,7 +1854,7 @@
 .cb-t-profile-bars {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .cb-t-pbar {
@@ -1865,8 +1867,9 @@
 .cb-t-pbar-label { font-size: 0.82rem; }
 
 .cb-t-pbar-track {
-  height: 5px;
-  background: rgba(255,255,255,0.1);
+  height: 9px;
+  background: var(--surface);
+  border: 2px solid var(--ink);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -1880,7 +1883,8 @@
 .cb-t-pbar-pct {
   font-family: var(--mono);
   font-size: 0.72rem;
-  color: rgba(255,255,255,0.45);
+  font-weight: 700;
+  color: var(--text-muted);
   text-align: right;
 }
 
@@ -1898,14 +1902,14 @@
   display: flex;
   gap: 10px;
   align-items: flex-start;
-  color: rgba(255,255,255,0.65);
+  color: var(--text);
   animation: cb-fadein 0.2s ease;
 }
 
-.cb-t-step--pending { color: rgba(255,255,255,0.35); }
-.cb-t-check { color: #4ade80; flex-shrink: 0; }
+.cb-t-step--pending { color: var(--text-muted); }
+.cb-t-check { color: #0fa968; flex-shrink: 0; display: inline-flex; align-items: center; }
 .cb-t-cursor {
-  color: #60a5fa;
+  color: var(--accent);
   flex-shrink: 0;
   animation: cb-blink 0.8s step-end infinite;
 }
@@ -1913,7 +1917,7 @@
 .cb-t-done {
   font-family: var(--mono);
   font-size: 0.78rem;
-  color: rgba(255,255,255,0.28);
+  color: var(--text-muted);
   margin: 4px 0 0;
   animation: cb-fadein 0.4s ease;
 }
@@ -2232,4 +2236,174 @@
 @keyframes cb-bar-grow {
   from { transform: scaleY(0); opacity: 0; }
   to   { transform: scaleY(1); opacity: 1; }
+}
+
+/* ============================================================
+   ARCADE THEME — outer dashboard chrome only.
+   The phone (cb-ipad / cb-gram / cb-ig / cb-status / cb-story /
+   cb-mini) is intentionally left alone, emojis included.
+   Signature: chunky 2px ink borders + hard offset shadows.
+   ============================================================ */
+
+/* Panels */
+.cb-game-header,
+.cb-game-footer,
+.cb-history-panel {
+  background: var(--surface);
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 6px 6px 0 var(--ink);
+  backdrop-filter: none;
+}
+
+/* Inner cards within the dashboard */
+.cb-history-stat,
+.cb-history-meter,
+.cb-history-item {
+  border: 2px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+.cb-history-item__icon {
+  border: 2px solid var(--ink);
+}
+
+.cb-history-day,
+.cb-day-badge {
+  border: 2px solid var(--ink);
+}
+
+.cb-history-empty {
+  border: 2px dashed var(--ink);
+  border-radius: 14px;
+}
+
+/* Keep the panel fixed; only the log scrolls. Compact items so more
+   fit on shorter viewports. */
+.cb-history-panel {
+  overflow: hidden;
+  gap: 12px;
+  padding: 18px;
+}
+.cb-history-log {
+  gap: 9px;
+}
+.cb-history-item {
+  padding: 9px 11px;
+  gap: 10px;
+}
+.cb-history-item__icon {
+  width: 26px;
+  height: 26px;
+  font-size: 0.82rem;
+}
+.cb-history-item__body {
+  gap: 3px;
+}
+.cb-history-item__top strong {
+  font-size: 0.78rem;
+}
+.cb-history-item__body p,
+.cb-history-item__body > span {
+  font-size: 0.75rem;
+  line-height: 1.35;
+}
+.cb-history-stat {
+  padding: 10px 11px 9px;
+}
+
+/* Footer hint + toast: align inline icons with the centred text */
+.cb-footer-hint {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  max-width: 40ch;
+}
+.cb-like-toast {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+
+/* Reveal + learn screens */
+.cb-rv-stat,
+.cb-learn-card {
+  border: 2px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 6px 6px 0 var(--ink);
+}
+
+.cb-learn-card--accent { border-left: 6px solid var(--accent); }
+.cb-learn-card--tip    { border-left: 6px solid #18a06b; }
+
+.cb-rv-bar {
+  border: 2px solid var(--ink);
+  box-shadow: 3px 3px 0 var(--ink);
+}
+
+/* In-game buttons — arcade pills with a hard offset shadow that
+   presses on click. Scoped to this game's button instances so the
+   site-wide .btn is untouched. */
+.cb-next-btn {
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.cb-next-btn:hover:not(:disabled) {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.cb-next-btn:active:not(:disabled) {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.cb-intro-btn,
+.cb-rv-cta .btn,
+.cb-learn-cta .btn {
+  border: 2px solid var(--ink);
+  box-shadow: 4px 4px 0 var(--ink);
+  transition:
+    transform 0.12s ease,
+    box-shadow 0.12s ease,
+    background 0.15s ease,
+    color 0.15s ease;
+}
+.cb-intro-btn:hover,
+.cb-rv-cta .btn:hover,
+.cb-learn-cta .btn:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--ink);
+}
+.cb-intro-btn:active,
+.cb-rv-cta .btn:active,
+.cb-learn-cta .btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+/* On small screens, drop the fixed-height single-screen layout and let
+   the page scroll naturally — no awkward inner-only scroll. The desktop
+   layout (fixed height, log scrolls internally) is unchanged. */
+@media (max-width: 980px) {
+  .cb-game-shell {
+    height: auto;
+    overflow: visible;
+  }
+  .cb-game-main,
+  .cb-game-side {
+    height: auto;
+    overflow: visible;
+  }
+  .cb-game-side {
+    grid-template-rows: none;
+  }
+  .cb-history-panel,
+  .cb-history-log {
+    overflow: visible;
+    min-height: 0;
+  }
 }

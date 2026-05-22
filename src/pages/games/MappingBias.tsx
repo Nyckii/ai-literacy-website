@@ -111,7 +111,7 @@ const DESTINATIONS: Destination[] = [
       industry:
         'US tech is dominated by Big Tech with stock comp; Swiss training set saw mostly cash salaries from banking + pharma.',
       education:
-        'Swiss apprenticeships barely exist in the US labor market — the model gives a positive signal that has nowhere to land.',
+        'Swiss apprenticeships barely exist in the US labor market, the model gives a positive signal that has nowhere to land.',
       pension:
         'In Switzerland, BVG pensions are treated as ~CHF 25k of hidden comp. In the US, healthcare + 401k structure is totally different.',
     },
@@ -130,19 +130,19 @@ const DESTINATIONS: Destination[] = [
     actualRangeCHF: [9_000, 35_000],
     breaks: {
       currency:
-        'CHF 108k converted into INR is ~94 lakh — about 6× a typical senior engineer\'s package.',
+        'CHF 108k converted into INR is ~94 lakh, about 6× a typical senior engineer\'s package.',
       cost:
         'Mumbai rent ≈ CHF 600/mo; Zürich rent ≈ CHF 2,200/mo. The salary baseline is calibrated to costs that don\'t apply.',
       industry:
-        'Indian tech is dominated by services firms (TCS, Infosys, Wipro) — different pay structures than Swiss banking + pharma.',
+        'Indian tech is dominated by services firms (TCS, Infosys, Wipro), different pay structures than Swiss banking + pharma.',
       education:
-        'A BSc from IIT Bombay vs. a Tier-3 college means wildly different things — a split the Swiss data has never seen.',
+        'A BSc from IIT Bombay vs. a Tier-3 college means wildly different things, a split the Swiss data has never seen.',
       tax: 'Indian tax brackets and bonus structures don\'t map to 26 Swiss cantonal regimes.',
       pension:
         'Indian provident-fund structure differs from Swiss BVG; the "hidden comp" assumption is wrong.',
     },
     consequence:
-      'The model would offer a Mumbai engineer roughly 6× the local market rate — bankrupting the company on its first hire.',
+      'The model would offer a Mumbai engineer roughly 6× the local market rate, bankrupting the company on its first hire.',
     position: { x: 350, y: 220 },
     distance: 'very-far',
   },
@@ -158,7 +158,7 @@ const DESTINATIONS: Destination[] = [
       currency:
         'IDR salaries don\'t scale linearly with CHF; converting blows up the number even more.',
       cost:
-        'Jakarta living costs are a fraction of Zürich\'s — the salary baseline has no anchor here.',
+        'Jakarta living costs are a fraction of Zürich\'s, the salary baseline has no anchor here.',
       industry:
         'Indonesia\'s tech scene is concentrated in Jakarta, dominated by Southeast-Asian unicorns the Swiss data has never seen.',
       education:
@@ -168,7 +168,7 @@ const DESTINATIONS: Destination[] = [
         'BPJS Ketenagakerjaan ≠ BVG pensions; the hidden-comp assumption inflates the prediction.',
     },
     consequence:
-      'Predictions are 8× the actual market. Every offer is a giveaway — your margins evaporate by month two.',
+      'Predictions are 8× the actual market. Every offer is a giveaway, your margins evaporate by month two.',
     position: { x: 365, y: 180 },
     distance: 'very-far',
   },
@@ -183,7 +183,7 @@ const DESTINATIONS: Destination[] = [
     breaks: {
       cost: 'Cost of living in 1955 Switzerland was ~1/5 of today\'s. Salaries scale with prices.',
       industry:
-        'In 1955, the Swiss economy ran on watchmaking, textiles, and manufacturing — not banking, pharma, ICT.',
+        'In 1955, the Swiss economy ran on watchmaking, textiles, and manufacturing, not banking, pharma, ICT.',
       education:
         '~3% of the population had a university degree in 1955 vs. ~32% today. A BSc was an elite signal, not a baseline.',
       tax: 'Cantonal tax brackets were structured very differently before federal harmonization.',
@@ -409,7 +409,7 @@ export function MappingBias() {
 
               {visited.size < 2 && stage === 'deploy' && active && (
                 <p className="mp-hint">
-                  Try at least one more market — domain shift looks different
+                  Try at least one more market, domain shift looks different
                   on every axis.
                 </p>
               )}
@@ -459,7 +459,7 @@ function HomeActual({
 
       <p className="mp-actual-verdict mp-actual-verdict-good">
         Off by {errorPct >= 0 ? '+' : ''}
-        {errorPct}%. Inside the model's training distribution — exactly what
+        {errorPct}%. Inside the model's training distribution, exactly what
         we'd hope.
       </p>
 
@@ -579,7 +579,7 @@ function FeaturesPanel({ active }: { active: Destination | null }) {
       <header className="mp-features-head">
         <h2>What's baked into this model</h2>
         <p className="muted">
-          Seven assumptions encoded during training. Pick a market above —
+          Seven assumptions encoded during training. Pick a market above,
           the ones that no longer hold get crossed out.
         </p>
       </header>
@@ -620,7 +620,7 @@ function Reveal({ onReset }: { onReset: () => void }) {
           <h2>Domain of validity</h2>
           <p className="muted">
             A model is only valid where it was trained. The center is Swiss
-            payroll, 2018–2023. Everything outside is extrapolation — even
+            payroll, 2018–2023. Everything outside is extrapolation, even
             when the confidence stays at 95%.
           </p>
         </header>
@@ -698,7 +698,7 @@ function Reveal({ onReset }: { onReset: () => void }) {
           <p>
             <strong>Mapping bias</strong> is what happens when a model is
             applied outside the population it was trained on. The model
-            isn't broken — it's just being asked questions it has no answer
+            isn't broken, it's just being asked questions it has no answer
             for.
           </p>
           <p>
@@ -713,14 +713,14 @@ function Reveal({ onReset }: { onReset: () => void }) {
       <aside className="mp-note">
         <h3>How this is different from data bias</h3>
         <p>
-          The Swiss training data isn't biased <em>against</em> anyone — it
+          The Swiss training data isn't biased <em>against</em> anyone, it
           captures Swiss salaries accurately. Mapping bias isn't about the
           data being flawed. It's about <em>where the model is deployed</em>.
           The same model is fine in Zürich and harmful in Mumbai. The bias
           lives in the act of transfer, not in the data.
         </p>
         <p className="muted">
-          Numbers above are illustrative — calibrated to plausible orders
+          Numbers above are illustrative, calibrated to plausible orders
           of magnitude from public labor-statistics sources, not the output
           of a live model.
         </p>
