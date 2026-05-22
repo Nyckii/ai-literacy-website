@@ -1,4 +1,37 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import type { ElementType } from 'react';
+import {
+  ArrowsClockwise,
+  BookOpen,
+  Brain,
+  Briefcase,
+  Camera,
+  Cat,
+  ChartBar,
+  Check,
+  CheckCircle,
+  Confetti,
+  Database,
+  Dog,
+  FirstAid,
+  Globe,
+  GraduationCap,
+  Lightbulb,
+  Lightning,
+  LinkSimple,
+  MagnifyingGlass,
+  Package,
+  Palette,
+  PushPin,
+  Question,
+  Robot,
+  Sparkle,
+  Tag,
+  Trophy,
+  Warning,
+  X,
+  XCircle,
+} from '@phosphor-icons/react';
 import { markGameCompleted } from '../../lib/gameProgress';
 
 // ============================================================
@@ -18,6 +51,21 @@ import bd5Img from './assets/LearningBiasImg/black_dog_5.jpg';
 import bd6Img from './assets/LearningBiasImg/black_dog_6.jpg';
 import wd1Img from './assets/LearningBiasImg/white_dog_1.jpg';
 import bc1Img from './assets/LearningBiasImg/black_cat_1.jpg';
+
+// ============================================================
+// ARCADE PALETTE — mirrors the site tokens in src/index.css
+// ============================================================
+const INK = '#0b1733';
+const MUTED = '#5c6275';
+const SURFACE = '#ffffff';
+const CAT = '#6d4df0'; // category accent — "Cat"
+const CAT_SOFT = '#ece8ff';
+const NOTCAT = '#e8820a'; // category accent — "Not Cat"
+const NOTCAT_SOFT = '#fff3e0';
+const OK = '#0fa968';
+const OK_SOFT = '#d8f5e6';
+const BAD = '#ff3b46'; // arcade coral, doubles as the error colour
+const BAD_SOFT = '#ffe1e3';
 
 // ============================================================
 // TYPES
@@ -97,11 +145,30 @@ const LB_STEPS = ['Sort Data', 'Train AI', 'Test AI', 'Challenge', 'Learn'];
 const STEP_TO_PHASE: GamePhase[] = ['labeling', 'training', 'test', 'challenge', 'explanation'];
 
 // ============================================================
-// CSS
+// SMALL HELPERS
+// ============================================================
+// A label badge with a leading icon — "Cat" / "Not Cat" used throughout.
+function LabelText({ label }: { label: Prediction }) {
+  return label === 'cat' ? (
+    <>
+      <Cat size={14} weight="fill" /> Cat
+    </>
+  ) : (
+    <>
+      <Dog size={14} weight="fill" /> Not Cat
+    </>
+  );
+}
+
+// ============================================================
+// CSS — arcade flavour: chunky 2px ink borders, hard offset shadows
 // ============================================================
 const GLOBAL_STYLES = `
   .lb * { box-sizing: border-box; }
-  .lb { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; }
+  .lb {
+    font-family: "Inter", ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    --ink: ${INK};
+  }
 
   @keyframes lbFadeUp {
     from { opacity: 0; transform: translateY(24px); }
@@ -138,8 +205,8 @@ const GLOBAL_STYLES = `
     50%     { transform: translateY(-11px) rotate(1.5deg); }
   }
   @keyframes lbSuccessGlow {
-    0%,100% { box-shadow: 0 0 18px rgba(16,185,129,0.22); }
-    50%     { box-shadow: 0 0 48px rgba(16,185,129,0.6), 0 0 72px rgba(5,150,105,0.28); }
+    0%,100% { box-shadow: 6px 6px 0 ${INK}; }
+    50%     { box-shadow: 6px 6px 0 ${INK}, 0 0 38px rgba(15,169,104,0.5); }
   }
   @keyframes lbRevealBadge {
     0%   { opacity: 0; transform: translateY(-8px) scale(0.78); }
@@ -157,8 +224,8 @@ const GLOBAL_STYLES = `
     100% { opacity: 1; transform: scale(1) rotate(0deg); }
   }
   @keyframes lbCardPulse {
-    0%,100% { box-shadow: 0 4px 20px rgba(0,0,0,0.07); }
-    50%     { box-shadow: 0 0 0 4px rgba(99,102,241,0.35), 0 8px 32px rgba(99,102,241,0.2); }
+    0%,100% { box-shadow: 6px 6px 0 ${INK}; }
+    50%     { box-shadow: 6px 6px 0 ${CAT}; }
   }
   @keyframes lbWrongReveal {
     0%   { opacity: 0; transform: scale(0.4) rotate(-8deg); }
@@ -177,130 +244,114 @@ const GLOBAL_STYLES = `
   .lb-pulse        { animation: lbPulse 1.5s ease-in-out infinite; }
   .lb-card-pulse   { animation: lbCardPulse 0.8s ease-in-out infinite; }
 
+  /* Arcade tile card — white, chunky ink border, hard offset shadow */
   .lb-card {
-    background: #fff;
-    border-radius: 22px;
-    box-shadow: 0 4px 28px rgba(0,0,0,0.07), 0 1px 4px rgba(0,0,0,0.04);
-    transition: transform 0.22s ease, box-shadow 0.22s ease;
+    background: ${SURFACE};
+    border: 2px solid ${INK};
+    border-radius: 18px;
+    box-shadow: 6px 6px 0 ${INK};
+    transition: transform 0.16s ease, box-shadow 0.16s ease;
   }
   .lb-card-hover:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 10px 36px rgba(0,0,0,0.11);
+    transform: translate(-3px, -3px);
+    box-shadow: 9px 9px 0 ${INK};
   }
 
-  /* Buttons */
+  /* Buttons — pill, ink border, hard shadow that presses on click */
   .lb-btn {
-    border: none; cursor: pointer; font-weight: 700;
-    border-radius: 14px; letter-spacing: -0.01em;
-    transition: all 0.22s ease;
+    cursor: pointer; font-weight: 800;
+    border-radius: 999px; letter-spacing: -0.01em;
+    border: 2px solid ${INK};
+    transition: transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease;
     display: inline-flex; align-items: center; justify-content: center; gap: 8px;
     font-family: inherit; line-height: 1;
+    box-shadow: 4px 4px 0 ${INK};
   }
-  .lb-btn:hover:not(:disabled) { transform: translateY(-2px); }
-  .lb-btn:active:not(:disabled) { transform: translateY(0) scale(0.97); }
-  .lb-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none !important; }
+  .lb-btn:hover:not(:disabled) { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 ${INK}; }
+  .lb-btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: 1px 1px 0 ${INK}; }
+  .lb-btn:disabled { opacity: 0.45; cursor: not-allowed; box-shadow: 4px 4px 0 ${INK}; transform: none !important; }
 
-  .lb-btn-xl  { font-size: 18px; padding: 17px 36px; border-radius: 16px; }
+  .lb-btn-xl  { font-size: 18px; padding: 17px 36px; }
   .lb-btn-lg  { font-size: 16px; padding: 14px 28px; }
   .lb-btn-md  { font-size: 14px; padding: 10px 20px; }
-  .lb-btn-sm  { font-size: 13px; padding: 8px 14px; border-radius: 10px; }
+  .lb-btn-sm  { font-size: 13px; padding: 8px 14px; }
 
-  .lb-btn-primary {
-    background: linear-gradient(135deg, #4F46E5, #7C3AED);
-    color: #fff; box-shadow: 0 4px 16px rgba(79,70,229,0.38);
-  }
-  .lb-btn-primary:hover:not(:disabled) {
-    background: linear-gradient(135deg, #4338CA, #6D28D9);
-    box-shadow: 0 7px 24px rgba(79,70,229,0.55);
-  }
-  .lb-btn-success {
-    background: linear-gradient(135deg, #10B981, #059669);
-    color: #fff; box-shadow: 0 4px 16px rgba(16,185,129,0.38);
-  }
-  .lb-btn-success:hover:not(:disabled) { box-shadow: 0 7px 24px rgba(16,185,129,0.5); }
-  .lb-btn-warning {
-    background: linear-gradient(135deg, #F59E0B, #D97706);
-    color: #fff; box-shadow: 0 4px 16px rgba(245,158,11,0.38);
-  }
-  .lb-btn-warning:hover:not(:disabled) { box-shadow: 0 7px 24px rgba(245,158,11,0.5); }
-  .lb-btn-ghost {
-    background: rgba(255,255,255,0.75);
-    color: #6B7280; border: 2px solid #E5E7EB;
-  }
-  .lb-btn-ghost:hover:not(:disabled) { background: #F9FAFB; color: #374151; }
-  .lb-btn-outline {
-    background: #fff; color: #4F46E5;
-    border: 2.5px solid #4F46E5; box-shadow: 0 2px 8px rgba(79,70,229,0.1);
-  }
-  .lb-btn-outline:hover:not(:disabled) { background: #EEF2FF; }
+  .lb-btn-primary { background: ${BAD}; color: #fff; }
+  .lb-btn-primary:hover:not(:disabled) { background: #ff525c; }
+  .lb-btn-success { background: ${OK}; color: #fff; }
+  .lb-btn-ghost   { background: ${SURFACE}; color: ${INK}; }
+  .lb-btn-ghost:hover:not(:disabled) { background: #f4f4f5; }
+  .lb-btn-outline { background: ${SURFACE}; color: ${INK}; }
+  .lb-btn-outline:hover:not(:disabled) { background: ${CAT_SOFT}; }
 
   /* Guess buttons in challenge */
   .lb-guess-btn {
-    flex: 1; padding: 10px 8px; border-radius: 10px;
-    font-size: 13px; font-weight: 700;
-    border: 2px solid #E5E7EB;
-    background: #F9FAFB; color: #6B7280;
-    cursor: pointer; transition: all 0.18s ease;
+    flex: 1; padding: 10px 8px; border-radius: 12px;
+    font-size: 13px; font-weight: 800;
+    border: 2px solid ${INK};
+    background: ${SURFACE}; color: ${INK};
+    box-shadow: 2px 2px 0 ${INK};
+    cursor: pointer; transition: transform 0.14s ease, box-shadow 0.14s ease, background 0.14s ease;
     font-family: inherit;
+    display: inline-flex; align-items: center; justify-content: center; gap: 6px;
   }
   .lb-guess-btn:hover:not(:disabled):not(.selected-cat):not(.selected-notcat) {
-    border-color: #A5B4FC; background: #EEF2FF; color: #4F46E5;
-    transform: translateY(-1px);
+    transform: translate(-1px,-1px); box-shadow: 3px 3px 0 ${INK};
   }
   .lb-guess-btn.selected-cat {
-    border-color: #4F46E5; background: #EEF2FF; color: #3730A3;
-    box-shadow: 0 0 0 3px rgba(79,70,229,0.15);
+    background: ${CAT}; color: #fff; border-color: ${INK};
   }
   .lb-guess-btn.selected-notcat {
-    border-color: #D97706; background: #FFFBEB; color: #92400E;
-    box-shadow: 0 0 0 3px rgba(217,119,6,0.15);
+    background: ${NOTCAT}; color: #fff; border-color: ${INK};
   }
 
   /* Badges */
   .lb-badge {
     display: inline-flex; align-items: center; gap: 5px;
     padding: 5px 12px; border-radius: 999px;
-    font-size: 13px; font-weight: 700; letter-spacing: -0.01em;
+    font-size: 13px; font-weight: 800; letter-spacing: -0.01em;
+    border: 2px solid ${INK};
   }
-  .lb-badge-cat    { background: #EEF2FF; color: #4338CA; border: 1.5px solid #C7D2FE; }
-  .lb-badge-notcat { background: #FFF7ED; color: #C2410C; border: 1.5px solid #FED7AA; }
+  .lb-badge-cat    { background: ${CAT_SOFT}; color: ${CAT}; }
+  .lb-badge-notcat { background: ${NOTCAT_SOFT}; color: #b45d04; }
   .lb-badge-correct {
-    background: #D1FAE5; color: #047857; border: 2px solid #6EE7B7;
+    background: ${OK_SOFT}; color: ${OK};
     font-size: 14px; padding: 6px 14px;
     animation: lbRevealBadge 0.42s cubic-bezier(0.34,1.56,0.64,1) both;
   }
   .lb-badge-wrong {
-    background: #FEE2E2; color: #DC2626; border: 2px solid #FCA5A5;
+    background: ${BAD_SOFT}; color: ${BAD};
     font-size: 14px; padding: 6px 14px;
     animation: lbWrongReveal 0.45s cubic-bezier(0.34,1.56,0.64,1) both;
   }
 
   .lb-insight {
-    border-left: 4px solid #4F46E5;
-    background: linear-gradient(135deg, #EEF2FF, #F5F3FF);
-    border-radius: 0 18px 18px 0;
-    padding: 18px 22px;
+    border: 2px solid ${INK};
+    border-left-width: 6px;
+    background: ${BAD_SOFT};
+    border-radius: 14px;
+    padding: 16px 20px;
   }
 
   .lb-scan-beam {
     position: absolute; top: 0;
     width: 22%; height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(99,102,241,0.55), transparent);
+    background: linear-gradient(90deg, transparent, rgba(109,77,240,0.55), transparent);
     animation: lbScan 1.35s ease-in-out infinite;
     pointer-events: none;
   }
 
   /* Step indicator */
   .lb-step-dot {
-    width: 10px; height: 10px; border-radius: 50%;
+    width: 12px; height: 12px; border-radius: 50%;
+    border: 2px solid ${INK};
     transition: all 0.35s ease; flex-shrink: 0;
   }
-  .lb-step-line { flex: 1; height: 2px; transition: background 0.5s ease; min-width: 12px; }
+  .lb-step-line { flex: 1; height: 3px; transition: background 0.5s ease; min-width: 12px; }
   .lb-step-label {
-    font-size: 11px; font-weight: 600; letter-spacing: 0.04em;
-    text-transform: uppercase; margin-top: 5px; transition: color 0.35s;
+    font-size: 11px; font-weight: 800; letter-spacing: 0.04em;
+    text-transform: uppercase; margin-top: 6px; transition: color 0.35s;
   }
-  /* Clickable past-step labels show a subtle underline on hover */
   .lb-step-past:hover .lb-step-label { text-decoration: underline; }
   .lb-step-past:hover .lb-step-dot { transform: scale(1.35); }
 
@@ -309,16 +360,17 @@ const GLOBAL_STYLES = `
     border-radius: 12px; overflow: hidden;
     cursor: grab; user-select: none; -webkit-user-select: none;
     transition: opacity 0.15s, transform 0.15s, box-shadow 0.2s, outline 0.15s;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    border: 2px solid ${INK};
+    box-shadow: 3px 3px 0 ${INK};
     position: relative; background: #E5E7EB;
     aspect-ratio: 1;
   }
-  .lb-photo-card:hover { transform: translateY(-3px); box-shadow: 0 8px 22px rgba(0,0,0,0.16); }
+  .lb-photo-card:hover { transform: translate(-2px,-2px); box-shadow: 5px 5px 0 ${INK}; }
   .lb-photo-card.dragging { opacity: 0.28; cursor: grabbing; transform: scale(0.95); }
   .lb-photo-card.selected {
-    outline: 3px solid #4F46E5; outline-offset: 2px;
-    transform: scale(1.06) translateY(-2px);
-    box-shadow: 0 0 0 4px rgba(79,70,229,0.18), 0 10px 28px rgba(0,0,0,0.16);
+    outline: 3px solid ${CAT}; outline-offset: 2px;
+    transform: scale(1.05) translate(-1px,-1px);
+    box-shadow: 5px 5px 0 ${INK};
     z-index: 2;
   }
   .lb-photo-card img {
@@ -329,17 +381,17 @@ const GLOBAL_STYLES = `
 
   /* Drop zones */
   .lb-drop-zone {
-    flex: 1; border-radius: 20px;
-    border: 2.5px dashed #D1D5DB; background: #F9FAFB;
-    padding: 14px; transition: border-color 0.2s, background 0.2s, transform 0.15s;
+    flex: 1; border-radius: 18px;
+    border: 2.5px dashed ${INK}; background: ${SURFACE};
+    padding: 14px; transition: background 0.2s, transform 0.15s, box-shadow 0.2s;
     min-height: 180px;
   }
-  .lb-drop-zone.drag-over-cat   { border-color: #6366F1 !important; background: #EEF2FF !important; transform: scale(1.01); }
-  .lb-drop-zone.drag-over-notcat { border-color: #F59E0B !important; background: #FFFBEB !important; transform: scale(1.01); }
-  .lb-drop-zone.tap-active      { border-color: #A5B4FC; background: #F5F3FF; cursor: pointer; }
+  .lb-drop-zone.drag-over-cat   { background: ${CAT_SOFT} !important; border-style: solid !important; box-shadow: 4px 4px 0 ${INK}; transform: scale(1.01); }
+  .lb-drop-zone.drag-over-notcat { background: ${NOTCAT_SOFT} !important; border-style: solid !important; box-shadow: 4px 4px 0 ${INK}; transform: scale(1.01); }
+  .lb-drop-zone.tap-active      { background: #f7f5ff; cursor: pointer; }
   .lb-drop-zone-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding-bottom: 10px; margin-bottom: 10px; border-bottom: 1.5px solid #E5E7EB;
+    padding-bottom: 10px; margin-bottom: 10px; border-bottom: 2px solid ${INK};
   }
 
   /* Unsorted pool: strict 5-col grid */
@@ -347,20 +399,14 @@ const GLOBAL_STYLES = `
 
   /* Test / challenge image card */
   .lb-test-card {
-    border-radius: 20px; overflow: hidden;
-    border: 3px solid #E5E7EB; background: #fff;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
-    transition: border-color 0.35s, box-shadow 0.35s;
+    border-radius: 18px; overflow: hidden;
+    border: 2px solid ${INK}; background: ${SURFACE};
+    box-shadow: 6px 6px 0 ${INK};
+    transition: box-shadow 0.35s, transform 0.2s;
   }
-  .lb-test-card.correct {
-    border-color: #10B981;
-    box-shadow: 0 0 0 4px rgba(16,185,129,0.14), 0 6px 24px rgba(0,0,0,0.07);
-  }
-  .lb-test-card.wrong {
-    border-color: #EF4444;
-    box-shadow: 0 0 0 4px rgba(239,68,68,0.16), 0 6px 24px rgba(239,68,68,0.1);
-  }
-  .lb-test-card .photo { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #E5E7EB; }
+  .lb-test-card.correct { box-shadow: 6px 6px 0 ${OK}; }
+  .lb-test-card.wrong   { box-shadow: 6px 6px 0 ${BAD}; }
+  .lb-test-card .photo { width: 100%; aspect-ratio: 4/3; overflow: hidden; background: #E5E7EB; border-bottom: 2px solid ${INK}; }
   .lb-test-card .photo img { width: 100%; height: 100%; object-fit: cover; object-position: center; display: block; }
   .lb-test-card .labels { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px; }
   .lb-test-card .label-row { display: flex; align-items: center; justify-content: space-between; }
@@ -371,8 +417,7 @@ const GLOBAL_STYLES = `
     padding: 16px 28px;
     background: rgba(255,255,255,0.94);
     backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-    border-top: 1px solid rgba(0,0,0,0.07);
-    box-shadow: 0 -4px 24px rgba(0,0,0,0.07);
+    border-top: 2px solid ${INK};
     display: flex; justify-content: center; align-items: center;
     z-index: 200;
   }
@@ -392,11 +437,13 @@ const GLOBAL_STYLES = `
 function StyleInjector() {
   useEffect(() => {
     const id = 'lb-game-styles';
-    if (!document.getElementById(id)) {
-      const el = document.createElement('style');
-      el.id = id; el.textContent = GLOBAL_STYLES;
+    let el = document.getElementById(id) as HTMLStyleElement | null;
+    if (!el) {
+      el = document.createElement('style');
+      el.id = id;
       document.head.appendChild(el);
     }
+    el.textContent = GLOBAL_STYLES;
   }, []);
   return null;
 }
@@ -433,31 +480,26 @@ function StepIndicator({
               {i > 0 && (
                 <div
                   className="lb-step-line"
-                  style={{ background: done || active ? 'linear-gradient(90deg,#4F46E5,#7C3AED)' : '#E5E7EB' }}
+                  style={{ background: done || active ? INK : '#E5E7EB' }}
                 />
               )}
               <div
                 className="lb-step-dot"
                 style={{
-                  background: done ? '#10B981' : active ? '#4F46E5' : '#E5E7EB',
-                  boxShadow: active
-                    ? '0 0 0 3px rgba(79,70,229,0.25)'
-                    : done
-                    ? '0 0 0 3px rgba(16,185,129,0.2)'
-                    : 'none',
+                  background: done ? OK : active ? BAD : '#E5E7EB',
                   transform: active ? 'scale(1.3)' : 'scale(1)',
                 }}
               />
               {i < LB_STEPS.length - 1 && (
                 <div
                   className="lb-step-line"
-                  style={{ background: done ? 'linear-gradient(90deg,#4F46E5,#7C3AED)' : '#E5E7EB' }}
+                  style={{ background: done ? INK : '#E5E7EB' }}
                 />
               )}
             </div>
             <span
               className="lb-step-label"
-              style={{ color: done ? '#10B981' : active ? '#4F46E5' : '#9CA3AF' }}
+              style={{ color: done ? OK : active ? BAD : '#9CA3AF' }}
             >
               {label}
             </span>
@@ -518,10 +560,10 @@ function PhotoCard({
       <img src={card.src} alt={`${card.color} ${card.type}`} draggable={false} />
       {isSelected && (
         <div style={{
-          position: 'absolute', inset: 0, background: 'rgba(79,70,229,0.12)',
+          position: 'absolute', inset: 0, background: 'rgba(109,77,240,0.18)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', pointerEvents: 'none',
         }}>
-          <div style={{ background: '#4F46E5', borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 800, color: '#fff' }}>
+          <div style={{ background: CAT, border: `2px solid ${INK}`, borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 800, color: '#fff' }}>
             Selected
           </div>
         </div>
@@ -534,11 +576,11 @@ function PhotoCard({
 // DROP ZONE
 // ============================================================
 function DropZone({
-  zone, label, emoji, accentColor,
+  zone, label, Icon, accentColor,
   dragOverZone, selectedId, cardsHere, currentDragId,
   onDragOver, onDragLeave, onDrop, onZoneClick, onCardDragStart, onCardDragEnd, onCardClick,
 }: {
-  zone: 'cat' | 'not-cat'; label: string; emoji: string; accentColor: string;
+  zone: 'cat' | 'not-cat'; label: string; Icon: ElementType; accentColor: string;
   dragOverZone: ZoneId | null; selectedId: string | null; cardsHere: ImageCard[]; currentDragId: string | null;
   onDragOver: (e: React.DragEvent, zone: ZoneId) => void; onDragLeave: () => void;
   onDrop: (zone: ZoneId) => void; onZoneClick: (zone: ZoneId) => void;
@@ -560,15 +602,17 @@ function DropZone({
       aria-label={`${label} zone`}
     >
       <div className="lb-drop-zone-header">
-        <span style={{ fontWeight: 800, fontSize: 15, color: accentColor }}>{emoji} {label}</span>
-        <span style={{ fontSize: 12, fontWeight: 700, color: '#fff', background: accentColor, borderRadius: 999, padding: '2px 10px' }}>
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontWeight: 800, fontSize: 15, color: accentColor }}>
+          <Icon size={18} weight="fill" /> {label}
+        </span>
+        <span style={{ fontSize: 12, fontWeight: 800, color: '#fff', background: accentColor, border: `2px solid ${INK}`, borderRadius: 999, padding: '2px 10px' }}>
           {cardsHere.length}
         </span>
       </div>
       {cardsHere.length === 0 ? (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', flexDirection: 'column', gap: 6, minHeight: 100 }}>
-          <span style={{ fontSize: 28, opacity: 0.22 }}>{emoji}</span>
-          <span style={{ fontSize: 12, color: '#9CA3AF', fontWeight: 600 }}>
+          <Icon size={30} weight="duotone" color={accentColor} style={{ opacity: 0.32 }} />
+          <span style={{ fontSize: 12, color: '#9CA3AF', fontWeight: 700 }}>
             {hasTap ? 'Tap to place here' : 'Drag images here'}
           </span>
         </div>
@@ -594,56 +638,69 @@ function DropZone({
 // PHASE: INTRO
 // ============================================================
 function PhaseIntro({ onStart }: { onStart: () => void }) {
+  const chips: { Icon: ElementType; label: string }[] = [
+    { Icon: Tag, label: 'Sort training data' },
+    { Icon: Robot, label: 'Train AI' },
+    { Icon: MagnifyingGlass, label: 'Test on new images' },
+    { Icon: Lightbulb, label: 'Discover the bias' },
+  ];
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 600, width: '100%' }}>
-      <div className="lb-float" style={{ fontSize: 72, marginBottom: 4, lineHeight: 1 }}>🧠</div>
+      <div className="lb-float" style={{ marginBottom: 8, lineHeight: 1 }}>
+        <Brain size={72} weight="duotone" color={CAT} />
+      </div>
       <div style={{ marginBottom: 20, display: 'flex', gap: 12, alignItems: 'center', flexWrap: 'wrap', justifyContent: 'center' }}>
         {[wc1Img, bd1Img].map((src, i) => (
-          <div key={i} style={{ width: 72, height: 72, borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 16px rgba(0,0,0,0.12)', flexShrink: 0 }}>
+          <div key={i} style={{ width: 72, height: 72, borderRadius: 14, overflow: 'hidden', border: `2px solid ${INK}`, boxShadow: `3px 3px 0 ${INK}`, flexShrink: 0 }}>
             <img src={src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
           </div>
         ))}
-        <span style={{ fontSize: 24, color: '#9CA3AF' }}>→</span>
-        <span style={{ fontSize: 40 }}>🤖</span>
-        <span style={{ fontSize: 24, color: '#9CA3AF' }}>→</span>
-        <div style={{ width: 72, height: 72, borderRadius: 16, overflow: 'hidden', boxShadow: '0 4px 16px rgba(239,68,68,0.3)', flexShrink: 0 }}>
+        <span style={{ color: MUTED, display: 'inline-flex' }}><ArrowRightGlyph /></span>
+        <Robot size={40} weight="fill" color={INK} />
+        <span style={{ color: MUTED, display: 'inline-flex' }}><ArrowRightGlyph /></span>
+        <div style={{ width: 72, height: 72, borderRadius: 14, overflow: 'hidden', border: `2px solid ${INK}`, boxShadow: `3px 3px 0 ${BAD}`, flexShrink: 0 }}>
           <img src={wd1Img} alt="white dog" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
         </div>
-        <span style={{ fontSize: 22 }}>❌</span>
+        <XCircle size={26} weight="fill" color={BAD} />
       </div>
 
-      <h1 className="lb-fade-up" style={{ fontSize: 'clamp(26px, 5vw, 38px)', fontWeight: 800, textAlign: 'center', color: '#1F2937', margin: '0 0 10px', letterSpacing: '-0.03em', lineHeight: 1.2 }}>
+      <h1 className="lb-fade-up" style={{ fontSize: 'clamp(26px, 5vw, 38px)', fontWeight: 900, textAlign: 'center', color: INK, margin: '0 0 10px', letterSpacing: '-0.03em', lineHeight: 1.2 }}>
         Did the AI Really Learn Cats?
       </h1>
-      <p className="lb-fade-up" style={{ fontSize: 17, color: '#4F46E5', fontWeight: 700, textAlign: 'center', marginBottom: 24, animationDelay: '0.1s' }}>
+      <p className="lb-fade-up" style={{ fontSize: 17, color: CAT, fontWeight: 800, textAlign: 'center', marginBottom: 24, animationDelay: '0.1s' }}>
         An interactive lesson in Learning Bias
       </p>
 
       <div className="lb-card lb-fade-up" style={{ padding: '26px 30px', marginBottom: 26, animationDelay: '0.2s', width: '100%' }}>
-        <p style={{ margin: '0 0 14px', color: '#374151', fontSize: 16, lineHeight: 1.65 }}>
+        <p style={{ margin: '0 0 14px', color: INK, fontSize: 16, lineHeight: 1.65 }}>
           You're going to <strong>train an AI</strong> to recognize cats. You'll sort training images,
           watch the AI learn, and then test it on new photos.
         </p>
-        <p style={{ margin: 0, color: '#374151', fontSize: 16, lineHeight: 1.65 }}>
+        <p style={{ margin: 0, color: INK, fontSize: 16, lineHeight: 1.65 }}>
           Sounds simple — but the AI might achieve{' '}
-          <strong style={{ color: '#4F46E5' }}>100% training accuracy</strong> while learning
+          <strong style={{ color: CAT }}>100% training accuracy</strong> while learning
           the <em>completely wrong thing</em>. This is called <strong>learning bias</strong>.
         </p>
       </div>
 
       <div className="lb-fade-up" style={{ display: 'flex', gap: 10, marginBottom: 24, flexWrap: 'wrap', justifyContent: 'center', animationDelay: '0.3s' }}>
-        {['🏷️ Sort training data', '🤖 Train AI', '🧪 Test on new images', '💡 Discover the bias'].map(item => (
-          <span key={item} style={{ background: '#EEF2FF', color: '#4F46E5', padding: '6px 14px', borderRadius: 999, fontSize: 13, fontWeight: 600, border: '1.5px solid #C7D2FE' }}>
-            {item}
+        {chips.map(({ Icon, label }) => (
+          <span key={label} style={{ display: 'inline-flex', alignItems: 'center', gap: 7, background: SURFACE, color: INK, padding: '7px 14px', borderRadius: 999, fontSize: 13, fontWeight: 700, border: `2px solid ${INK}` }}>
+            <Icon size={15} weight="bold" color={CAT} /> {label}
           </span>
         ))}
       </div>
 
       <button className="lb-btn lb-btn-xl lb-btn-primary lb-bounce-in" style={{ animationDelay: '0.4s' }} onClick={onStart}>
-        Start Training ✨
+        Start Training <Sparkle size={20} weight="fill" />
       </button>
     </div>
   );
+}
+
+// Plain right-arrow glyph component (kept consistent with the site's arrow usage)
+function ArrowRightGlyph() {
+  return <span style={{ fontSize: 24, fontWeight: 800, lineHeight: 1 }}>→</span>;
 }
 
 // ============================================================
@@ -679,8 +736,8 @@ function PhaseDragLabeling({
     }
   }, [canTrain, allSorted, allCorrect, unsorted.length, onActionChange]);
 
-  const statusMsg   = !allSorted ? `${unsorted.length} image${unsorted.length !== 1 ? 's' : ''} remaining` : !allCorrect ? 'Check your labels — something looks off' : '✅ All correct — ready to train!';
-  const statusColor = !allSorted ? '#6B7280' : !allCorrect ? '#DC2626' : '#10B981';
+  const statusMsg   = !allSorted ? `${unsorted.length} image${unsorted.length !== 1 ? 's' : ''} remaining` : !allCorrect ? 'Check your labels — something looks off' : 'All correct — ready to train!';
+  const statusColor = !allSorted ? MUTED : !allCorrect ? BAD : OK;
 
   function moveCard(id: string, to: ZoneId) { setPlacements(prev => ({ ...prev, [id]: to })); setSelectedId(null); }
 
@@ -707,17 +764,17 @@ function PhaseDragLabeling({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 860, width: '100%' }}>
       <div className="lb-fade-up" style={{ textAlign: 'center', marginBottom: 8 }}>
-        <h2 style={{ fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 800, color: '#1F2937', margin: '0 0 6px', letterSpacing: '-0.025em' }}>
-          🏷️ Sort the Training Images
+        <h2 style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 900, color: INK, margin: '0 0 6px', letterSpacing: '-0.025em' }}>
+          <Tag size={26} weight="fill" color={CAT} /> Sort the Training Images
         </h2>
-        <p style={{ color: '#6B7280', fontSize: 15, margin: 0 }}>
+        <p style={{ color: MUTED, fontSize: 15, margin: 0 }}>
           Drag images into a zone — or tap to select, then tap a zone to place. Tap a placed image to return it.
         </p>
       </div>
 
       {selectedId && (
-        <div className="lb-fade-in" style={{ margin: '8px 0 4px', background: '#EEF2FF', border: '1.5px solid #C7D2FE', borderRadius: 12, padding: '8px 16px', fontSize: 13, color: '#4F46E5', fontWeight: 700 }}>
-          📌 Image selected — tap a zone below to place it
+        <div className="lb-fade-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, margin: '8px 0 4px', background: CAT_SOFT, border: `2px solid ${INK}`, borderRadius: 999, padding: '8px 16px', fontSize: 13, color: CAT, fontWeight: 800 }}>
+          <PushPin size={15} weight="fill" /> Image selected — tap a zone below to place it
         </div>
       )}
 
@@ -726,24 +783,26 @@ function PhaseDragLabeling({
         className="lb-fade-up"
         style={{
           width: '100%', marginTop: 16, marginBottom: 18,
-          background: 'linear-gradient(135deg, #F8FAFC, #F1F5F9)',
-          border: `2px solid ${selectedId ? '#A5B4FC' : '#E2E8F0'}`,
-          borderRadius: 20, padding: '16px', transition: 'border-color 0.2s', animationDelay: '0.1s',
+          background: SURFACE,
+          border: `2px solid ${INK}`, boxShadow: `6px 6px 0 ${INK}`,
+          borderRadius: 18, padding: '16px', animationDelay: '0.1s',
         }}
         onDragOver={e => handleDragOver(e, 'unsorted')}
         onDragLeave={handleDragLeave}
         onDrop={() => handleDrop('unsorted')}
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-          <span style={{ fontWeight: 700, color: '#4B5563', fontSize: 14 }}>📦 Unsorted Images</span>
-          <span style={{ fontSize: 12, fontWeight: 700, background: unsorted.length === 0 ? '#10B981' : '#6B7280', color: '#fff', borderRadius: 999, padding: '2px 10px' }}>
-            {unsorted.length === 0 ? '✓ Done!' : `${unsorted.length} remaining`}
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, fontWeight: 800, color: INK, fontSize: 14 }}>
+            <Package size={17} weight="fill" /> Unsorted Images
+          </span>
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, fontWeight: 800, background: unsorted.length === 0 ? OK : INK, color: '#fff', border: `2px solid ${INK}`, borderRadius: 999, padding: '2px 10px' }}>
+            {unsorted.length === 0 ? <><Check size={12} weight="bold" /> Done!</> : `${unsorted.length} remaining`}
           </span>
         </div>
 
         {unsorted.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '18px 0', color: '#10B981', fontWeight: 700, fontSize: 14 }}>
-            ✅ All images sorted into zones below
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '18px 0', color: OK, fontWeight: 800, fontSize: 14 }}>
+            <CheckCircle size={18} weight="fill" /> All images sorted into zones below
           </div>
         ) : (
           <div className="lb-unsorted-grid">
@@ -761,21 +820,21 @@ function PhaseDragLabeling({
 
       {/* Drop zones */}
       <div className="lb-zones-row lb-fade-up" style={{ display: 'flex', gap: 14, width: '100%', marginBottom: 18, animationDelay: '0.15s' }}>
-        <DropZone zone="cat"     label="Cat"     emoji="🐱" accentColor="#4F46E5" cardsHere={inCat}    {...sharedProps} />
-        <DropZone zone="not-cat" label="Not Cat" emoji="🐶" accentColor="#D97706" cardsHere={inNotCat} {...sharedProps} />
+        <DropZone zone="cat"     label="Cat"     Icon={Cat} accentColor={CAT}    cardsHere={inCat}    {...sharedProps} />
+        <DropZone zone="not-cat" label="Not Cat" Icon={Dog} accentColor={NOTCAT} cardsHere={inNotCat} {...sharedProps} />
       </div>
 
       {allSorted && !allCorrect && (
-        <div className="lb-fade-in" style={{ width: '100%', marginBottom: 12, padding: '12px 18px', background: '#FEF2F2', border: '1.5px solid #FECACA', borderRadius: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontSize: 20 }}>⚠️</span>
-          <span style={{ fontSize: 14, color: '#B91C1C', fontWeight: 600 }}>
+        <div className="lb-fade-in" style={{ width: '100%', marginBottom: 12, padding: '12px 18px', background: BAD_SOFT, border: `2px solid ${INK}`, borderRadius: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+          <Warning size={22} weight="fill" color={BAD} />
+          <span style={{ fontSize: 14, color: '#b1232c', fontWeight: 700 }}>
             Some images might be in the wrong zone. Look carefully and try again.
           </span>
         </div>
       )}
 
       <div className="lb-fade-up" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, animationDelay: '0.2s' }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: statusColor }}>{statusMsg}</span>
+        <span style={{ fontSize: 13, fontWeight: 800, color: statusColor }}>{statusMsg}</span>
       </div>
     </div>
   );
@@ -813,19 +872,19 @@ function PhaseTraining({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 620, width: '100%' }}>
-      <h2 className="lb-fade-up" style={{ fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 800, color: '#1F2937', margin: '0 0 6px', letterSpacing: '-0.025em', textAlign: 'center' }}>
-        {step < 4 ? '🤖 Training AI...' : '🎉 Training Complete!'}
+      <h2 className="lb-fade-up" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 900, color: INK, margin: '0 0 6px', letterSpacing: '-0.025em', textAlign: 'center' }}>
+        {step < 4 ? <><Robot size={26} weight="fill" color={CAT} /> Training AI...</> : <><Confetti size={26} weight="fill" color={OK} /> Training Complete!</>}
       </h2>
-      <p className="lb-fade-up" style={{ color: '#6B7280', fontSize: 15, marginBottom: 28, textAlign: 'center', animationDelay: '0.1s' }}>
+      <p className="lb-fade-up" style={{ color: MUTED, fontSize: 15, marginBottom: 28, textAlign: 'center', animationDelay: '0.1s' }}>
         {step < 4 ? 'Analyzing patterns in your sorted images' : 'The AI has learned from your dataset'}
       </p>
 
-      <div className="lb-fade-up" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, width: '100%', marginBottom: 24, position: 'relative', padding: 14, background: '#F9FAFB', borderRadius: 18, border: '1.5px solid #E5E7EB', overflow: 'hidden', animationDelay: '0.15s' }}>
+      <div className="lb-fade-up" style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 8, width: '100%', marginBottom: 24, position: 'relative', padding: 14, background: SURFACE, borderRadius: 18, border: `2px solid ${INK}`, boxShadow: `6px 6px 0 ${INK}`, overflow: 'hidden', animationDelay: '0.15s' }}>
         {step < 4 && <div className="lb-scan-beam" />}
         {TRAINING_IMAGES.map((card, i) => (
-          <div key={card.id} style={{ borderRadius: 10, overflow: 'hidden', aspectRatio: '1', boxShadow: '0 2px 8px rgba(0,0,0,0.1)', animation: `lbFadeUp 0.3s ease ${i * 0.04}s both`, position: 'relative' }}>
+          <div key={card.id} style={{ borderRadius: 10, overflow: 'hidden', aspectRatio: '1', border: `2px solid ${INK}`, animation: `lbFadeUp 0.3s ease ${i * 0.04}s both`, position: 'relative' }}>
             <img src={card.src} alt={`${card.color} ${card.type}`} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center', display: 'block' }} />
-            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '3px 4px', background: card.correctLabel === 'cat' ? 'rgba(79,70,229,0.85)' : 'rgba(217,119,6,0.85)', textAlign: 'center' }}>
+            <div style={{ position: 'absolute', bottom: 0, left: 0, right: 0, padding: '3px 4px', background: card.correctLabel === 'cat' ? CAT : NOTCAT, textAlign: 'center' }}>
               <span style={{ fontSize: 9, fontWeight: 800, color: '#fff', letterSpacing: '0.04em' }}>{card.correctLabel === 'cat' ? 'Cat' : 'Not Cat'}</span>
             </div>
           </div>
@@ -839,18 +898,18 @@ function PhaseTraining({
               const done = i < step, active = i === step - 1;
               return (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                  <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, background: done ? '#10B981' : active ? '#4F46E5' : '#E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.4s' }}>
-                    {done ? <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 7L6.5 10.5L11 4" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                  <div style={{ width: 28, height: 28, borderRadius: '50%', flexShrink: 0, border: `2px solid ${INK}`, background: done ? OK : active ? CAT : '#E5E7EB', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.4s' }}>
+                    {done ? <Check size={14} weight="bold" color="#fff" />
                       : active ? <div className="lb-spin" style={{ width: 14, height: 14, border: '2px solid rgba(255,255,255,0.4)', borderTopColor: 'white', borderRadius: '50%' }} />
-                      : <span style={{ fontSize: 10, color: '#9CA3AF', fontWeight: 700 }}>{i + 1}</span>}
+                      : <span style={{ fontSize: 10, color: '#6B7280', fontWeight: 800 }}>{i + 1}</span>}
                   </div>
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: done ? '#10B981' : active ? '#4F46E5' : '#9CA3AF' }}>{label}</span>
-                      {done && <span style={{ fontSize: 12, color: '#10B981', fontWeight: 700 }}>Loss: 0.{i === 0 ? '38' : i === 1 ? '12' : '02'}</span>}
+                      <span style={{ fontSize: 13, fontWeight: 700, color: done ? OK : active ? CAT : '#9CA3AF' }}>{label}</span>
+                      {done && <span style={{ fontSize: 12, color: OK, fontWeight: 800 }}>Loss: 0.{i === 0 ? '38' : i === 1 ? '12' : '02'}</span>}
                     </div>
-                    <div style={{ height: 4, background: '#E5E7EB', borderRadius: 999, overflow: 'hidden' }}>
-                      <div style={{ height: '100%', borderRadius: 999, background: done ? '#10B981' : active ? 'linear-gradient(90deg,#4F46E5,#7C3AED)' : 'transparent', width: done ? '100%' : active ? '60%' : '0%', transition: 'width 0.8s ease' }} />
+                    <div style={{ height: 6, background: '#E5E7EB', borderRadius: 999, overflow: 'hidden', border: `1.5px solid ${INK}` }}>
+                      <div style={{ height: '100%', borderRadius: 999, background: done ? OK : active ? CAT : 'transparent', width: done ? '100%' : active ? '60%' : '0%', transition: 'width 0.8s ease' }} />
                     </div>
                   </div>
                 </div>
@@ -861,13 +920,15 @@ function PhaseTraining({
       )}
 
       {step >= 4 && (
-        <div className="lb-card lb-success-glow" style={{ width: '100%', padding: '32px', textAlign: 'center', background: 'linear-gradient(135deg, #ECFDF5, #D1FAE5)', border: '2px solid #6EE7B7', marginBottom: 20 }}>
-          <p style={{ margin: '0 0 8px', fontSize: 14, color: '#059669', fontWeight: 700, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Training Result</p>
+        <div className="lb-card lb-success-glow" style={{ width: '100%', padding: '32px', textAlign: 'center', background: OK_SOFT, marginBottom: 20 }}>
+          <p style={{ margin: '0 0 8px', fontSize: 14, color: OK, fontWeight: 800, letterSpacing: '0.05em', textTransform: 'uppercase' }}>Training Result</p>
           <div style={{ animation: 'lbCountUp 0.6s cubic-bezier(0.34,1.56,0.64,1) both' }}>
-            <span style={{ fontSize: 72, fontWeight: 900, color: '#10B981', lineHeight: 1, display: 'block', letterSpacing: '-0.04em' }}>100%</span>
+            <span style={{ fontSize: 72, fontWeight: 900, color: OK, lineHeight: 1, display: 'block', letterSpacing: '-0.04em' }}>100%</span>
           </div>
-          <p style={{ margin: '8px 0 0', fontSize: 16, color: '#047857', fontWeight: 700 }}>Training Accuracy 🎉</p>
-          <p style={{ margin: '6px 0 0', fontSize: 13, color: '#059669' }}>The AI correctly classified all {TRAINING_IMAGES.length} training images!</p>
+          <p style={{ margin: '8px 0 0', fontSize: 16, color: '#0a7d4d', fontWeight: 800, display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+            Training Accuracy <Confetti size={18} weight="fill" />
+          </p>
+          <p style={{ margin: '6px 0 0', fontSize: 13, color: OK }}>The AI correctly classified all {TRAINING_IMAGES.length} training images!</p>
         </div>
       )}
     </div>
@@ -893,19 +954,20 @@ function TestCard({ card, revealed, revealDelay = 0 }: { card: TestImageCard; re
       <div className="photo"><img src={card.src} alt={`${card.color} ${card.type}`} /></div>
       <div className="labels">
         <div className="label-row">
-          <span style={{ fontSize: 12, color: '#9CA3AF', fontWeight: 600 }}>True label</span>
+          <span style={{ fontSize: 12, color: '#9CA3AF', fontWeight: 700 }}>True label</span>
           <span className={`lb-badge ${card.trueLabel === 'cat' ? 'lb-badge-cat' : 'lb-badge-notcat'}`} style={{ fontSize: 11 }}>
-            {card.trueLabel === 'cat' ? '🐱 Cat' : '🐶 Not Cat'}
+            <LabelText label={card.trueLabel} />
           </span>
         </div>
         <div className="label-row">
-          <span style={{ fontSize: 12, color: '#9CA3AF', fontWeight: 600 }}>AI says</span>
+          <span style={{ fontSize: 12, color: '#9CA3AF', fontWeight: 700 }}>AI says</span>
           {show ? (
             <span className={`lb-badge ${isCorrect ? 'lb-badge-correct' : 'lb-badge-wrong'}`} style={{ fontSize: 12 }}>
-              {card.aiPrediction === 'cat' ? '🐱 Cat' : '🐶 Not Cat'} {isCorrect ? '✅' : '❌'}
+              <LabelText label={card.aiPrediction} />
+              {isCorrect ? <CheckCircle size={14} weight="fill" /> : <XCircle size={14} weight="fill" />}
             </span>
           ) : (
-            <span className="lb-pulse" style={{ fontSize: 20, lineHeight: 1 }}>❓</span>
+            <span className="lb-pulse" style={{ display: 'inline-flex', lineHeight: 1 }}><Question size={20} weight="bold" color={MUTED} /></span>
           )}
         </div>
       </div>
@@ -936,10 +998,10 @@ function PhaseTest({
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 640, width: '100%' }}>
-      <h2 className="lb-fade-up" style={{ fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 800, color: '#1F2937', margin: '0 0 6px', letterSpacing: '-0.025em', textAlign: 'center' }}>
-        🤖 Testing the AI
+      <h2 className="lb-fade-up" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 900, color: INK, margin: '0 0 6px', letterSpacing: '-0.025em', textAlign: 'center' }}>
+        <Robot size={26} weight="fill" color={CAT} /> Testing the AI
       </h2>
-      <p className="lb-fade-up" style={{ color: '#6B7280', fontSize: 15, marginBottom: 28, textAlign: 'center', animationDelay: '0.1s' }}>
+      <p className="lb-fade-up" style={{ color: MUTED, fontSize: 15, marginBottom: 28, textAlign: 'center', animationDelay: '0.1s' }}>
         The AI now sees images it has <em>never seen before</em>…
       </p>
 
@@ -950,11 +1012,11 @@ function PhaseTest({
       </div>
 
       {showSummary && (
-        <div className="lb-card lb-scale-in lb-success-glow" style={{ width: '100%', padding: '24px 28px', marginBottom: 20, background: 'linear-gradient(135deg, #ECFDF5, #D1FAE5)', border: '2px solid #6EE7B7', textAlign: 'center' }}>
-          <div style={{ fontSize: 40, marginBottom: 8 }}>🎉</div>
-          <h3 style={{ margin: '0 0 8px', fontSize: 20, fontWeight: 800, color: '#047857' }}>2 / 2 correct!</h3>
-          <p style={{ margin: '0 0 6px', fontSize: 15, color: '#065F46', lineHeight: 1.6 }}>The AI correctly identified the white cat and black dog. Looks like a success…</p>
-          <p style={{ margin: 0, fontSize: 14, color: '#059669', fontWeight: 600 }}>But what about images with different colors?</p>
+        <div className="lb-card lb-scale-in lb-success-glow" style={{ width: '100%', padding: '24px 28px', marginBottom: 20, background: OK_SOFT, textAlign: 'center' }}>
+          <div style={{ marginBottom: 8 }}><Confetti size={40} weight="fill" color={OK} /></div>
+          <h3 style={{ margin: '0 0 8px', fontSize: 20, fontWeight: 900, color: '#0a7d4d' }}>2 / 2 correct!</h3>
+          <p style={{ margin: '0 0 6px', fontSize: 15, color: '#0a7d4d', lineHeight: 1.6 }}>The AI correctly identified the white cat and black dog. Looks like a success…</p>
+          <p style={{ margin: 0, fontSize: 14, color: OK, fontWeight: 700 }}>But what about images with different colors?</p>
         </div>
       )}
     </div>
@@ -1010,10 +1072,10 @@ function PhaseChallenge({
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 700, width: '100%' }}>
       {/* Header */}
-      <h2 className="lb-fade-up" style={{ fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 800, color: '#1F2937', margin: '0 0 6px', letterSpacing: '-0.025em', textAlign: 'center' }}>
-        🤔 The Real Test
+      <h2 className="lb-fade-up" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10, fontSize: 'clamp(22px, 4vw, 30px)', fontWeight: 900, color: INK, margin: '0 0 6px', letterSpacing: '-0.025em', textAlign: 'center' }}>
+        <Brain size={26} weight="fill" color={CAT} /> The Real Test
       </h2>
-      <p className="lb-fade-up" style={{ color: '#6B7280', fontSize: 15, marginBottom: 8, textAlign: 'center', animationDelay: '0.1s' }}>
+      <p className="lb-fade-up" style={{ color: MUTED, fontSize: 15, marginBottom: 8, textAlign: 'center', animationDelay: '0.1s' }}>
         {challengeState === 'guessing'
           ? 'Before running the AI — what do you think it will predict?'
           : challengeState === 'scanning'
@@ -1023,7 +1085,7 @@ function PhaseChallenge({
 
       {challengeState === 'guessing' && (
         <div className="lb-insight lb-fade-up" style={{ width: '100%', marginBottom: 20, animationDelay: '0.15s' }}>
-          <p style={{ margin: 0, fontSize: 14, color: '#374151' }}>
+          <p style={{ margin: 0, fontSize: 14, color: INK }}>
             These images use a <strong>different color combination</strong> than the training data.
             Make your prediction for each image, then run the AI test.
           </p>
@@ -1055,10 +1117,10 @@ function PhaseChallenge({
                 <img src={card.src} alt={`${card.color} ${card.type}`} />
                 {/* Scanning overlay */}
                 {isScanning && (
-                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(99,102,241,0.08)', overflow: 'hidden' }}>
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(109,77,240,0.08)', overflow: 'hidden' }}>
                     <div style={{
                       position: 'absolute', top: 0, width: '28%', height: '100%',
-                      background: 'linear-gradient(90deg, transparent, rgba(99,102,241,0.5), transparent)',
+                      background: 'linear-gradient(90deg, transparent, rgba(109,77,240,0.5), transparent)',
                       animation: 'lbScan 1.1s ease-in-out infinite',
                     }} />
                   </div>
@@ -1067,13 +1129,12 @@ function PhaseChallenge({
                 {isRevealed && (
                   <div className="lb-bounce-in" style={{
                     position: 'absolute', top: 10, right: 10,
-                    background: '#EF4444', borderRadius: '50%',
+                    background: BAD, borderRadius: '50%', border: `2px solid ${INK}`,
                     width: 32, height: 32,
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 14, fontWeight: 900, color: '#fff',
-                    boxShadow: '0 2px 10px rgba(239,68,68,0.45)',
+                    boxShadow: `2px 2px 0 ${INK}`,
                   }}>
-                    ✕
+                    <X size={16} weight="bold" color="#fff" />
                   </div>
                 )}
               </div>
@@ -1082,16 +1143,16 @@ function PhaseChallenge({
               <div className="labels">
                 {/* True label — always shown */}
                 <div className="label-row">
-                  <span style={{ fontSize: 12, color: '#9CA3AF', fontWeight: 600 }}>True label</span>
+                  <span style={{ fontSize: 12, color: '#9CA3AF', fontWeight: 700 }}>True label</span>
                   <span className={`lb-badge ${card.trueLabel === 'cat' ? 'lb-badge-cat' : 'lb-badge-notcat'}`} style={{ fontSize: 11 }}>
-                    {card.trueLabel === 'cat' ? '🐱 Cat' : '🐶 Not Cat'}
+                    <LabelText label={card.trueLabel} />
                   </span>
                 </div>
 
                 {/* User guess row */}
                 {challengeState === 'guessing' && (
                   <div>
-                    <p style={{ margin: '4px 0 8px', fontSize: 12, color: '#6B7280', fontWeight: 600 }}>
+                    <p style={{ margin: '4px 0 8px', fontSize: 12, color: MUTED, fontWeight: 700 }}>
                       What will the AI predict?
                     </p>
                     <div style={{ display: 'flex', gap: 6 }}>
@@ -1099,18 +1160,18 @@ function PhaseChallenge({
                         className={`lb-guess-btn${guess === 'cat' ? ' selected-cat' : ''}`}
                         onClick={() => handleGuess(card.id, 'cat')}
                       >
-                        🐱 Cat
+                        <Cat size={15} weight="fill" /> Cat
                       </button>
                       <button
                         className={`lb-guess-btn${guess === 'not-cat' ? ' selected-notcat' : ''}`}
                         onClick={() => handleGuess(card.id, 'not-cat')}
                       >
-                        🐶 Not Cat
+                        <Dog size={15} weight="fill" /> Not Cat
                       </button>
                     </div>
                     {guess && (
-                      <p className="lb-fade-in" style={{ margin: '6px 0 0', fontSize: 11, color: '#9CA3AF', textAlign: 'center' }}>
-                        Your guess: <strong>{guess === 'cat' ? '🐱 Cat' : '🐶 Not Cat'}</strong>
+                      <p className="lb-fade-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, margin: '6px auto 0', fontSize: 11, color: '#9CA3AF', width: '100%', justifyContent: 'center' }}>
+                        Your guess: <strong style={{ display: 'inline-flex', alignItems: 'center', gap: 3, color: INK }}><LabelText label={guess} /></strong>
                       </p>
                     )}
                   </div>
@@ -1119,17 +1180,17 @@ function PhaseChallenge({
                 {/* Scanning state */}
                 {isScanning && (
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, padding: '4px 0' }}>
-                    <div className="lb-spin" style={{ width: 14, height: 14, border: '2px solid #C7D2FE', borderTopColor: '#4F46E5', borderRadius: '50%' }} />
-                    <span style={{ fontSize: 13, color: '#6B7280', fontWeight: 600 }}>AI analyzing…</span>
+                    <div className="lb-spin" style={{ width: 14, height: 14, border: `2px solid ${CAT_SOFT}`, borderTopColor: CAT, borderRadius: '50%' }} />
+                    <span style={{ fontSize: 13, color: MUTED, fontWeight: 700 }}>AI analyzing…</span>
                   </div>
                 )}
 
                 {/* Revealed: AI prediction */}
                 {isRevealed && (
                   <div className="label-row">
-                    <span style={{ fontSize: 12, color: '#9CA3AF', fontWeight: 600 }}>AI says</span>
+                    <span style={{ fontSize: 12, color: '#9CA3AF', fontWeight: 700 }}>AI says</span>
                     <span className="lb-badge lb-badge-wrong" style={{ fontSize: 12 }}>
-                      {card.aiPrediction === 'cat' ? '🐱 Cat' : '🐶 Not Cat'} ❌
+                      <LabelText label={card.aiPrediction} /> <XCircle size={14} weight="fill" />
                     </span>
                   </div>
                 )}
@@ -1138,12 +1199,12 @@ function PhaseChallenge({
                 {isRevealed && guess !== undefined && (
                   <div style={{ marginTop: 4, textAlign: 'center' }}>
                     {guessedRight ? (
-                      <span className="lb-fade-in" style={{ fontSize: 12, color: '#059669', fontWeight: 700 }}>
-                        ✓ You predicted correctly!
+                      <span className="lb-fade-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: OK, fontWeight: 800 }}>
+                        <Check size={13} weight="bold" /> You predicted correctly!
                       </span>
                     ) : (
-                      <span className="lb-fade-in" style={{ fontSize: 12, color: '#9CA3AF', fontWeight: 600 }}>
-                        You guessed {guess === 'cat' ? '🐱 Cat' : '🐶 Not Cat'}
+                      <span className="lb-fade-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, fontSize: 12, color: '#9CA3AF', fontWeight: 700 }}>
+                        You guessed <LabelText label={guess} />
                       </span>
                     )}
                   </div>
@@ -1157,11 +1218,11 @@ function PhaseChallenge({
       {/* Post-reveal: failure banner */}
       {challengeState === 'revealed' && (
         <div className="lb-scale-in" style={{ width: '100%', marginBottom: 16 }}>
-          <div style={{ background: 'linear-gradient(135deg, #FEF2F2, #FEE2E2)', border: '2px solid #FCA5A5', borderRadius: 20, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16, marginBottom: 14 }}>
-            <div style={{ fontSize: 38, flexShrink: 0 }}>😱</div>
+          <div style={{ background: BAD_SOFT, border: `2px solid ${INK}`, boxShadow: `6px 6px 0 ${BAD}`, borderRadius: 18, padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 16, marginBottom: 14 }}>
+            <XCircle size={38} weight="fill" color={BAD} style={{ flexShrink: 0 }} />
             <div>
-              <div style={{ fontWeight: 800, fontSize: 17, color: '#DC2626', marginBottom: 4 }}>2 out of 2 wrong!</div>
-              <div style={{ fontSize: 14, color: '#B91C1C', lineHeight: 1.55 }}>
+              <div style={{ fontWeight: 900, fontSize: 17, color: BAD, marginBottom: 4 }}>2 out of 2 wrong!</div>
+              <div style={{ fontSize: 14, color: '#b1232c', lineHeight: 1.55 }}>
                 The AI completely failed — it ignored the animal and went by something else entirely.
               </div>
             </div>
@@ -1170,36 +1231,38 @@ function PhaseChallenge({
           {/* Visual shortcut explanation — revealed only after banner */}
           {showExplanation && (
             <div className="lb-card lb-fade-in" style={{ padding: '20px 22px' }}>
-              <p style={{ margin: '0 0 14px', fontSize: 13, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                💡 What the AI was actually doing
+              <p style={{ display: 'flex', alignItems: 'center', gap: 7, margin: '0 0 14px', fontSize: 13, fontWeight: 800, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <Lightbulb size={16} weight="fill" color={NOTCAT} /> What the AI was actually doing
               </p>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
                 {CHALLENGE_IMAGES.map((card, i) => (
                   <div key={card.id} style={{
                     display: 'grid', gridTemplateColumns: '52px 1fr 1fr', alignItems: 'center', gap: 14,
                     padding: '12px 14px', borderRadius: 14,
-                    background: '#FFF1F2', border: '1.5px solid #FECDD3',
+                    background: BAD_SOFT, border: `2px solid ${INK}`,
                     animation: `lbFadeUp 0.4s ease ${i * 0.15}s both`,
                   }}>
-                    <div style={{ width: 52, height: 52, borderRadius: 10, overflow: 'hidden', flexShrink: 0 }}>
+                    <div style={{ width: 52, height: 52, borderRadius: 10, overflow: 'hidden', border: `2px solid ${INK}`, flexShrink: 0 }}>
                       <img src={card.src} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
                     </div>
                     <div>
-                      <div style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 600, marginBottom: 2 }}>Human sees</div>
-                      <div style={{ fontSize: 14, fontWeight: 800, color: '#374151' }}>
-                        {card.type === 'dog' ? '🐕 Dog' : '🐱 Cat'}
+                      <div style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 700, marginBottom: 2 }}>Human sees</div>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 14, fontWeight: 800, color: INK }}>
+                        {card.type === 'dog' ? <><Dog size={16} weight="fill" /> Dog</> : <><Cat size={16} weight="fill" /> Cat</>}
                       </div>
                     </div>
                     <div>
-                      <div style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 600, marginBottom: 2 }}>AI shortcut</div>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#DC2626' }}>
-                        {card.color === 'white' ? '⬜ White → Cat ❌' : '⬛ Black → Not Cat ❌'}
+                      <div style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 700, marginBottom: 2 }}>AI shortcut</div>
+                      <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, fontWeight: 800, color: BAD }}>
+                        <Swatch tone={card.color} />
+                        {card.color === 'white' ? 'White → Cat' : 'Black → Not Cat'}
+                        <XCircle size={14} weight="fill" />
                       </div>
                     </div>
                   </div>
                 ))}
               </div>
-              <p style={{ margin: '12px 0 0', fontSize: 13, color: '#6B7280', textAlign: 'center' }}>
+              <p style={{ margin: '12px 0 0', fontSize: 13, color: MUTED, textAlign: 'center' }}>
                 The AI never learned what a cat <em>is</em> — it learned what color they <em>were</em> in training.
               </p>
             </div>
@@ -1207,6 +1270,17 @@ function PhaseChallenge({
         </div>
       )}
     </div>
+  );
+}
+
+// Small colour swatch used to represent the "white"/"black" shortcut
+function Swatch({ tone }: { tone: 'white' | 'black' }) {
+  return (
+    <span style={{
+      display: 'inline-block', width: 14, height: 14, borderRadius: 4,
+      background: tone === 'white' ? '#fff' : '#1a1a1a',
+      border: `2px solid ${INK}`,
+    }} />
   );
 }
 
@@ -1228,37 +1302,37 @@ function PhaseExplanation({
     onActionChange('Finish →', true);
   }, [onActionChange]);
 
-  const insights = [
-    { icon: '🗄️', title: 'Skewed training data',        text: 'Every training cat was white. Every training dog was black. No exceptions.' },
-    { icon: '🔗', title: 'Perfect spurious correlation', text: 'Color was 100% correlated with the label — an irresistible shortcut for the model.' },
-    { icon: '⚡', title: 'AI chose the easy path',       text: 'The model learned the simplest rule that fit the data. Real cat features were never needed.' },
-    { icon: '📊', title: '100% accuracy ≠ understanding', text: 'Perfect training accuracy just means the AI fit your data — not that it learned the right concept.' },
+  const insights: { Icon: ElementType; title: string; text: string }[] = [
+    { Icon: Database,   title: 'Skewed training data',        text: 'Every training cat was white. Every training dog was black. No exceptions.' },
+    { Icon: LinkSimple, title: 'Perfect spurious correlation', text: 'Color was 100% correlated with the label — an irresistible shortcut for the model.' },
+    { Icon: Lightning,  title: 'AI chose the easy path',       text: 'The model learned the simplest rule that fit the data. Real cat features were never needed.' },
+    { Icon: ChartBar,   title: '100% accuracy ≠ understanding', text: 'Perfect training accuracy just means the AI fit your data — not that it learned the right concept.' },
   ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 660, width: '100%' }}>
       <div style={{ textAlign: 'center', marginBottom: 24 }}>
-        <div style={{ fontSize: 52, marginBottom: 8 }}>💡</div>
-        <h2 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 900, color: '#1F2937', margin: '0 0 10px', letterSpacing: '-0.03em' }}>
+        <div style={{ marginBottom: 8 }}><Lightbulb size={52} weight="duotone" color={NOTCAT} /></div>
+        <h2 style={{ fontSize: 'clamp(24px, 4vw, 32px)', fontWeight: 900, color: INK, margin: '0 0 10px', letterSpacing: '-0.03em' }}>
           The AI didn't learn "cat."
         </h2>
-        <p style={{ fontSize: 17, color: '#4F46E5', fontWeight: 700, margin: 0 }}>
+        <p style={{ fontSize: 17, color: CAT, fontWeight: 800, margin: 0 }}>
           It learned the shortcut: <strong>white = cat, black = not cat.</strong>
         </p>
       </div>
 
-      <div className="lb-card lb-fade-up" style={{ width: '100%', padding: '22px 26px', marginBottom: 20, background: 'linear-gradient(135deg,#FFFBEB,#FEF3C7)', border: '2px solid #FDE68A' }}>
-        <p style={{ margin: '0 0 8px', fontSize: 13, fontWeight: 700, color: '#92400E', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-          🎓 This is called Learning Bias
+      <div className="lb-card lb-fade-up" style={{ width: '100%', padding: '22px 26px', marginBottom: 20, background: NOTCAT_SOFT }}>
+        <p style={{ display: 'flex', alignItems: 'center', gap: 8, margin: '0 0 8px', fontSize: 13, fontWeight: 800, color: '#b45d04', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <GraduationCap size={17} weight="fill" /> This is called Learning Bias
         </p>
-        <p style={{ margin: 0, fontSize: 15, color: '#78350F', lineHeight: 1.65 }}>
+        <p style={{ margin: 0, fontSize: 15, color: '#7a4708', lineHeight: 1.65 }}>
           <strong>Learning bias</strong> happens when an AI picks up a shortcut pattern instead of the true concept. Because the training data had a perfect color correlation, the model had no reason to look deeper — it achieved 100% accuracy without ever understanding what a cat is.
         </p>
       </div>
 
       {visStep >= 1 && (
         <div className="lb-card lb-scale-in" style={{ width: '100%', padding: '20px 22px', marginBottom: 20 }}>
-          <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+          <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 800, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
             What the AI's rule predicts
           </p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -1268,16 +1342,16 @@ function PhaseExplanation({
               { src: wd1Img, label: 'White Dog',  result: 'Cat',     correct: false },
               { src: bc1Img, label: 'Black Cat',  result: 'Not Cat', correct: false },
             ].map((row, i) => (
-              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 12, background: row.correct ? '#F0FDF4' : '#FFF1F2', border: `1.5px solid ${row.correct ? '#BBF7D0' : '#FECDD3'}`, animation: `lbFadeUp 0.4s ease ${i * 0.1}s both` }}>
-                <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', flexShrink: 0 }}>
+              <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', borderRadius: 12, background: row.correct ? OK_SOFT : BAD_SOFT, border: `2px solid ${INK}`, animation: `lbFadeUp 0.4s ease ${i * 0.1}s both` }}>
+                <div style={{ width: 44, height: 44, borderRadius: 8, overflow: 'hidden', border: `2px solid ${INK}`, flexShrink: 0 }}>
                   <img src={row.src} alt={row.label} style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center' }} />
                 </div>
-                <span style={{ fontSize: 13, color: '#6B7280', fontWeight: 600, minWidth: 88 }}>{row.label}</span>
+                <span style={{ fontSize: 13, color: INK, fontWeight: 700, minWidth: 88 }}>{row.label}</span>
                 <div style={{ flex: 1, display: 'flex', alignItems: 'center', gap: 6 }}>
                   <span style={{ fontSize: 12, color: '#9CA3AF' }}>AI sees color →</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#374151' }}>{row.result}</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: INK }}>{row.result}</span>
                 </div>
-                <span style={{ fontSize: 16 }}>{row.correct ? '✅' : '❌'}</span>
+                {row.correct ? <CheckCircle size={18} weight="fill" color={OK} /> : <XCircle size={18} weight="fill" color={BAD} />}
               </div>
             ))}
           </div>
@@ -1290,9 +1364,9 @@ function PhaseExplanation({
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 12, width: '100%', marginBottom: 24 }}>
         {insights.map((ins, i) => (
           <div key={i} className="lb-card lb-fade-up" style={{ padding: '16px 18px', animation: `lbFadeUp 0.5s ease ${0.3 + i * 0.1}s both` }}>
-            <div style={{ fontSize: 24, marginBottom: 6 }}>{ins.icon}</div>
-            <div style={{ fontWeight: 700, fontSize: 13, color: '#1F2937', marginBottom: 4 }}>{ins.title}</div>
-            <div style={{ fontSize: 12, color: '#6B7280', lineHeight: 1.55 }}>{ins.text}</div>
+            <div style={{ marginBottom: 8 }}><ins.Icon size={24} weight="fill" color={CAT} /></div>
+            <div style={{ fontWeight: 800, fontSize: 13, color: INK, marginBottom: 4 }}>{ins.title}</div>
+            <div style={{ fontSize: 12, color: MUTED, lineHeight: 1.55 }}>{ins.text}</div>
           </div>
         ))}
       </div>
@@ -1304,47 +1378,49 @@ function PhaseExplanation({
 // PHASE: COMPLETE
 // ============================================================
 function PhaseComplete({ onRestart }: { onRestart: () => void }) {
-  const keyLessons = [
-    { icon: '⚡', title: 'AI takes shortcuts',        text: 'Models learn the easiest pattern that fits the data — not necessarily the true concept.', color: '#4F46E5' },
-    { icon: '📊', title: 'Accuracy can deceive',       text: '100% training accuracy only means the model fit that dataset. It says nothing about real understanding.', color: '#10B981' },
-    { icon: '🌈', title: 'Diversity breaks shortcuts', text: 'Varied examples (black cats, white dogs) force the model to learn real distinguishing features.', color: '#F59E0B' },
-    { icon: '🔍', title: 'Test out-of-distribution',   text: 'Always validate on data that differs from training to reveal what the model truly learned.', color: '#EF4444' },
+  const keyLessons: { Icon: ElementType; title: string; text: string; color: string }[] = [
+    { Icon: Lightning,       title: 'AI takes shortcuts',        text: 'Models learn the easiest pattern that fits the data — not necessarily the true concept.', color: CAT },
+    { Icon: ChartBar,        title: 'Accuracy can deceive',       text: '100% training accuracy only means the model fit that dataset. It says nothing about real understanding.', color: OK },
+    { Icon: Palette,         title: 'Diversity breaks shortcuts', text: 'Varied examples (black cats, white dogs) force the model to learn real distinguishing features.', color: NOTCAT },
+    { Icon: MagnifyingGlass, title: 'Test out-of-distribution',   text: 'Always validate on data that differs from training to reveal what the model truly learned.', color: BAD },
+  ];
+
+  const examples: { Icon: ElementType; t: string }[] = [
+    { Icon: FirstAid, t: "Medical AI trained on one hospital's data predicting poorly for patients elsewhere with different demographics." },
+    { Icon: Camera, t: "Image classifiers learning to detect \"wolf\" from snow in the background, not the animal's actual features." },
+    { Icon: Briefcase, t: 'Hiring models associating short résumés with rejection because junior roles historically used brief formats.' },
+    { Icon: Globe, t: 'Translation models performing worse on low-resource languages because training data skewed toward English.' },
   ];
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', maxWidth: 660, width: '100%' }}>
       <div style={{ textAlign: 'center', marginBottom: 28 }}>
-        <div className="lb-float" style={{ fontSize: 64, marginBottom: 12, display: 'block' }}>🏆</div>
-        <h2 className="lb-fade-up" style={{ fontSize: 'clamp(26px, 5vw, 36px)', fontWeight: 900, color: '#1F2937', margin: '0 0 10px', letterSpacing: '-0.03em' }}>
+        <div className="lb-float" style={{ marginBottom: 12, display: 'block' }}><Trophy size={64} weight="fill" color={NOTCAT} /></div>
+        <h2 className="lb-fade-up" style={{ fontSize: 'clamp(26px, 5vw, 36px)', fontWeight: 900, color: INK, margin: '0 0 10px', letterSpacing: '-0.03em' }}>
           You discovered learning bias!
         </h2>
-        <p className="lb-fade-up" style={{ color: '#6B7280', fontSize: 16, margin: 0, animationDelay: '0.1s' }}>Here's what you learned today</p>
+        <p className="lb-fade-up" style={{ color: MUTED, fontSize: 16, margin: 0, animationDelay: '0.1s' }}>Here's what you learned today</p>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 14, width: '100%', marginBottom: 28 }}>
         {keyLessons.map((lesson, i) => (
-          <div key={i} className="lb-card lb-card-hover lb-fade-up" style={{ padding: '20px', animation: `lbFadeUp 0.5s ease ${0.1 + i * 0.1}s both`, borderTop: `3px solid ${lesson.color}` }}>
-            <div style={{ fontSize: 28, marginBottom: 8 }}>{lesson.icon}</div>
-            <div style={{ fontWeight: 800, fontSize: 14, color: '#1F2937', marginBottom: 6 }}>{lesson.title}</div>
-            <div style={{ fontSize: 13, color: '#6B7280', lineHeight: 1.55 }}>{lesson.text}</div>
+          <div key={i} className="lb-card lb-card-hover lb-fade-up" style={{ padding: '20px', animation: `lbFadeUp 0.5s ease ${0.1 + i * 0.1}s both`, borderTop: `5px solid ${lesson.color}` }}>
+            <div style={{ marginBottom: 8 }}><lesson.Icon size={28} weight="fill" color={lesson.color} /></div>
+            <div style={{ fontWeight: 800, fontSize: 14, color: INK, marginBottom: 6 }}>{lesson.title}</div>
+            <div style={{ fontSize: 13, color: MUTED, lineHeight: 1.55 }}>{lesson.text}</div>
           </div>
         ))}
       </div>
 
-      <div className="lb-card lb-fade-up" style={{ width: '100%', padding: '20px 24px', marginBottom: 28, background: 'linear-gradient(135deg, #1F2937, #111827)', animationDelay: '0.5s' }}>
-        <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 700, color: '#9CA3AF', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+      <div className="lb-card lb-fade-up" style={{ width: '100%', padding: '20px 24px', marginBottom: 28, background: INK, borderColor: INK, animationDelay: '0.5s' }}>
+        <p style={{ margin: '0 0 12px', fontSize: 13, fontWeight: 800, color: '#9aa3bf', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
           Real-world examples of learning bias
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-          {[
-            { e: '🏥', t: "Medical AI trained on one hospital's data predicting poorly for patients elsewhere with different demographics." },
-            { e: '📷', t: "Image classifiers learning to detect \"wolf\" from snow in the background, not the animal's actual features." },
-            { e: '💼', t: 'Hiring models associating short résumés with rejection because junior roles historically used brief formats.' },
-            { e: '🌍', t: 'Translation models performing worse on low-resource languages because training data skewed toward English.' },
-          ].map((ex, i) => (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+          {examples.map((ex, i) => (
             <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-              <span style={{ fontSize: 16, flexShrink: 0, marginTop: 1 }}>{ex.e}</span>
-              <span style={{ fontSize: 13, color: '#D1D5DB', lineHeight: 1.55 }}>{ex.t}</span>
+              <ex.Icon size={18} weight="fill" color="#ffd0d6" style={{ flexShrink: 0, marginTop: 1 }} />
+              <span style={{ fontSize: 13, color: '#d8dbe6', lineHeight: 1.55 }}>{ex.t}</span>
             </div>
           ))}
         </div>
@@ -1352,10 +1428,10 @@ function PhaseComplete({ onRestart }: { onRestart: () => void }) {
 
       <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', justifyContent: 'center' }}>
         <button className="lb-btn lb-btn-lg lb-btn-primary lb-bounce-in" onClick={onRestart} style={{ minWidth: 180 }}>
-          🔄 Play Again
+          <ArrowsClockwise size={18} weight="bold" /> Play Again
         </button>
         <a href="https://en.wikipedia.org/wiki/Inductive_bias" target="_blank" rel="noopener noreferrer" className="lb-btn lb-btn-lg lb-btn-outline" style={{ minWidth: 180, textDecoration: 'none' }}>
-          📖 Learn More
+          <BookOpen size={18} weight="bold" /> Learn More
         </a>
       </div>
     </div>
@@ -1404,6 +1480,10 @@ export function LearningBias() {
     }
   }
 
+  const stepMap: Record<GamePhase, number> = {
+    intro: -1, labeling: 0, training: 1, test: 2, challenge: 3, explanation: 4, complete: 4,
+  };
+
   // Step indicator click — only allows going back to completed steps
   function handleStepClick(stepIdx: number) {
     const currentStepIdx = stepMap[phase];
@@ -1411,10 +1491,6 @@ export function LearningBias() {
       advance(STEP_TO_PHASE[stepIdx]);
     }
   }
-
-  const stepMap: Record<GamePhase, number> = {
-    intro: -1, labeling: 0, training: 1, test: 2, challenge: 3, explanation: 4, complete: 4,
-  };
 
   const showNav = phase !== 'intro' && phase !== 'complete';
 
@@ -1427,7 +1503,7 @@ export function LearningBias() {
       className="lb"
       style={{
         minHeight: '100vh',
-        background: 'linear-gradient(160deg, #EEF2FF 0%, #F5F3FF 40%, #FDF4FF 80%, #FFF0F6 100%)',
+        background: 'linear-gradient(160deg, #fff0f1 0%, #f3f0ff 45%, #eafaf2 100%)',
         padding: showNav ? '32px 20px 108px' : '32px 20px 60px',
         display: 'flex', flexDirection: 'column', alignItems: 'center',
       }}
