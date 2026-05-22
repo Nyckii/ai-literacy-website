@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { DragEvent } from 'react';
+import { FEATURED_SLUGS } from '../data/games';
 
 type Level = 'individual' | 'multi-level' | 'group';
 
@@ -16,7 +17,9 @@ type Entry = {
   essence: string;
 };
 
-const ENTRIES: Entry[] = [
+// Full catalogue of bias write-ups. The recap only quizzes the featured
+// study games (see ENTRIES below); the rest stay here for reference.
+const ALL_ENTRIES: Entry[] = [
   {
     slug: 'confirmation-bias',
     title: 'Confirmation Bias',
@@ -29,7 +32,7 @@ const ENTRIES: Entry[] = [
     title: 'Measurement Bias',
     level: 'individual',
     essence:
-      'A stand-in is used to score the real thing — and the system ends up rewarding the stand-in itself. People who happen to look right by that surrogate win, even when the underlying work is identical.',
+      'A stand-in is used to score the real thing, and the system ends up rewarding the stand-in itself. People who happen to look right by that surrogate win, even when the underlying work is identical.',
   },
   {
     slug: 'algorithm-bias',
@@ -64,30 +67,35 @@ const ENTRIES: Entry[] = [
     title: 'Historical Bias',
     level: 'group',
     essence:
-      'A record of what came before is also a record of its inequalities. A model that fits that record faithfully will project those inequalities forward — its predictions are calibrated to a world we\'d rather move beyond.',
+      'A record of what came before is also a record of its inequalities. A model that fits that record faithfully will project those inequalities forward, its predictions are calibrated to a world we\'d rather move beyond.',
   },
   {
     slug: 'exclusion-bias',
     title: 'Exclusion Bias',
     level: 'group',
     essence:
-      'Every system is built around an imagined default user — their schedule, their resources, their context. People who fall outside that default aren\'t warned; the help simply works less well for them, and nobody flags it.',
+      'Every system is built around an imagined default user, their schedule, their resources, their context. People who fall outside that default aren\'t warned; the help simply works less well for them, and nobody flags it.',
   },
   {
     slug: 'representation-bias',
     title: 'Representation Bias',
     level: 'group',
     essence:
-      'What lands in the training data defines what the model treats as normal, central, or important. Whoever — or whatever — is missing from the data is missing from the answer, no matter how confidently it is delivered.',
+      'What lands in the training data defines what the model treats as normal, central, or important. Whoever, or whatever, is missing from the data is missing from the answer, no matter how confidently it is delivered.',
   },
   {
     slug: 'mapping-bias',
     title: 'Mapping Bias',
     level: 'group',
     essence:
-      'A model can be perfectly accurate inside the population it was built for and confidently wrong the moment it\'s used somewhere else. The flaw isn\'t in the model itself — it\'s in the act of moving it outside the world it was made for.',
+      'A model can be perfectly accurate inside the population it was built for and confidently wrong the moment it\'s used somewhere else. The flaw isn\'t in the model itself, it\'s in the act of moving it outside the world it was made for.',
   },
 ];
+
+// The recap mirrors the experiment: only the 3 featured biases are quizzed.
+const ENTRIES: Entry[] = ALL_ENTRIES.filter((e) =>
+  (FEATURED_SLUGS as readonly string[]).includes(e.slug),
+);
 
 const LEVEL_LABEL: Record<Level, string> = {
   individual: 'Individual-level',
@@ -193,7 +201,7 @@ export function BiasRecap() {
   return (
     <section className="qz-card" aria-labelledby="qz-heading">
       <header className="qz-head">
-        <h2 id="qz-heading">One last check — match each bias to its core idea</h2>
+        <h2 id="qz-heading">One last check, match each bias to its core idea</h2>
         <p className="qz-sub">
           Drag each statement onto the bias it best describes. (Or tap a
           statement to select it, then tap a bias card.)
@@ -203,7 +211,7 @@ export function BiasRecap() {
       <div className="qz-pool" role="list" aria-label="Statements to place">
         {pool.length === 0 ? (
           <p className="qz-pool-empty">
-            All ten placed. Hit <strong>Check answers</strong> to see how
+            All placed. Hit <strong>Check answers</strong> to see how
             you did.
           </p>
         ) : (
@@ -297,7 +305,7 @@ export function BiasRecap() {
             >
               {allPlaced
                 ? 'Check answers'
-                : `Place all 10 (${ENTRIES.length - pool.length}/${ENTRIES.length})`}
+                : `Place all ${ENTRIES.length} (${ENTRIES.length - pool.length}/${ENTRIES.length})`}
             </button>
             {!allPlaced && (
               <p className="qz-hint">
@@ -310,7 +318,7 @@ export function BiasRecap() {
           <>
             <p className={`qz-score ${score === ENTRIES.length ? 'qz-score-perfect' : ''}`}>
               {score === ENTRIES.length
-                ? '🎯 Perfect — all ten matched.'
+                ? 'Perfect, all matched.'
                 : `${score} / ${ENTRIES.length} correct`}
             </p>
             <button className="btn btn-ghost" onClick={reset}>

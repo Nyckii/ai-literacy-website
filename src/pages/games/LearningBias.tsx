@@ -53,14 +53,14 @@ import wd1Img from './assets/LearningBiasImg/white_dog_1.jpg';
 import bc1Img from './assets/LearningBiasImg/black_cat_1.jpg';
 
 // ============================================================
-// ARCADE PALETTE — mirrors the site tokens in src/index.css
+// ARCADE PALETTE, mirrors the site tokens in src/index.css
 // ============================================================
 const INK = '#0b1733';
 const MUTED = '#5c6275';
 const SURFACE = '#ffffff';
-const CAT = '#6d4df0'; // category accent — "Cat"
+const CAT = '#6d4df0'; // category accent, "Cat"
 const CAT_SOFT = '#ece8ff';
-const NOTCAT = '#e8820a'; // category accent — "Not Cat"
+const NOTCAT = '#e8820a'; // category accent, "Not Cat"
 const NOTCAT_SOFT = '#fff3e0';
 const OK = '#0fa968';
 const OK_SOFT = '#d8f5e6';
@@ -147,7 +147,7 @@ const STEP_TO_PHASE: GamePhase[] = ['labeling', 'training', 'test', 'challenge',
 // ============================================================
 // SMALL HELPERS
 // ============================================================
-// A label badge with a leading icon — "Cat" / "Not Cat" used throughout.
+// A label badge with a leading icon, "Cat" / "Not Cat" used throughout.
 function LabelText({ label }: { label: Prediction }) {
   return label === 'cat' ? (
     <>
@@ -161,7 +161,7 @@ function LabelText({ label }: { label: Prediction }) {
 }
 
 // ============================================================
-// CSS — arcade flavour: chunky 2px ink borders, hard offset shadows
+// CSS, arcade flavour: chunky 2px ink borders, hard offset shadows
 // ============================================================
 const GLOBAL_STYLES = `
   .lb * { box-sizing: border-box; }
@@ -244,7 +244,7 @@ const GLOBAL_STYLES = `
   .lb-pulse        { animation: lbPulse 1.5s ease-in-out infinite; }
   .lb-card-pulse   { animation: lbCardPulse 0.8s ease-in-out infinite; }
 
-  /* Arcade tile card — white, chunky ink border, hard offset shadow */
+  /* Arcade tile card, white, chunky ink border, hard offset shadow */
   .lb-card {
     background: ${SURFACE};
     border: 2px solid ${INK};
@@ -257,7 +257,7 @@ const GLOBAL_STYLES = `
     box-shadow: 9px 9px 0 ${INK};
   }
 
-  /* Buttons — pill, ink border, hard shadow that presses on click */
+  /* Buttons, pill, ink border, hard shadow that presses on click */
   .lb-btn {
     cursor: pointer; font-weight: 800;
     border-radius: 999px; letter-spacing: -0.01em;
@@ -355,7 +355,7 @@ const GLOBAL_STYLES = `
   .lb-step-past:hover .lb-step-label { text-decoration: underline; }
   .lb-step-past:hover .lb-step-dot { transform: scale(1.35); }
 
-  /* Photo card — draggable */
+  /* Photo card, draggable */
   .lb-photo-card {
     border-radius: 12px; overflow: hidden;
     cursor: grab; user-select: none; -webkit-user-select: none;
@@ -411,7 +411,7 @@ const GLOBAL_STYLES = `
   .lb-test-card .labels { padding: 12px 14px 14px; display: flex; flex-direction: column; gap: 8px; }
   .lb-test-card .label-row { display: flex; align-items: center; justify-content: space-between; }
 
-  /* Bottom action bar — single centered button */
+  /* Bottom action bar, single centered button */
   .lb-bottom-action {
     position: fixed; bottom: 0; left: 0; right: 0;
     padding: 16px 28px;
@@ -449,7 +449,7 @@ function StyleInjector() {
 }
 
 // ============================================================
-// STEP INDICATOR — past steps are clickable to go back
+// STEP INDICATOR, past steps are clickable to go back
 // ============================================================
 function StepIndicator({
   current,
@@ -511,7 +511,7 @@ function StepIndicator({
 }
 
 // ============================================================
-// BOTTOM ACTION BUTTON — single centered primary action
+// BOTTOM ACTION BUTTON, single centered primary action
 // ============================================================
 function BottomActionButton({
   label,
@@ -537,7 +537,7 @@ function BottomActionButton({
 }
 
 // ============================================================
-// PHOTO CARD — draggable tile used during labeling
+// PHOTO CARD, draggable tile used during labeling
 // ============================================================
 function PhotoCard({
   card, isSelected, isDragging, onDragStart, onDragEnd, onClick,
@@ -677,7 +677,7 @@ function PhaseIntro({ onStart }: { onStart: () => void }) {
           watch the AI learn, and then test it on new photos.
         </p>
         <p style={{ margin: 0, color: INK, fontSize: 16, lineHeight: 1.65 }}>
-          Sounds simple — but the AI might achieve{' '}
+          Sounds simple, but the AI might achieve{' '}
           <strong style={{ color: CAT }}>100% training accuracy</strong> while learning
           the <em>completely wrong thing</em>. This is called <strong>learning bias</strong>.
         </p>
@@ -730,13 +730,13 @@ function PhaseDragLabeling({
     if (canTrain) {
       onActionChange('Train AI →', true);
     } else if (allSorted && !allCorrect) {
-      onActionChange('Some images look wrong — check your sorting', false);
+      onActionChange('Some images look wrong, check your sorting', false);
     } else {
       onActionChange(`Sort all ${unsorted.length} images to continue`, false);
     }
   }, [canTrain, allSorted, allCorrect, unsorted.length, onActionChange]);
 
-  const statusMsg   = !allSorted ? `${unsorted.length} image${unsorted.length !== 1 ? 's' : ''} remaining` : !allCorrect ? 'Check your labels — something looks off' : 'All correct — ready to train!';
+  const statusMsg   = !allSorted ? `${unsorted.length} image${unsorted.length !== 1 ? 's' : ''} remaining` : !allCorrect ? 'Check your labels, something looks off' : 'All correct, ready to train!';
   const statusColor = !allSorted ? MUTED : !allCorrect ? BAD : OK;
 
   function moveCard(id: string, to: ZoneId) { setPlacements(prev => ({ ...prev, [id]: to })); setSelectedId(null); }
@@ -768,17 +768,17 @@ function PhaseDragLabeling({
           <Tag size={26} weight="fill" color={CAT} /> Sort the Training Images
         </h2>
         <p style={{ color: MUTED, fontSize: 15, margin: 0 }}>
-          Drag images into a zone — or tap to select, then tap a zone to place. Tap a placed image to return it.
+          Drag images into a zone, or tap to select, then tap a zone to place. Tap a placed image to return it.
         </p>
       </div>
 
       {selectedId && (
         <div className="lb-fade-in" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, margin: '8px 0 4px', background: CAT_SOFT, border: `2px solid ${INK}`, borderRadius: 999, padding: '8px 16px', fontSize: 13, color: CAT, fontWeight: 800 }}>
-          <PushPin size={15} weight="fill" /> Image selected — tap a zone below to place it
+          <PushPin size={15} weight="fill" /> Image selected, tap a zone below to place it
         </div>
       )}
 
-      {/* Unsorted pool — strict 5×2 grid */}
+      {/* Unsorted pool, strict 5×2 grid */}
       <div
         className="lb-fade-up"
         style={{
@@ -1024,7 +1024,7 @@ function PhaseTest({
 }
 
 // ============================================================
-// PHASE: CHALLENGE — interactive guess + AI reveal
+// PHASE: CHALLENGE, interactive guess + AI reveal
 // ============================================================
 type ChallengeState = 'guessing' | 'scanning' | 'revealed';
 
@@ -1077,7 +1077,7 @@ function PhaseChallenge({
       </h2>
       <p className="lb-fade-up" style={{ color: MUTED, fontSize: 15, marginBottom: 8, textAlign: 'center', animationDelay: '0.1s' }}>
         {challengeState === 'guessing'
-          ? 'Before running the AI — what do you think it will predict?'
+          ? 'Before running the AI, what do you think it will predict?'
           : challengeState === 'scanning'
           ? 'AI analyzing images…'
           : "Here's what the AI actually predicted."}
@@ -1112,7 +1112,7 @@ function PhaseChallenge({
               ].filter(Boolean).join(' ')}
               style={{ animation: `lbFadeUp 0.45s ease ${cardIdx * 0.1}s both`, overflow: 'hidden' }}
             >
-              {/* Image — always visible */}
+              {/* Image, always visible */}
               <div className="photo" style={{ position: 'relative' }}>
                 <img src={card.src} alt={`${card.color} ${card.type}`} />
                 {/* Scanning overlay */}
@@ -1141,7 +1141,7 @@ function PhaseChallenge({
 
               {/* Labels / guess area */}
               <div className="labels">
-                {/* True label — always shown */}
+                {/* True label, always shown */}
                 <div className="label-row">
                   <span style={{ fontSize: 12, color: '#9CA3AF', fontWeight: 700 }}>True label</span>
                   <span className={`lb-badge ${card.trueLabel === 'cat' ? 'lb-badge-cat' : 'lb-badge-notcat'}`} style={{ fontSize: 11 }}>
@@ -1223,12 +1223,12 @@ function PhaseChallenge({
             <div>
               <div style={{ fontWeight: 900, fontSize: 17, color: BAD, marginBottom: 4 }}>2 out of 2 wrong!</div>
               <div style={{ fontSize: 14, color: '#b1232c', lineHeight: 1.55 }}>
-                The AI completely failed — it ignored the animal and went by something else entirely.
+                The AI completely failed, it ignored the animal and went by something else entirely.
               </div>
             </div>
           </div>
 
-          {/* Visual shortcut explanation — revealed only after banner */}
+          {/* Visual shortcut explanation, revealed only after banner */}
           {showExplanation && (
             <div className="lb-card lb-fade-in" style={{ padding: '20px 22px' }}>
               <p style={{ display: 'flex', alignItems: 'center', gap: 7, margin: '0 0 14px', fontSize: 13, fontWeight: 800, color: MUTED, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -1263,7 +1263,7 @@ function PhaseChallenge({
                 ))}
               </div>
               <p style={{ margin: '12px 0 0', fontSize: 13, color: MUTED, textAlign: 'center' }}>
-                The AI never learned what a cat <em>is</em> — it learned what color they <em>were</em> in training.
+                The AI never learned what a cat <em>is</em>, it learned what color they <em>were</em> in training.
               </p>
             </div>
           )}
@@ -1304,9 +1304,9 @@ function PhaseExplanation({
 
   const insights: { Icon: ElementType; title: string; text: string }[] = [
     { Icon: Database,   title: 'Skewed training data',        text: 'Every training cat was white. Every training dog was black. No exceptions.' },
-    { Icon: LinkSimple, title: 'Perfect spurious correlation', text: 'Color was 100% correlated with the label — an irresistible shortcut for the model.' },
+    { Icon: LinkSimple, title: 'Perfect spurious correlation', text: 'Color was 100% correlated with the label, an irresistible shortcut for the model.' },
     { Icon: Lightning,  title: 'AI chose the easy path',       text: 'The model learned the simplest rule that fit the data. Real cat features were never needed.' },
-    { Icon: ChartBar,   title: '100% accuracy ≠ understanding', text: 'Perfect training accuracy just means the AI fit your data — not that it learned the right concept.' },
+    { Icon: ChartBar,   title: '100% accuracy ≠ understanding', text: 'Perfect training accuracy just means the AI fit your data, not that it learned the right concept.' },
   ];
 
   return (
@@ -1326,7 +1326,7 @@ function PhaseExplanation({
           <GraduationCap size={17} weight="fill" /> This is called Learning Bias
         </p>
         <p style={{ margin: 0, fontSize: 15, color: '#7a4708', lineHeight: 1.65 }}>
-          <strong>Learning bias</strong> happens when an AI picks up a shortcut pattern instead of the true concept. Because the training data had a perfect color correlation, the model had no reason to look deeper — it achieved 100% accuracy without ever understanding what a cat is.
+          <strong>Learning bias</strong> happens when an AI picks up a shortcut pattern instead of the true concept. Because the training data had a perfect color correlation, the model had no reason to look deeper, it achieved 100% accuracy without ever understanding what a cat is.
         </p>
       </div>
 
@@ -1379,7 +1379,7 @@ function PhaseExplanation({
 // ============================================================
 function PhaseComplete({ onRestart }: { onRestart: () => void }) {
   const keyLessons: { Icon: ElementType; title: string; text: string; color: string }[] = [
-    { Icon: Lightning,       title: 'AI takes shortcuts',        text: 'Models learn the easiest pattern that fits the data — not necessarily the true concept.', color: CAT },
+    { Icon: Lightning,       title: 'AI takes shortcuts',        text: 'Models learn the easiest pattern that fits the data, not necessarily the true concept.', color: CAT },
     { Icon: ChartBar,        title: 'Accuracy can deceive',       text: '100% training accuracy only means the model fit that dataset. It says nothing about real understanding.', color: OK },
     { Icon: Palette,         title: 'Diversity breaks shortcuts', text: 'Varied examples (black cats, white dogs) force the model to learn real distinguishing features.', color: NOTCAT },
     { Icon: MagnifyingGlass, title: 'Test out-of-distribution',   text: 'Always validate on data that differs from training to reveal what the model truly learned.', color: BAD },
@@ -1484,7 +1484,7 @@ export function LearningBias() {
     intro: -1, labeling: 0, training: 1, test: 2, challenge: 3, explanation: 4, complete: 4,
   };
 
-  // Step indicator click — only allows going back to completed steps
+  // Step indicator click, only allows going back to completed steps
   function handleStepClick(stepIdx: number) {
     const currentStepIdx = stepMap[phase];
     if (currentStepIdx !== undefined && stepIdx < currentStepIdx) {

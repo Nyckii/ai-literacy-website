@@ -93,7 +93,7 @@ export function Resources() {
               target="_blank"
               rel="noreferrer"
             >
-              Google PAIR — AI Explorables
+              Google PAIR, AI Explorables
             </a>
             <span className="resource-note">
               Interactive visual explanations and demos about fairness, model behavior, and machine learning.
@@ -117,7 +117,7 @@ export function Resources() {
               target="_blank"
               rel="noreferrer"
             >
-              ETH Zürich — PEACH
+              ETH Zürich, PEACH
             </a>
             <span className="resource-note">
               The Educational Technology research group hosting this course and exploring learning designs.

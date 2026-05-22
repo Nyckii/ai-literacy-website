@@ -21,7 +21,7 @@ type Variant = {
 
 const PROMPT = 'In 200 words: Why do you want to study at this university?';
 
-const SAE_BODY = `My interest in this university stems from its commitment to interdisciplinary engineering grounded in social impact. As a first-generation student, I have spent the past four years working at my family's restaurant while maintaining a 3.9 GPA — an experience that has taught me to value institutions where practical knowledge is treated as seriously as theoretical work.
+const SAE_BODY = `My interest in this university stems from its commitment to interdisciplinary engineering grounded in social impact. As a first-generation student, I have spent the past four years working at my family's restaurant while maintaining a 3.9 GPA, an experience that has taught me to value institutions where practical knowledge is treated as seriously as theoretical work.
 
 The Engineering for Society program aligns directly with my goal of designing accessible technology for under-resourced communities. I was particularly drawn to Professor Allen's research on inclusive design, which I encountered through her TED talk last spring. Her argument that good design begins with the people most often overlooked has shaped how I approach every project I take on.
 
@@ -40,9 +40,9 @@ const VARIANTS: Variant[] = [
     id: 'aave',
     tabLabel: 'AAVE',
     dialectName: 'African American Vernacular English',
-    body: `I want to study at this university 'cause y'all care about engineering that actually solves real problems for real people. I'm a first-gen student, and I been working at my family's restaurant since I was fourteen while keeping a 3.9 GPA — that taught me practical knowledge matter just as much as what's in the textbook.
+    body: `I want to study at this university 'cause y'all care about engineering that actually solves real problems for real people. I'm a first-gen student, and I been working at my family's restaurant since I was fourteen while keeping a 3.9 GPA, that taught me practical knowledge matter just as much as what's in the textbook.
 
-The Engineering for Society program — that's the one for me. My goal is building accessible tech for communities like the one I come from, ones that always be getting overlooked. I caught Professor Allen's TED talk last spring, and her point about good design starting with the people who get overlooked the most? That shifted how I approach every project I work on.
+The Engineering for Society program, that's the one for me. My goal is building accessible tech for communities like the one I come from, ones that always be getting overlooked. I caught Professor Allen's TED talk last spring, and her point about good design starting with the people who get overlooked the most? That shifted how I approach every project I work on.
 
 Going to school here ain't just about getting an education. It's a chance to build the tools my community wished we had when I was growing up.`,
     scores: {
@@ -53,20 +53,20 @@ Going to school here ain't just about getting an education. It's a chance to bui
       argument: 7.8,
     },
     notes: {
-      vocab: 'AES rubrics reward longer, latinate vocabulary — even when shorter words make the same point.',
+      vocab: 'AES rubrics reward longer, latinate vocabulary, even when shorter words make the same point.',
       grammar: 'Habitual “be”, perfective “been”, copula deletion: rule-governed AAVE features the model treats as errors.',
       mechanics: '“’cause” and “ain’t” are formally correct contractions but score as informality.',
       structure: 'Both essays follow the same three-paragraph arc.',
       argument: 'The actual reasoning is identical. The AI sees no difference here.',
     },
     noteOnLanguage:
-      'AAVE is a fully grammatical dialect of English with consistent rules. Habitual “be”, perfective “been”, and copula deletion are documented linguistic features — not mistakes.',
+      'AAVE is a fully grammatical dialect of English with consistent rules. Habitual “be”, perfective “been”, and copula deletion are documented linguistic features, not mistakes.',
   },
   {
     id: 'de',
     tabLabel: 'German ESL',
     dialectName: 'English written by a German native speaker',
-    body: `My interest for this university comes from its strong commitment to interdisciplinary engineering with social impact. As a first-generation student, I have been working since fourteen years in my family's restaurant while keeping a 3.9 GPA — this taught me that practical knowledge is as important as theoretical work.
+    body: `My interest for this university comes from its strong commitment to interdisciplinary engineering with social impact. As a first-generation student, I have been working since fourteen years in my family's restaurant while keeping a 3.9 GPA, this taught me that practical knowledge is as important as theoretical work.
 
 The Engineering for Society program fits perfectly to my goal of building accessible technology for under-resourced communities. Especially I was drawn to the research of Professor Allen about inclusive design, which I learned to know through her TED talk last spring. Her statement, that good design must begin by the people who are most often overlooked, has changed how I approach every project I work on.
 
@@ -86,7 +86,7 @@ Studying here would not only be an education. It would be the chance to build th
       argument: 'The actual reasoning is identical. The AI sees no difference here.',
     },
     noteOnLanguage:
-      'L1 transfer features from German (preposition choice, calques like “learned to know”, V2 word order) reflect competent ESL writing — not failed reasoning.',
+      'L1 transfer features from German (preposition choice, calques like “learned to know”, V2 word order) reflect competent ESL writing, not failed reasoning.',
   },
   {
     id: 'ko',
@@ -255,7 +255,7 @@ export function MeasurementBias() {
               </button>
               <p className="mb-disclaimer">
                 Scores below are illustrative, modeled on findings reported in
-                AES bias research — not the output of a live model.
+                AES bias research, not the output of a live model.
               </p>
             </div>
           )}
@@ -308,7 +308,7 @@ export function MeasurementBias() {
               <div className="mb-explainer">
                 <h2>So what just happened?</h2>
                 <p>
-                  Argument quality is identical — the actual reasoning is the
+                  Argument quality is identical, the actual reasoning is the
                   same in every version. Everything else got penalized for
                   departing from Standard American English. That's measurement
                   bias: the AI mistakes <em>how</em> someone writes for{' '}
@@ -316,7 +316,7 @@ export function MeasurementBias() {
                 </p>
                 <p>
                   Try the other tabs above the right essay. The penalty hits
-                  AAVE, German ESL, and Korean ESL — three very different
+                  AAVE, German ESL, and Korean ESL, three very different
                   varieties of English. The common thread isn't quality. It's
                   whose English the training data prefers.
                 </p>

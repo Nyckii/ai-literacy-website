@@ -73,7 +73,7 @@ export function Home() {
           </h1>
           <p className="lede">
             Short, gamified interactions that surface what bias in AI actually
-            looks like — and where it comes from.
+            looks like, and where it comes from.
           </p>
           <div className="hero-cta">
             <a href="#games" className="btn btn-coral">
@@ -102,7 +102,7 @@ export function Home() {
       <section id="games" className="games">
         <h2>The games</h2>
         <p className="section-lede">
-          Start with these three — each targets one type of bias. Play them in
+          Start with these three, each targets one type of bias. Play them in
           order or pick any to begin.
         </p>
 
@@ -140,7 +140,7 @@ export function Home() {
       <section id="more-games" className="games games-more">
         <h3 className="games-more-title">More biases to explore</h3>
         <p className="section-lede">
-          Optional — more interactions covering other types of bias.
+          Optional, more interactions covering other types of bias.
         </p>
         <ul className="game-grid">
           {moreGames.map((g) => (

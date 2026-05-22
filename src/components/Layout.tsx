@@ -65,7 +65,7 @@ export function Layout() {
           </div>
 
           <div className="footer-col">
-            <h4 className="footer-col-title">Team — Group 2</h4>
+            <h4 className="footer-col-title">Team, Group 2</h4>
             <ul className="footer-team">
               <li>Xiaozihan Wang</li>
               <li>Akankshya Ingale</li>
