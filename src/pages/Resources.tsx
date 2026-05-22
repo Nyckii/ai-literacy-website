@@ -20,6 +20,15 @@ const DOWNLOADS: DownloadItem[] = [
     url: "/downloads/LessonPlans.zip",
     accentClass: "tile-lavender",
   },
+  {
+    title: "Bias Overview",
+    description: "An overview document explaining various biases and their impacts.",
+    filename: "BiasOverview.docx",
+    fileSize: "18 KB",
+    fileType: "docx",
+    url: "/downloads/BiasOverview.docx",
+    accentClass: "tile-salmon",
+  },
 ];
 
 export function Resources() {
