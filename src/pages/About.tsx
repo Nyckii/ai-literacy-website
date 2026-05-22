@@ -5,14 +5,14 @@ export function About() {
         <p className="eyebrow">About</p>
         <h1>About Bias Arcade</h1>
         <p className="lede">
-          A collection of short interactive games and resources designed to help users understand biases in AI models.
+          A collection of short interactive experiences and resources designed to help users understand biases in AI models.
         </p>
       </header>
 
       <section className="content-block">
         <h2>What is the tool about?</h2>
         <p>
-          Bias Arcade is a collection of short interactive games and resources designed to help users understand bias in AI models. Each game explores either how bias becomes embedded in a system or what happens in the real world when a biased AI system makes decisions. No technical background is required for the games.
+          Bias Arcade is a collection of short interactive experiences and resources designed to help users understand bias in AI models. Each experience explores either how bias becomes embedded in a system or what happens in the real world when a biased AI system makes decisions. No technical background is required for the interactive experiences.
         </p>
       </section>
 
@@ -22,13 +22,13 @@ export function About() {
           Bias Arcade is for anyone curious about how AI models can contain unwanted biases. It is especially aimed at high school and university students outside of computer science, as well as educators looking to explore AI bias with their students.
         </p>
         <p>
-          Learners don't need to know how to code or build AI systems to use the website. The games focus on concepts, consequences, and critical thinking rather than technical implementation. However, some basic familiarity with how AI models work (for example, how they are trained and learn from data) is helpful for better understanding the causes and impacts of biases.
+          Learners don't need to know how to code or build AI systems to use the website. The interactive experiences focus on concepts, consequences, and critical thinking rather than technical implementation. However, some basic familiarity with how AI models work (for example, how they are trained and learn from data) is helpful for better understanding the causes and impacts of biases.
         </p>
       </section>
 
       <section className="content-block">
         <h2>Learning objectives</h2>
-        <p>By the end of the games, learners will be able to:</p>
+        <p>By the end of the interactive experiences, learners will be able to:</p>
         <ul>
           <li>Identify specific points in the AI development process where human choices can introduce bias.</li>
           <li>Connect a type of AI bias to a harmful outcome in a real-world domain.</li>
@@ -39,32 +39,32 @@ export function About() {
       <section className="content-block">
         <h2>Design rationale</h2>
         <p>
-          Bias Arcade uses multiple decision-making games to build a comprehensive understanding of biases in AI systems. It is built on three core pillars: Game-Based Learning to maximise learner motivation, Situated Learning to ground concepts in real-world contexts and Cognitive Load Theory to ensure the experience remains focused and accessible.
+          Bias Arcade uses multiple decision-making interactive experiences to build a comprehensive understanding of biases in AI systems. It is built on three core pillars: Interactive Learning to maximise learner motivation, Situated Learning to ground concepts in real-world contexts and Cognitive Load Theory to ensure the experience remains focused and accessible.
         </p>
 
-        <h3>Game-based learning</h3>
+        <h3>Interactive learning</h3>
         <p>
-          Rather than presenting AI bias through reading materials or videos, the games place learners in situations where they must make decisions, observe consequences and reflect on outcomes. This active involvement supports deeper understanding and is better suited to developing critical thinking skills. Research in game-based learning highlights its benefits for motivation, engagement and knowledge retention.
+          Rather than presenting AI bias through reading materials or videos, the interactive experiences place learners in situations where they must make decisions, observe consequences and reflect on outcomes. This active involvement supports deeper understanding and is better suited to developing critical thinking skills. Research in interactive learning highlights its benefits for motivation, engagement and knowledge retention.
         </p>
 
         <h3>Situated in real-world contexts</h3>
         <p>
-          Games in Bias Arcade are set in real-world contexts such as hiring, healthcare or social media. This grounds the learning experience in contexts learners can relate to, thereby making the consequences of AI bias feel more concrete. Furthermore, it directly supports learners in connecting biases to harmful real-world outcomes.
+          Interactive experiences in Bias Arcade are set in real-world contexts such as hiring, healthcare or social media. This grounds the learning experience in contexts learners can relate to, thereby making the consequences of AI bias feel more concrete. Furthermore, it directly supports learners in connecting biases to harmful real-world outcomes.
         </p>
 
         <h3>Designed for non-technical audiences</h3>
         <p>
-          Bias Arcade requires no coding knowledge or technical background to use. This was an intentional decision based on our target audience: high school and university students outside of computer science and educators who may have limited experience with AI systems. The games focus on concepts, decisions and consequences rather than implementation. This aligns with the AILit Framework's emphasis on AI literacy as a broad competency that should be accessible to all learners, not only those with a technical background.
+          Bias Arcade requires no coding knowledge or technical background to use. This was an intentional decision based on our target audience: high school and university students outside of computer science and educators who may have limited experience with AI systems. The interactive experiences focus on concepts, decisions and consequences rather than implementation. This aligns with the AILit Framework's emphasis on AI literacy as a broad competency that should be accessible to all learners, not only those with a technical background.
         </p>
 
-        <h3>One bias per game</h3>
+        <h3>One bias per experience</h3>
         <p>
-          Each game focuses on a single type of bias. This decision was driven by cognitive load considerations. Introducing multiple types of bias in one game risks overwhelming and confusing learners. Isolating one bias per game allows learners to develop a clear and accurate mental model of how each bias operates.
+          Each experience focuses on a single type of bias. This decision was driven by cognitive load considerations. Introducing multiple types of bias in one experience risks overwhelming and confusing learners. Isolating one bias per experience allows learners to develop a clear and accurate mental model of how each bias operates.
         </p>
 
-        <h3>Shorter games</h3>
+        <h3>Shorter experiences</h3>
         <p>
-          Rather than creating longer experiences, we aimed to create a collection of short, self-contained games with additional supporting resources. This provides two advantages: first, it maintains learner motivation and attention. Second, it gives educators the flexibility to incorporate the games in multiple ways: For example, as a warm-up activity, a standalone lesson, or a brief in-class exercise. This makes Bias Arcade suitable for both self-study and structured classroom use.
+          Rather than creating longer interactions, we aimed to create a collection of short, self-contained experiences with additional supporting resources. This provides two advantages: first, it maintains learner motivation and attention. Second, it gives educators the flexibility to incorporate the experiences in multiple ways: For example, as a warm-up activity, a standalone lesson, or a brief in-class exercise. This makes Bias Arcade suitable for both self-study and structured classroom use.
         </p>
       </section>
 

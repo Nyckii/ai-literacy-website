@@ -135,7 +135,7 @@ export function Resources() {
       <section className="content-block">
         <h2>Foundational papers</h2>
         <p className="section-description">
-          A curated collection of academic research and literature that formed the theoretical groundwork for the games and concepts inside the Bias Arcade.
+          A curated collection of academic research and literature that formed the theoretical groundwork for the interactive experiences and concepts inside the Bias Arcade.
         </p>
         <ul className="resource-list">
           <li>
@@ -216,7 +216,7 @@ export function Resources() {
       <section className="content-block">
         <h2>Source code</h2>
         <p>
-          The Bias Arcade is open source. Read the games, file issues, or
+          The Bias Arcade is open source. Explore the code, file issues, or
           fork it:
           {' '}
           <a
