@@ -1,23 +1,23 @@
-import { DownloadSimple, FileDoc } from "@phosphor-icons/react";
+import { DownloadSimple, FileDoc, FileZip } from "@phosphor-icons/react";
 
 interface DownloadItem {
   title: string;
   description: string;
   filename: string;
   fileSize: string;
-  fileType: "docx" | "pdf" | "generic";
+  fileType: "docx" | "pdf" | "zip" | "generic";
   url: string;
   accentClass: string;
 }
 
 const DOWNLOADS: DownloadItem[] = [
   {
-    title: "Bias & Fairness Worksheet",
-    description: "A printable worksheet that guides students through analyzing the four types of AI bias: measurement, historical, representation, and evaluation. Perfect for classroom activities.",
-    filename: "Biases.docx",
-    fileSize: "28 KB",
-    fileType: "docx",
-    url: "/downloads/Biases.docx",
+    title: "Lesson Plans & Materials",
+    description: "A collection of teaching materials that includes single lessons and a jigsaw lesson with multiple worksheets.",
+    filename: "LessonPlans.zip",
+    fileSize: "323 KB",
+    fileType: "zip",
+    url: "/downloads/LessonPlans.zip",
     accentClass: "tile-lavender",
   },
 ];
@@ -27,10 +27,9 @@ export function Resources() {
     <article className="content-page">
       <header className="content-header">
         <p className="eyebrow">Resources</p>
-        <h1>Further reading</h1>
+        <h1>Resources</h1>
         <p className="lede">
-          Papers, projects, and frameworks that shaped the Bias Arcade. Use
-          them to dig deeper into any bias you encountered in a game.
+          A comprehensive collection of materials to support teaching and learning with the Bias Arcade. Explore lesson plans with learning objectives and discussion questions, teacher guides, additional external projects, and foundational reading lists.
         </p>
       </header>
 
@@ -38,7 +37,7 @@ export function Resources() {
         <h2>Downloadable materials</h2>
         <div className="download-grid">
           {DOWNLOADS.map((item, index) => {
-            const Icon = item.fileType === "docx" ? FileDoc : FileDoc;
+            const Icon = item.fileType === "zip" ? FileZip : FileDoc;
             return (
               <div key={index} className="download-card">
                 <div className="download-card-body">
@@ -46,13 +45,11 @@ export function Resources() {
                     <Icon size={24} weight="bold" />
                   </div>
                   <div className="download-card-content">
-                    <span className="download-card-badge">{item.fileType.toUpperCase()}</span>
                     <h3 className="download-card-title">{item.title}</h3>
                     <p className="download-card-desc">{item.description}</p>
                   </div>
                 </div>
                 <div className="download-card-footer">
-                  <span className="download-card-size">{item.fileSize}</span>
                   <a
                     href={item.url}
                     download={item.filename}
@@ -75,18 +72,6 @@ export function Resources() {
           Explore external projects, interactive tools, and curriculum designs from the broader educational technology and AI ethics community.
         </p>
         <ul className="resource-list">
-          <li>
-            <a
-              href="https://www.survivalofthebestfit.com/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Survival of the Best Fit
-            </a>
-            <span className="resource-note">
-              An interactive game exploring the impacts of historical bias on automated hiring algorithms.
-            </span>
-          </li>
           <li>
             <a
               href="https://pair.withgoogle.com/explorables/"
@@ -113,14 +98,26 @@ export function Resources() {
           </li>
           <li>
             <a
-              href="https://ethz.ch/en.html"
+              href="https://www.survivalofthebestfit.com/"
               target="_blank"
               rel="noreferrer"
             >
-              ETH Zürich — PEACH
+              Survival of the Best Fit
             </a>
             <span className="resource-note">
-              The Educational Technology research group hosting this course and exploring learning designs.
+              An interactive game exploring the impacts of historical bias on automated hiring algorithms.
+            </span>
+          </li>
+          <li>
+            <a
+              href="https://github.com/survivalofthebestfit/survivalofthebestfit/wiki/Reading-List"
+              target="_blank"
+              rel="noreferrer"
+            >
+              Reading List
+            </a>
+            <span className="resource-note">
+              This list is for anyone who wants to learn more about the case for why and how we can make AI systems more inclusive.
             </span>
           </li>
         </ul>
