@@ -4,38 +4,13 @@
 // Your Turn uses click-on-map dispatch: click a neighborhood to send one available rider there.
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import type { ElementType } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import {
-  ArrowsClockwise,
-  Broadcast,
-  BuildingOffice,
-  Buildings,
-  Car,
-  ChartBar,
-  CheckCircle,
-  ClipboardText,
-  Coins,
-  FirstAid,
-  GraduationCap,
-  House,
-  HouseLine,
-  Lightning,
-  Mountains,
-  Package,
-  Robot,
-  Scooter,
-  Target,
-  Timer,
-  Warning,
-} from '@phosphor-icons/react';
+import { useNavigate } from 'react-router-dom';
 import mapImg from './assets/AlgorithmBiasImg/city-delivery-map.png';
 import { markGameCompleted } from '../../lib/gameProgress';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type GamePhase =
-  | 'intro'
   | 'explore'
   | 'goal'
   | 'yourTurn'
@@ -48,7 +23,7 @@ type GamePhase =
   | 'finalReflect';
 
 interface Hood {
-  id: string; name: string; emoji: string; Icon: ElementType;
+  id: string; name: string; emoji: string;
   color: string; bgColor: string; textColor: string;
   pos: { x: number; y: number };
   radius: number;
@@ -71,7 +46,7 @@ interface LiveRider {
 }
 
 interface RiderMapPos {
-  x: number; y: number; delivering: boolean;
+  id: number; x: number; y: number; delivering: boolean;
 }
 
 // Explore demo state
@@ -84,48 +59,48 @@ interface ExploreDemo {
 // ─── Map Constants ────────────────────────────────────────────────────────────
 
 // HQ = the large central warehouse building (~43% left, ~47% top in the image)
-const HQ = { x: 43, y: 47 };
+const HQ = { x: 53, y: 46 };
 
 // Road waypoints follow visible roads in the PNG (x/y in 0–100 range)
 const ROAD_PATHS: Record<string, [number, number][]> = {
-  downtown:    [[43, 47], [36, 52], [29, 58], [25, 65]],
-  midtown:     [[43, 47], [35, 43], [28, 38], [25, 33]],
-  northsuburb: [[43, 47], [43, 36], [43, 26], [42, 17]],
-  easthills:   [[43, 47], [53, 47], [63, 47], [73, 47]],
+  downtown:    [[53, 46], [50, 52], [46, 58], [42, 65]],
+  midtown:     [[53, 46], [45, 41], [38, 36], [30, 31]],
+  northsuburb: [[53, 46], [52, 36], [52, 27], [51, 19]],
+  easthills:   [[53, 46], [61, 46], [69, 47], [76, 47]],
 };
 
 const HOODS: Hood[] = [
   {
-    id: 'downtown', name: 'Downtown', emoji: '🏙️', Icon: Buildings,
+    id: 'downtown', name: 'Downtown', emoji: '🏙️',
     color: '#4f46e5', bgColor: 'rgba(79,70,229,0.15)', textColor: '#4338ca',
-    pos: { x: 25, y: 65 }, radius: 9,
+    pos: { x: 42, y: 65 }, radius: 9,
     baseOrders: 6, baseTime: 8, minTime: 4, earnings: 10,
     tagline: 'Dense · Fast · Profitable',
     difficulty: 'Easy, short trips',
     exploreInfo: 'Packed skyscrapers, busy restaurants, tight grid roads. Riders can zip in and out, very short trips, high order volume.',
   },
   {
-    id: 'midtown', name: 'Midtown', emoji: '🏢', Icon: BuildingOffice,
+    id: 'midtown', name: 'Midtown', emoji: '🏢',
     color: '#0891b2', bgColor: 'rgba(8,145,178,0.15)', textColor: '#0e7490',
-    pos: { x: 25, y: 33 }, radius: 8,
+    pos: { x: 30, y: 31 }, radius: 8,
     baseOrders: 4, baseTime: 13, minTime: 6, earnings: 11,
     tagline: 'Mixed · Steady · Moderate',
     difficulty: 'Medium, moderate trips',
     exploreInfo: 'Office towers and apartment blocks mixed together. Steady orders through the day, manageable distances from HQ.',
   },
   {
-    id: 'northsuburb', name: 'North Suburb', emoji: '🏘️', Icon: HouseLine,
+    id: 'northsuburb', name: 'North Suburb', emoji: '🏘️',
     color: '#d97706', bgColor: 'rgba(217,119,6,0.15)', textColor: '#b45309',
-    pos: { x: 42, y: 17 }, radius: 7,
+    pos: { x: 51, y: 19 }, radius: 7,
     baseOrders: 3, baseTime: 17, minTime: 8, earnings: 13,
     tagline: 'Quiet · Spread out · Longer rides',
     difficulty: 'Harder, homes spread out',
     exploreInfo: 'Peaceful residential streets where houses are far apart. Fewer orders per shift, but each delivery covers more ground.',
   },
   {
-    id: 'easthills', name: 'East Hills', emoji: '🏜️', Icon: Mountains,
+    id: 'easthills', name: 'East Hills', emoji: '🏜️',
     color: '#dc2626', bgColor: 'rgba(220,38,38,0.15)', textColor: '#b91c1c',
-    pos: { x: 73, y: 47 }, radius: 9,
+    pos: { x: 76, y: 47 }, radius: 8,
     baseOrders: 3, baseTime: 23, minTime: 10, earnings: 16,
     tagline: 'Remote · Winding roads · Hardest',
     difficulty: 'Hardest, longest trips',
@@ -134,14 +109,15 @@ const HOODS: Hood[] = [
 ];
 
 // Biased algorithm (proportional to historical order volume)
-const ALGO_SEQUENCE = ['downtown', 'midtown', 'northsuburb', 'downtown', 'easthills', 'midtown', 'northsuburb', 'downtown'];
+const ALGO_SEQUENCE = ['downtown', 'downtown', 'downtown', 'downtown', 'midtown', 'midtown', 'northsuburb', 'easthills'];
 // Fairer algorithm (guaranteed min coverage)
 const FAIRER_SEQUENCE = ['downtown', 'easthills', 'midtown', 'northsuburb', 'downtown', 'easthills', 'midtown', 'northsuburb'];
 // East Hills demand surge
 const ALGO_ORDERS_SURGE: Record<string, number> = { downtown: 6, midtown: 4, northsuburb: 3, easthills: 8 };
 
 const TOTAL_RIDERS = 8;
-const YOUR_TURN_DURATION = 90;
+const YOUR_TURN_DURATION = 45;
+const AUTO_DISPATCH_FRAME_GAP = 12;
 const LIVE_GOALS = {
   avgTrip: 15,
   delivered: 13,
@@ -171,6 +147,7 @@ const DEMAND_WEIGHTS = [
 
 // Initial demand at game start
 const INITIAL_DEMAND: Record<string, number> = { downtown: 7, midtown: 5, northsuburb: 3, easthills: 4 };
+const EMPTY_HOOD_COUNTS: Record<string, number> = { downtown: 0, midtown: 0, northsuburb: 0, easthills: 0 };
 
 // ─── Simulation Helpers ───────────────────────────────────────────────────────
 
@@ -187,6 +164,25 @@ function simulate(asgn: Record<string, number>, orders?: Record<string, number>)
     const t = calcTime(h.baseTime, h.minTime, n);
     const s = calcSat(t);
     return { id: h.id, drivers: n, orders: ord, time: t, sat: s, delivered: n === 0 ? 0 : Math.min(ord, n * 2) };
+  });
+}
+function liveResultsFromRun(
+  assigned: Record<string, number>,
+  delivered: Record<string, number>,
+  orders: Record<string, number>
+): NResult[] {
+  return HOODS.map(h => {
+    const drivers = assigned[h.id] ?? 0;
+    const done = delivered[h.id] ?? 0;
+    const time = drivers === 0 ? 99 : liveTripSeconds(h.id);
+    return {
+      id: h.id,
+      drivers,
+      orders: orders[h.id] ?? h.baseOrders,
+      time,
+      sat: calcSat(time),
+      delivered: done,
+    };
   });
 }
 function summarize(rs: NResult[]) {
@@ -253,88 +249,89 @@ function progressToXY(hoodId: string, progress: number): [number, number] {
 
 function riderIsDelivering(progress: number) { return progress > 1.0 && progress <= 1.3; }
 
+function spreadRiderXY(id: number, x: number, y: number): [number, number] {
+  const lane = (id % 5) - 2;
+  const direction = Math.floor(id / 5) % 2 === 0 ? 1 : -1;
+  return [x + lane * 0.42, y + lane * direction * 0.34];
+}
+
 // Round-trip speeds are intentionally uneven to create live dispatch pressure.
 function riderSpeedForHood(h: Hood): number {
   const roundTripSecs = liveTripSeconds(h.id);
   return 2.3 / (roundTripSecs * 30); // progress units per frame at 30fps
 }
 
-// The Explore demo plays at a fixed brisk pace (~2.5s round trip) so players
-// aren't left waiting on the long routes — the real per-neighborhood trip
-// time is communicated through the labels and the result card instead.
-const DEMO_ROUND_TRIP_FRAMES = 150;
-function demoRiderSpeed(_h: Hood): number {
-  return 2.3 / DEMO_ROUND_TRIP_FRAMES;
-}
+// Speed for Explore demo (same function, distinct usage)
+const demoRiderSpeed = riderSpeedForHood;
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
 const STYLES = `
 .ab-page {
   min-height: 100vh;
-  background: #faf7f2;
+  background: #ede9e3;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0 16px 110px;
-  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
-  color: #0b1733;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  color: #2d2419;
 }
 
 /* ── Stepper ── */
 .ab-stepper { display:flex; align-items:flex-start; gap:0; padding:18px 0 10px; width:100%; max-width:860px; }
 .ab-step { display:flex; flex-direction:column; align-items:center; flex:1; user-select:none; }
-.ab-step-dot { width:11px; height:11px; border-radius:50%; background:#fff; border:2px solid #0b1733; transition:all 0.25s; }
-.ab-step.done .ab-step-dot { background:#16a34a; border-color:#0b1733; cursor:pointer; }
-.ab-step.active .ab-step-dot { background:#ff3b46; border-color:#0b1733; box-shadow:0 0 0 4px rgba(255,59,70,0.18); width:13px; height:13px; }
+.ab-step-dot { width:10px; height:10px; border-radius:50%; background:#d5cec6; border:2px solid #c4bcb3; transition:all 0.25s; }
+.ab-step.done .ab-step-dot { background:#16a34a; border-color:#15803d; cursor:pointer; }
+.ab-step.active .ab-step-dot { background:#4f46e5; border-color:#4338ca; box-shadow:0 0 0 4px rgba(79,70,229,0.18); width:12px; height:12px; }
 .ab-step-label { font-size:10px; color:#a8998c; margin-top:5px; text-align:center; white-space:nowrap; }
-.ab-step.active .ab-step-label { color:#ff3b46; font-weight:800; }
+.ab-step.active .ab-step-label { color:#4f46e5; font-weight:700; }
 .ab-step.done .ab-step-label { color:#7a6e64; }
-.ab-step-line { flex:1; height:2px; background:#d8d0c6; margin-top:5px; }
-.ab-step-line.done { background:rgba(22,163,74,0.45); }
+.ab-step-line { flex:1; height:2px; background:#ddd5ca; margin-top:4px; }
+.ab-step-line.done { background:rgba(22,163,74,0.4); }
 
 /* ── Live HUD bar ── */
 .ab-hud { display:flex; gap:8px; width:100%; max-width:860px; flex-wrap:wrap; }
 .ab-goal-panel {
-  flex:1 1 520px; background:#fff; border:2px solid #0b1733; border-radius:14px;
-  padding:10px 14px; box-shadow:4px 4px 0 #0b1733;
+  flex:1 1 520px; background:#fff; border:2px solid #d8d0ff; border-radius:14px;
+  padding:10px 14px; box-shadow:0 2px 10px rgba(79,70,229,0.08);
   display:flex; align-items:center; justify-content:space-between; gap:12px;
 }
-.ab-goal-panel.safe { background:#f0fdf4; }
-.ab-goal-panel.warn { background:#fffbeb; }
-.ab-goal-panel.bad { background:#fef2f2; }
+.ab-goal-panel.safe { border-color:#86efac; background:#f0fdf4; }
+.ab-goal-panel.warn { border-color:#fbbf24; background:#fffbeb; }
+.ab-goal-panel.bad { border-color:#fca5a5; background:#fef2f2; }
 .ab-goal-main { min-width:0; }
 .ab-goal-kicker { font-size:9px; color:#7a6e64; text-transform:uppercase; letter-spacing:0.08em; font-weight:800; margin-bottom:2px; }
-.ab-goal-title { font-size:18px; color:#0b1733; font-weight:850; letter-spacing:-0.02em; }
+.ab-goal-title { font-size:18px; color:#2d2419; font-weight:850; letter-spacing:-0.02em; }
 .ab-goal-meta { font-size:12px; color:#6b5f55; margin-top:3px; font-weight:650; }
-.ab-goal-avg { flex:0 0 auto; font-size:24px; font-weight:850; font-variant-numeric:tabular-nums; color:#0b1733; text-align:right; }
+.ab-goal-avg { flex:0 0 auto; font-size:24px; font-weight:850; font-variant-numeric:tabular-nums; color:#4f46e5; text-align:right; }
 .ab-goal-panel.safe .ab-goal-avg { color:#16a34a; }
 .ab-goal-panel.warn .ab-goal-avg { color:#d97706; }
 .ab-goal-panel.bad .ab-goal-avg { color:#dc2626; }
 .ab-hud-secondary {
-  flex:1 1 210px; background:#fff; border:2px solid #0b1733; border-radius:14px;
+  flex:1 1 210px; background:#fff; border:1px solid #e2d9ce; border-radius:14px;
   padding:10px 14px; display:flex; align-items:center; justify-content:center;
   gap:14px; color:#6b5f55; font-size:12px; font-weight:750;
-  box-shadow:4px 4px 0 #0b1733;
+  box-shadow:0 1px 4px rgba(0,0,0,0.05);
 }
 .ab-hud-tile {
   flex:1; min-width:90px;
-  background:#fff; border:2px solid #0b1733; border-radius:12px;
+  background:#fff; border:1px solid #e2d9ce; border-radius:12px;
   padding:8px 10px; text-align:center;
-  box-shadow:3px 3px 0 #0b1733;
+  box-shadow:0 1px 4px rgba(0,0,0,0.06);
 }
-.ab-hud-val { font-size:18px; font-weight:700; color:#0b1733; font-variant-numeric:tabular-nums; line-height:1; margin-bottom:2px; }
+.ab-hud-val { font-size:18px; font-weight:700; color:#2d2419; font-variant-numeric:tabular-nums; line-height:1; margin-bottom:2px; }
 .ab-hud-val.ok  { color:#16a34a; }
 .ab-hud-val.warn { color:#d97706; }
 .ab-hud-val.bad  { color:#dc2626; }
 .ab-hud-label { font-size:9px; color:#a8998c; text-transform:uppercase; letter-spacing:0.07em; font-weight:600; }
 .ab-timer-tile {
   flex:0 0 auto; min-width:88px;
-  background:#fff8f0; border:2px solid #0b1733; border-radius:12px;
+  background:#fff8f0; border:1.5px solid #f4c07a; border-radius:12px;
   padding:8px 10px; text-align:center;
-  box-shadow:3px 3px 0 #0b1733;
+  box-shadow:0 1px 4px rgba(0,0,0,0.06);
 }
-.ab-timer-tile.urgent { background:#fef2f2; }
+.ab-timer-tile.urgent { background:#fef2f2; border-color:#fca5a5; }
 .ab-timer-val { font-size:22px; font-weight:800; color:#c87722; font-variant-numeric:tabular-nums; line-height:1; }
 .ab-timer-tile.urgent .ab-timer-val { color:#dc2626; }
 .ab-timer-label { font-size:9px; color:#a8998c; text-transform:uppercase; letter-spacing:0.07em; font-weight:600; }
@@ -391,9 +388,9 @@ const STYLES = `
 /* ── HQ badge (shown during Your Turn) ── */
 .ab-hq-badge {
   position:absolute; transform:translate(-50%,-100%);
-  background:#0b1733; color:#fff; border:2px solid #0b1733; border-radius:20px;
+  background:#4f46e5; color:#fff; border-radius:20px;
   padding:4px 11px 5px; font-size:12px; font-weight:700;
-  box-shadow:0 2px 10px rgba(11,23,51,0.32);
+  box-shadow:0 2px 10px rgba(79,70,229,0.32);
   pointer-events:none; z-index:30; white-space:nowrap; text-align:center;
   animation:ab-fadein 0.3s ease both;
 }
@@ -442,43 +439,42 @@ const STYLES = `
 
 /* ── Demo rider (Explore single-rider animation) ── */
 .ab-demo-rider {
-  position:absolute; width:30px; height:30px; border-radius:50%;
-  background:#0b1733; border:3px solid #fff;
+  position:absolute; width:32px; height:32px; border-radius:50%;
+  background:#4f46e5; border:3px solid #fff;
   display:flex; align-items:center; justify-content:center;
-  font-size:14px;
-  box-shadow:0 2px 10px rgba(11,23,51,0.42);
+  font-size:15px;
+  box-shadow:0 2px 10px rgba(79,70,229,0.42);
   transform:translate(-50%,-50%);
   z-index:30; pointer-events:none;
-  transition:left 0.08s linear, top 0.08s linear;
 }
 
 /* ── Cards ── */
 .ab-card {
-  background:#fff; border:2px solid #0b1733; border-radius:18px;
+  background:#fff; border:1px solid #e2d9ce; border-radius:18px;
   padding:22px 26px; width:100%; max-width:860px; margin-top:10px;
-  box-shadow:6px 6px 0 #0b1733;
+  box-shadow:0 1px 6px rgba(0,0,0,0.07);
   animation:ab-fadein 0.35s ease both;
 }
-.ab-card-title { font-size:21px; font-weight:900; color:#0b1733; margin:0 0 5px; letter-spacing:-0.02em; }
+.ab-card-title { font-size:21px; font-weight:800; color:#2d2419; margin:0 0 5px; letter-spacing:-0.02em; }
 .ab-card-sub   { font-size:14px; color:#8a7a6d; margin:0 0 16px; line-height:1.55; }
 .ab-callout { padding:12px 16px; border-radius:12px; font-size:13px; line-height:1.6; }
-.ab-callout.indigo { background:#eef2ff; border:2px solid #0b1733; color:#3730a3; }
-.ab-callout.amber  { background:#fffbeb; border:2px solid #0b1733; color:#92400e; }
-.ab-callout.red    { background:#fef2f2; border:2px solid #0b1733; color:#991b1b; }
-.ab-callout.green  { background:#f0fdf4; border:2px solid #0b1733; color:#166534; }
+.ab-callout.indigo { background:#eef2ff; border:1px solid #c7d2fe; color:#3730a3; }
+.ab-callout.amber  { background:#fffbeb; border:1px solid #fde68a; color:#92400e; }
+.ab-callout.red    { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; }
+.ab-callout.green  { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
 
 /* ── Your Turn info panel ── */
 .ab-yt-panel {
   width:100%; max-width:860px; margin-top:10px;
-  background:#fff; border:2px solid #0b1733; border-radius:16px;
+  background:#fff; border:1px solid #e2d9ce; border-radius:16px;
   padding:14px 20px;
-  box-shadow:6px 6px 0 #0b1733;
+  box-shadow:0 1px 6px rgba(0,0,0,0.07);
   display:flex; flex-direction:column; gap:10px;
 }
 .ab-yt-instruction {
-  font-size:14px; font-weight:700; color:#0b1733; text-align:center;
+  font-size:14px; font-weight:700; color:#2d2419; text-align:center;
 }
-.ab-yt-instruction span { color:#ff3b46; }
+.ab-yt-instruction span { color:#4f46e5; }
 .ab-yt-feedback {
   font-size:13px; font-weight:600; color:#8a7a6d;
   background:#f8f5f1; border-radius:10px;
@@ -515,18 +511,18 @@ const STYLES = `
 
 /* ── Algo tiles ── */
 .ab-algo-tiles { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
-.ab-algo-tile { flex:1; min-width:120px; background:#fff; border:2px solid #0b1733; border-radius:14px; padding:12px; text-align:center; box-shadow:3px 3px 0 #0b1733; transition:all 0.3s; }
+.ab-algo-tile { flex:1; min-width:120px; background:#f8f5f1; border:2px solid #e2d9ce; border-radius:14px; padding:12px; text-align:center; transition:all 0.3s; }
 .ab-algo-count { font-size:30px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1; }
 .ab-algo-label { font-size:11px; color:#a8998c; margin-top:2px; }
 
 /* ── Strategy box ── */
-.ab-strategy-box { background:#eef2ff; border:2px solid #0b1733; border-radius:14px; padding:16px 18px; margin-bottom:14px; box-shadow:3px 3px 0 #0b1733; }
+.ab-strategy-box { background:#eef2ff; border:2px solid #c7d2fe; border-radius:14px; padding:16px 18px; margin-bottom:14px; }
 .ab-strategy-rule { background:#fff; border:1.5px dashed #c7d2fe; border-radius:10px; padding:12px 16px; font-size:14px; color:#3730a3; font-weight:600; font-style:italic; margin-top:10px; line-height:1.5; }
 
 /* ── News banner ── */
-.ab-news-banner { background:linear-gradient(135deg,#dc2626,#b91c1c); color:#fff; border-radius:14px; padding:16px 20px; margin-bottom:16px; animation:ab-fadein 0.4s ease both; }
-.ab-news-tag  { font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; opacity:0.75; margin-bottom:4px; }
-.ab-news-text { font-size:20px; font-weight:800; line-height:1.3; }
+.ab-news-banner { background:linear-gradient(135deg,#dc2626,#7f1d1d); color:#fff; border-radius:14px; padding:20px 24px; margin-bottom:16px; animation:ab-fadein 0.4s ease both; border:2px solid #fca5a5; box-shadow:0 4px 24px rgba(220,38,38,0.35); }
+.ab-news-tag  { font-size:12px; font-weight:800; letter-spacing:0.15em; text-transform:uppercase; opacity:0.9; margin-bottom:6px; display:flex; align-items:center; gap:6px; }
+.ab-news-text { font-size:22px; font-weight:900; line-height:1.3; }
 
 /* ── Compare table ── */
 .ab-compare-wrap { overflow:hidden; border-radius:14px; border:1px solid #e2d9ce; margin-top:12px; }
@@ -563,11 +559,11 @@ const STYLES = `
 .ab-choice-feedback.right { color:#166534; background:rgba(22,163,74,0.1); }
 
 /* ── Explore panel ── */
-.ab-explore-panel { width:100%; max-width:860px; margin-top:10px; background:#fff; border:2px solid #0b1733; border-radius:16px; overflow:hidden; box-shadow:6px 6px 0 #0b1733; }
-.ab-explore-tabs { display:flex; border-bottom:2px solid #0b1733; }
-.ab-explore-tab { flex:1; padding:10px 6px; border:none; background:none; cursor:pointer; font-size:12px; font-weight:700; color:#a8998c; transition:all 0.18s; display:flex; flex-direction:column; align-items:center; gap:3px; }
-.ab-explore-tab:hover { color:#0b1733; }
-.ab-explore-tab.active  { color:#ff3b46; background:#fff1f2; border-bottom:3px solid #ff3b46; margin-bottom:-2px; }
+.ab-explore-panel { width:100%; max-width:860px; margin-top:10px; background:#fff; border:1px solid #e2d9ce; border-radius:16px; overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,0.06); }
+.ab-explore-tabs { display:flex; border-bottom:1px solid #e2d9ce; }
+.ab-explore-tab { flex:1; padding:10px 6px; border:none; background:none; cursor:pointer; font-size:12px; font-weight:600; color:#a8998c; transition:all 0.18s; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.ab-explore-tab:hover { color:#2d2419; }
+.ab-explore-tab.active  { color:#4f46e5; background:#f5f4ff; border-bottom:2.5px solid #4f46e5; margin-bottom:-1px; }
 .ab-explore-tab.visited { color:#16a34a; }
 .ab-explore-content { padding:16px 20px; }
 .ab-explore-empty { color:#b0a499; font-size:14px; padding:20px; text-align:center; }
@@ -577,23 +573,228 @@ const STYLES = `
 .ab-trip-stat-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; opacity:0.7; }
 
 /* ── Round complete banner ── */
-.ab-round-done { width:100%; max-width:860px; margin-top:10px; background:#f0fdf4; border:2px solid #0b1733; border-radius:16px; padding:16px 20px; text-align:center; box-shadow:6px 6px 0 #0b1733; animation:ab-fadein 0.4s ease both; }
+.ab-round-done { width:100%; max-width:860px; margin-top:10px; background:#f0fdf4; border:2px solid #86efac; border-radius:16px; padding:16px 20px; text-align:center; animation:ab-fadein 0.4s ease both; }
 
 /* ── Spinner ── */
-.ab-spinner { width:18px; height:18px; border:2.5px solid #e2d9ce; border-top-color:#ff3b46; border-radius:50%; animation:ab-spin 0.8s linear infinite; flex-shrink:0; }
+.ab-spinner { width:18px; height:18px; border:2.5px solid #e2d9ce; border-top-color:#4f46e5; border-radius:50%; animation:ab-spin 0.8s linear infinite; flex-shrink:0; }
 
 /* ── Action bar ── */
-.ab-action-bar { position:fixed; bottom:0; left:0; right:0; padding:14px 24px; background:rgba(250,247,242,0.96); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-top:2px solid #0b1733; display:flex; justify-content:center; align-items:center; z-index:400; }
-.ab-btn { min-width:260px; padding:14px 36px; border:2px solid #0b1733; border-radius:999px; font-size:15px; font-weight:800; cursor:pointer; transition:transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease; background:#ff3b46; color:#fff; box-shadow:4px 4px 0 #0b1733; }
-.ab-btn:hover:not(:disabled) { background:#ff525c; transform:translate(-2px,-2px); box-shadow:6px 6px 0 #0b1733; }
-.ab-btn:active:not(:disabled) { transform:translate(2px,2px); box-shadow:1px 1px 0 #0b1733; }
-.ab-btn:disabled { background:#e7e1d8; color:#a8998c; cursor:not-allowed; box-shadow:4px 4px 0 #cfc7bb; }
+.ab-action-bar { position:fixed; bottom:0; left:0; right:0; padding:14px 24px; background:rgba(237,233,227,0.96); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-top:1px solid #e2d9ce; display:flex; justify-content:center; align-items:center; z-index:400; box-shadow:0 -4px 20px rgba(0,0,0,0.06); }
+.ab-btn { min-width:260px; padding:13px 36px; border:none; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.18s; background:#4f46e5; color:#fff; box-shadow:0 4px 16px rgba(79,70,229,0.3); }
+.ab-btn:hover:not(:disabled) { background:#4338ca; transform:translateY(-1px); box-shadow:0 6px 24px rgba(79,70,229,0.38); }
+.ab-btn:disabled { background:#d5cec6; color:#a8998c; cursor:not-allowed; box-shadow:none; }
+
+/* ── Arcade design pass ── */
+.ab-page {
+  background:
+    radial-gradient(rgba(11,23,51,0.05) 1.15px, transparent 1.25px) 0 0 / 18px 18px,
+    var(--bg);
+  color:var(--text);
+  font-family:var(--sans);
+}
+.ab-stepper {
+  max-width:980px;
+  padding:20px 0 12px;
+}
+.ab-step-dot {
+  background:var(--surface);
+  border:2px solid var(--ink);
+  box-shadow:2px 2px 0 var(--ink);
+}
+.ab-step.active .ab-step-dot {
+  background:var(--accent);
+  border-color:var(--ink);
+  box-shadow:3px 3px 0 var(--ink);
+}
+.ab-step.done .ab-step-dot {
+  background:var(--tile-mint);
+  border-color:var(--ink);
+}
+.ab-step-label {
+  color:color-mix(in srgb, var(--ink) 60%, transparent);
+  font-weight:800;
+  letter-spacing:0.04em;
+  text-transform:uppercase;
+}
+.ab-step.active .ab-step-label,
+.ab-step.done .ab-step-label {
+  color:var(--ink);
+}
+.ab-step-line {
+  background:color-mix(in srgb, var(--ink) 22%, transparent);
+  height:3px;
+}
+.ab-step-line.done {
+  background:var(--accent);
+}
+.ab-map-wrap {
+  max-width:980px;
+  border-radius:var(--radius-lg);
+  border:2px solid var(--ink);
+  box-shadow:8px 8px 0 var(--ink);
+  background:var(--surface);
+}
+.ab-card,
+.ab-yt-panel,
+.ab-explore-panel,
+.ab-round-done {
+  max-width:980px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.64), rgba(255,255,255,0) 42%),
+    var(--surface);
+  border:2px solid var(--ink);
+  border-radius:var(--radius-lg);
+  box-shadow:6px 6px 0 var(--ink);
+}
+.ab-card-title {
+  color:var(--ink);
+  font-family:var(--display);
+  font-size:1.24rem;
+  letter-spacing:-0.02em;
+}
+.ab-card-sub {
+  color:var(--text-muted);
+}
+.ab-hud {
+  max-width:980px;
+}
+.ab-hud > div,
+.ab-goal-panel,
+.ab-hud-secondary,
+.ab-hud-tile,
+.ab-timer-tile,
+.ab-trip-stat,
+.ab-algo-tile,
+.ab-reflect-tile,
+.ab-choice-card,
+.ab-strategy-box,
+.ab-callout {
+  border:2px solid var(--ink) !important;
+  box-shadow:4px 4px 0 var(--ink);
+  border-radius:var(--radius);
+}
+.ab-algo-tile,
+.ab-reflect-tile,
+.ab-choice-card,
+.ab-yt-hood-chip {
+  background:
+    radial-gradient(rgba(11,23,51,0.06) 1px, transparent 1.1px) 0 0 / 13px 13px,
+    var(--surface) !important;
+}
+.ab-algo-count,
+.ab-trip-stat-val {
+  color:var(--accent-strong);
+}
+.ab-demand,
+.ab-hq-badge,
+.ab-hotspot,
+.ab-rider,
+.ab-demo-rider {
+  border:2px solid var(--ink) !important;
+  box-shadow:3px 3px 0 var(--ink);
+}
+.ab-demand {
+  background:var(--tile-yellow);
+}
+.ab-demand-label,
+.ab-demand-count {
+  color:var(--ink);
+}
+.ab-demand.surge {
+  background:var(--accent);
+  color:#fff;
+}
+.ab-demand.surge .ab-demand-label,
+.ab-demand.surge .ab-demand-count {
+  color:#fff;
+}
+.ab-rider {
+  background:var(--tile-coral);
+}
+.ab-rider.delivering {
+  background:var(--accent);
+}
+.ab-demo-rider,
+.ab-hq-badge {
+  background:var(--tile-lavender);
+  color:var(--ink);
+}
+.ab-rtable {
+  border-collapse:separate;
+  border-spacing:0;
+  overflow:hidden;
+  border:2px solid var(--ink);
+  border-radius:var(--radius);
+}
+.ab-rtable th {
+  background:var(--ink);
+  color:#fff;
+  border-bottom:2px solid var(--ink);
+}
+.ab-rtable td {
+  border-bottom:1px solid color-mix(in srgb, var(--ink) 16%, transparent);
+}
+.ab-rtable tr:last-child td {
+  border-bottom:none;
+}
+.ab-badge {
+  border:1.5px solid currentColor;
+  border-radius:6px;
+}
+.ab-explore-tab {
+  color:var(--text-muted);
+}
+.ab-explore-tab.active {
+  color:var(--ink);
+  background:var(--accent-soft);
+  border-bottom:3px solid var(--accent);
+}
+.ab-explore-tab.visited {
+  color:var(--accent-strong);
+}
+.ab-news-banner {
+  border:2px solid var(--ink);
+  box-shadow:6px 6px 0 var(--ink);
+  background:
+    radial-gradient(rgba(255,255,255,0.16) 1.3px, transparent 1.4px) 0 0 / 16px 16px,
+    var(--accent);
+}
+.ab-spinner {
+  border-color:color-mix(in srgb, var(--ink) 18%, transparent);
+  border-top-color:var(--accent);
+}
+.ab-action-bar {
+  background:rgba(250,250,250,0.9);
+  border-top:2px solid var(--ink);
+  box-shadow:0 -5px 0 rgba(11,23,51,0.08);
+}
+.ab-btn {
+  background:var(--accent);
+  color:#fff;
+  border:2px solid var(--ink);
+  border-radius:999px;
+  box-shadow:5px 5px 0 var(--ink);
+}
+.ab-btn:hover:not(:disabled) {
+  background:var(--accent-strong);
+  transform:translate(-2px,-2px);
+  box-shadow:8px 8px 0 var(--ink);
+}
+.ab-btn:active:not(:disabled) {
+  transform:translate(2px,2px);
+  box-shadow:2px 2px 0 var(--ink);
+}
+.ab-btn:disabled {
+  background:color-mix(in srgb, var(--ink) 15%, var(--surface));
+  color:color-mix(in srgb, var(--ink) 45%, transparent);
+  border-color:color-mix(in srgb, var(--ink) 36%, transparent);
+  box-shadow:none;
+}
 
 /* ── Animations ── */
 @keyframes ab-fadein  { from{opacity:0;transform:translateY(8px);}  to{opacity:1;transform:translateY(0);} }
 @keyframes ab-spin    { to{transform:rotate(360deg);} }
-/* SVG-safe ring expansion: scales around the ellipse's own centre (needs transform-box:fill-box) */
-@keyframes ab-ring-expand { 0%{opacity:0.85;transform:scale(1);} 100%{opacity:0;transform:scale(1.7);} }
+@keyframes ab-pulse-ring { 0%{opacity:0.7;transform:translate(-50%,-50%) scale(1);} 100%{opacity:0;transform:translate(-50%,-50%) scale(2.6);} }
 @keyframes ab-bob     { 0%,100%{transform:translate(-50%,-100%) translateY(0);} 50%{transform:translate(-50%,-100%) translateY(-5px);} }
 @keyframes ab-urgency { 0%,100%{transform:translate(-50%,-100%) scale(1);} 50%{transform:translate(-50%,-100%) scale(1.07);} }
 @keyframes ab-deliver { from{transform:translate(-50%,-50%) scale(1);} to{transform:translate(-50%,-50%) scale(1.28);} }
@@ -612,14 +813,6 @@ function satBadge(s: number) {
 }
 function rowCls(s: number) { return s >= 70 ? 'ab-row-ok' : s >= 40 ? 'ab-row-warn' : 'ab-row-bad'; }
 
-function describeAssignment(asgn: Record<string, number>): string {
-  const sorted = [...HOODS].sort((a, b) => (asgn[b.id] ?? 0) - (asgn[a.id] ?? 0));
-  const top = sorted[0]; const bot = sorted[sorted.length - 1];
-  const topN = asgn[top.id] ?? 0; const botN = asgn[bot.id] ?? 0;
-  if (topN === botN) return 'You spread riders evenly across all neighborhoods.';
-  const botPart = botN === 0 ? `gave none to ${bot.name}` : `only ${botN} to ${bot.name}`;
-  return `You gave ${topN} trips to ${top.name} and ${botPart}.`;
-}
 
 function hoodTripHint(h: Hood) {
   return `${h.name}, ${h.difficulty} · click to send 1 rider`;
@@ -627,9 +820,9 @@ function hoodTripHint(h: Hood) {
 
 // ─── Step Indicator ───────────────────────────────────────────────────────────
 
-const VISIBLE_STEP_LABELS = ['Explore', 'Goal', 'Your Turn', 'Automate', 'Bias', 'Reflect'];
+const VISIBLE_STEP_LABELS = ['Explore', 'Goal', 'Simulation', 'Automate', 'Bias', 'Reflect'];
 const PHASE_TO_VSTEP: Record<GamePhase, number> = {
-  intro: 0, explore: 0, goal: 1, yourTurn: 2, automate: 3, bias: 4, reflect: 5,
+  explore: 0, goal: 1, yourTurn: 2, automate: 3, bias: 4, reflect: 5,
   fixIt: 5, fairerRound: 5, finalReflect: 5,
 };
 const VSTEP_FIRST_PHASE: GamePhase[] = ['explore', 'goal', 'yourTurn', 'automate', 'bias', 'reflect'];
@@ -684,8 +877,6 @@ interface MapBoardProps {
   ytFeedback: string | null;
   // Active riders (animating on map)
   activeRiderPositions: RiderMapPos[];
-  // Idle riders at HQ
-  idleRiderCount: number;
   // Demand (non-yourTurn phases)
   showDemand: boolean;
   surgeActive: boolean;
@@ -693,29 +884,20 @@ interface MapBoardProps {
   // Algo phases
   displayAssignments: Record<string, number>;
   highlightHoodId: string | null;
+  buildingAlgo: boolean;
 }
 
 function MapBoard({
   phase, visitedSet, activeExploreTab, demoRiderXY, demoHoodId,
   onHoodClick,
   isYourTurn, ytIdleRiders, ytDemand, ytRoundDone, ytFeedback,
-  activeRiderPositions, idleRiderCount,
+  activeRiderPositions,
   showDemand, surgeActive, staticDemand,
-  displayAssignments, highlightHoodId,
+  displayAssignments, highlightHoodId, buildingAlgo,
 }: MapBoardProps) {
   const AR = 1.8333;
   const isExplore = phase === 'explore';
 
-  // Idle rider positions clustered around HQ
-  const idlePositions = useMemo(() => {
-    const positions: [number, number][] = [];
-    for (let i = 0; i < idleRiderCount; i++) {
-      const angle = (i / Math.max(1, idleRiderCount)) * Math.PI * 2;
-      const r = idleRiderCount <= 1 ? 0 : 2.8;
-      positions.push([HQ.x + r * Math.cos(angle), HQ.y + r * Math.sin(angle)]);
-    }
-    return positions;
-  }, [idleRiderCount]);
 
   return (
     <div className="ab-map-wrap">
@@ -745,29 +927,14 @@ function MapBoard({
           );
         })}
 
-        {/* Highlight ring for algo assignment */}
-        {highlightHoodId && (() => {
-          const h = hoodById(highlightHoodId);
-          return (
-            <ellipse cx={h.pos.x * AR} cy={h.pos.y}
-              rx={h.radius * AR * 1.65} ry={h.radius * 1.65}
-              fill="none" stroke={h.color} strokeWidth="1.3"
-              style={{ transformBox: 'fill-box', transformOrigin: 'center', animation: 'ab-ring-expand 0.65s ease-out forwards' }}
-            />
-          );
-        })()}
 
         {/* HQ marker */}
         <g>
-          <circle cx={HQ.x * AR} cy={HQ.y} r={4.8}
-            fill="white" stroke="#0b1733" strokeWidth="1.4" opacity="0.98" />
-          <text x={HQ.x * AR} y={HQ.y + 0.6}
+          <circle cx={HQ.x * AR} cy={HQ.y} r={3.2}
+            fill="white" stroke="#ec4899" strokeWidth="1.0" opacity="0.96" />
+          <text x={HQ.x * AR} y={HQ.y + 0.5}
             textAnchor="middle" dominantBaseline="middle"
-            fontSize="3.4" fill="#0b1733" fontWeight="bold">HQ</text>
-          <circle cx={HQ.x * AR} cy={HQ.y} r={7.5}
-            fill="none" stroke="#0b1733" strokeWidth="0.7"
-            style={{ animation: 'ab-hq-pulse 2.6s ease-in-out infinite' }}
-          />
+            fontSize="2.4" fill="#ec4899" fontWeight="bold">HQ</text>
         </g>
       </svg>
 
@@ -777,8 +944,7 @@ function MapBoard({
           className={`ab-hq-badge ${ytIdleRiders === 0 ? 'warn' : ''}`}
           style={{ left: `${HQ.x}%`, top: `${HQ.y - 6}%` }}
         >
-          <Scooter size={13} weight="fill" style={{ verticalAlign: '-2px', marginRight: 3 }} />
-          {ytIdleRiders}/{TOTAL_RIDERS} ready
+          🛵 {ytIdleRiders}/{TOTAL_RIDERS} ready
         </div>
       )}
 
@@ -792,7 +958,7 @@ function MapBoard({
               style={{ left: `${h.pos.x}%`, top: `${h.pos.y - h.radius * 0.55}%` }}
             >
               <span className="ab-demand-label">DEMAND</span>
-              <span className="ab-demand-count"><Package size={12} weight="fill" style={{ verticalAlign: '-2px' }} /> {count}</span>
+              <span className="ab-demand-count">📦 {count}</span>
             </div>
           );
         }
@@ -802,37 +968,30 @@ function MapBoard({
           : (surgeActive ? ALGO_ORDERS_SURGE[h.id] : h.baseOrders);
         return (
           <div key={`dem-${h.id}`}
-            className={`ab-demand ${isSurging ? 'surge' : ''}`}
+            className={`ab-demand ${isSurging ? 'surge' : ''} ${orderCount === 0 ? 'no-demand' : ''}`}
             style={{ left: `${h.pos.x}%`, top: `${h.pos.y - h.radius * 0.55}%` }}
           >
             <span className="ab-demand-label">DEMAND</span>
-            <span className="ab-demand-count"><Package size={12} weight="fill" style={{ verticalAlign: '-2px' }} /> {orderCount}</span>
+            <span className="ab-demand-count">📦 {orderCount}</span>
           </div>
         );
       })}
 
-      {/* Idle riders at HQ */}
-      {idleRiderCount > 0 && ['yourTurn', 'automate', 'bias', 'fairerRound'].includes(phase) && (
-        idlePositions.map(([ix, iy], i) => (
-          <div key={`idle-${i}`} className="ab-rider-idle"
-            style={{ left: `${ix}%`, top: `${iy}%` }}><Scooter size={12} weight="fill" color="#fff" /></div>
-        ))
-      )}
 
       {/* Active riders animating on roads */}
-      {activeRiderPositions.map((pos, i) => (
-        <div key={`rider-${i}`}
+      {activeRiderPositions.map((pos) => (
+        <div key={`rider-${pos.id}`}
           className={`ab-rider ${pos.delivering ? 'delivering' : ''}`}
           style={{ left: `${pos.x}%`, top: `${pos.y}%` }}>
-          <Scooter size={16} weight="fill" color="#fff" />
+          🛵
         </div>
       ))}
 
       {/* Explore demo rider */}
-      {demoRiderXY && (
+      {isExplore && demoRiderXY && (
         <div className="ab-demo-rider"
           style={{ left: `${demoRiderXY[0]}%`, top: `${demoRiderXY[1]}%` }}>
-          <Scooter size={15} weight="fill" color="#fff" />
+          🛵
         </div>
       )}
 
@@ -866,7 +1025,7 @@ function MapBoard({
             disabled={ytRoundDone}
             onClick={() => onHoodClick(h.id)}
           >
-            <h.Icon size={30} weight="fill" color={h.color} />
+            {h.emoji}
           </button>
         );
       })}
@@ -874,6 +1033,26 @@ function MapBoard({
       {/* Feedback toast on map */}
       {isYourTurn && ytFeedback && (
         <div className="ab-feedback-toast">{ytFeedback}</div>
+      )}
+
+      {/* Building algorithm overlay */}
+      {buildingAlgo && (
+        <div style={{
+          position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          background: 'rgba(237,233,227,0.55)', backdropFilter: 'blur(2px)', zIndex: 50,
+          pointerEvents: 'none',
+        }}>
+          <div style={{
+            background: '#fff', border: '2px solid #c7d2fe', borderRadius: 16,
+            padding: '18px 28px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
+            boxShadow: '0 4px 24px rgba(79,70,229,0.15)',
+          }}>
+            <div className="ab-spinner" style={{ width: 28, height: 28, borderWidth: 3, borderTopColor: '#4f46e5' }} />
+            <div style={{ fontSize: 14, fontWeight: 700, color: '#3730a3' }}>Building Algorithm…</div>
+            <div style={{ fontSize: 12, color: '#6366f1' }}>Analysing your dispatch patterns</div>
+          </div>
+        </div>
       )}
     </div>
   );
@@ -900,8 +1079,8 @@ function ResultTable({ results, showOrders, minimal, hideSatisfaction }: {
           const h = hoodById(r.id);
           return (
             <tr key={r.id} className={rowCls(r.sat)}>
-              <td><span style={{ color: h.color, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 5 }}><h.Icon size={15} weight="fill" /> {h.name}</span></td>
-              <td>{r.drivers === 0 ? <span className="ab-badge ab-badge-zero" style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>0 <Warning size={11} weight="fill" /></span> : r.drivers}</td>
+              <td><span style={{ color: h.color, fontWeight: 600 }}>{h.emoji} {h.name}</span></td>
+              <td>{r.drivers === 0 ? <span className="ab-badge ab-badge-zero">0 ⚠</span> : r.drivers}</td>
               {showOrders && <td><strong>{r.orders}</strong></td>}
               <td style={{ fontWeight: r.drivers === 0 ? 600 : undefined, color: r.drivers === 0 ? '#dc2626' : undefined }}>
                 {timeLabel(r.time)}
@@ -920,55 +1099,6 @@ function ResultTable({ results, showOrders, minimal, hideSatisfaction }: {
         })}
       </tbody>
     </table>
-  );
-}
-
-// ─── Stage 0: Intro ───────────────────────────────────────────────────────────
-
-function PhaseIntro({ onAct }: { onAct: (l: string, e: boolean) => void }) {
-  useEffect(() => { onAct("Let's go →", true); }, [onAct]);
-
-  const steps: { n: string; title: string; body: string }[] = [
-    { n: '1', title: 'Explore the city', body: 'Tap each of the four neighborhoods to see how far it is from HQ and how many orders it gets.' },
-    { n: '2', title: 'Learn the goal', body: 'Management gives you one rule: keep the average delivery time low.' },
-    { n: '3', title: 'Your turn to dispatch', body: 'Send your 8 riders out by tapping neighborhoods. Try to hit the speed goal before the round ends.' },
-    { n: '4', title: 'Automate it', body: 'Hand your strategy to an algorithm that copies what worked: send riders where trips are fastest.' },
-    { n: '5', title: 'See the bias', body: 'A demand surge hits the far neighborhood. Watch how the “reasonable” algorithm responds.' },
-    { n: '6', title: 'Reflect', body: 'Unpack why a neutral-sounding goal produced an unfair result.' },
-  ];
-
-  return (
-    <div className="ab-card" style={{ maxWidth: 720 }}>
-      <div className="ab-card-title" style={{ display: 'flex', alignItems: 'center', gap: 9 }}><Scooter size={24} weight="fill" color="#ff3b46" /> Fair or Fast? A Delivery Dispatch Game</div>
-      <div className="ab-card-sub">
-        You're the new dispatch manager at <strong>SpeedEats</strong>, a food-delivery startup. Your job is to send riders
-        across the city so customers get their orders quickly. Simple enough — but the choices you make will quietly
-        teach an algorithm who matters and who waits.
-      </div>
-
-      <div className="ab-callout indigo" style={{ marginBottom: 16 }}>
-        <strong>The question to keep in mind:</strong> can a goal that sounds completely fair still lead to an unfair outcome?
-      </div>
-
-      <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8998c', marginBottom: 10 }}>
-        How it works — 6 quick steps
-      </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 10 }}>
-        {steps.map(s => (
-          <div key={s.n} style={{ display: 'flex', gap: 12, background: '#f8f5f1', border: '1px solid #e8e0d5', borderRadius: 12, padding: '12px 14px' }}>
-            <div style={{ flexShrink: 0, width: 26, height: 26, borderRadius: '50%', background: '#0b1733', color: '#fff', fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{s.n}</div>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 13, color: '#2d2419', marginBottom: 2 }}>{s.title}</div>
-              <div style={{ fontSize: 12, color: '#6b5f55', lineHeight: 1.5 }}>{s.body}</div>
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div style={{ fontSize: 12, color: '#a8998c', marginTop: 14 }}>
-        Takes about 3–4 minutes. No right or wrong way to play — just follow the goal and see what happens.
-      </div>
-    </div>
   );
 }
 
@@ -1021,22 +1151,16 @@ function PhaseExplore({
 
   const activeHood = activeTab ? hoodById(activeTab) : null;
   const isDemoRunning = demoState && demoState.phase !== 'done' && demoState.hoodId === activeTab;
-  const isDemoDone   = demoState?.phase === 'done' && demoState.hoodId === activeTab;
 
   return (
     <div className="ab-explore-panel">
-      <div className="ab-yt-instruction" style={{ marginBottom: 10 }}>
-        {allDone
-          ? <>Nice — you've scouted every area. <span>Press the button below to continue.</span></>
-          : <><span>Step 1:</span> Tap each neighborhood (on the map or the tabs) to scout it. {remaining} left.</>}
-      </div>
       <div className="ab-explore-tabs">
         {HOODS.map(h => (
           <button key={h.id}
             className={`ab-explore-tab ${visitedSet.has(h.id) ? 'visited' : ''} ${activeTab === h.id ? 'active' : ''}`}
             onClick={() => handleTab(h.id)}
           >
-            <h.Icon size={18} weight="fill" color={h.color} /><span>{h.name}</span>
+            <span>{h.emoji}</span><span>{h.name}</span>
             {visitedSet.has(h.id) && <span style={{ fontSize: 9, color: '#16a34a' }}>✓</span>}
           </button>
         ))}
@@ -1044,41 +1168,27 @@ function PhaseExplore({
       {activeHood ? (
         <div className="ab-explore-content" style={{ animation: 'ab-fadein 0.25s ease both' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-            <activeHood.Icon size={34} weight="fill" color={activeHood.color} style={{ flexShrink: 0 }} />
+            <span style={{ fontSize: 34 }}>{activeHood.emoji}</span>
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 800, fontSize: 17, color: activeHood.textColor, marginBottom: 2 }}>{activeHood.name}</div>
               <div style={{ fontSize: 11, fontWeight: 600, color: '#a8998c', marginBottom: 8 }}>{activeHood.tagline}</div>
               <div style={{ fontSize: 13, color: '#6b5f55', lineHeight: 1.6, marginBottom: 10 }}>{activeHood.exploreInfo}</div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {[
-                  { Icon: Timer, txt: `~${liveTripSeconds(activeHood.id)} sec round trip` },
-                  { Icon: Package, txt: `${activeHood.baseOrders} orders/shift` },
-                  { Icon: Coins, txt: `$${activeHood.earnings}/delivery` },
-                  { Icon: Target, txt: activeHood.difficulty },
-                ].map(({ Icon, txt }) => (
-                  <div key={txt} style={{ background: activeHood.bgColor, borderRadius: 8, padding: '5px 10px', fontSize: 12, fontWeight: 600, color: activeHood.textColor, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
-                    <Icon size={14} weight="fill" /> {txt}
-                  </div>
-                ))}
+              <div className="ab-trip-result">
+                <div className="ab-trip-stat" style={{ background: activeHood.bgColor, border: `1.5px solid ${activeHood.color}40` }}>
+                  <div className="ab-trip-stat-val" style={{ color: activeHood.textColor }}>{liveTripSeconds(activeHood.id)} sec</div>
+                  <div className="ab-trip-stat-lbl" style={{ color: activeHood.textColor }}>Round trip</div>
+                </div>
+                <div className="ab-trip-stat" style={{ background: '#f0fdf4', border: '1.5px solid #86efac' }}>
+                  <div className="ab-trip-stat-val" style={{ color: '#16a34a' }}>${activeHood.earnings}</div>
+                  <div className="ab-trip-stat-lbl" style={{ color: '#16a34a' }}>Per delivery</div>
+                </div>
               </div>
               {isDemoRunning && (
                 <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#6b5f55' }}>
                   <div className="ab-spinner" />
                   {demoState!.phase === 'outbound' && `Rider heading to ${activeHood.name}…`}
-                  {demoState!.phase === 'arrived' && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Package size={14} weight="fill" /> Delivering in {activeHood.name}…</span>}
+                  {demoState!.phase === 'arrived' && `📦 Delivering in ${activeHood.name}…`}
                   {demoState!.phase === 'returning' && 'Rider returning to HQ…'}
-                </div>
-              )}
-              {isDemoDone && (
-                <div className="ab-trip-result">
-                  <div className="ab-trip-stat" style={{ background: activeHood.bgColor, border: `1.5px solid ${activeHood.color}40` }}>
-                    <div className="ab-trip-stat-val" style={{ color: activeHood.textColor }}>{liveTripSeconds(activeHood.id)} sec</div>
-                    <div className="ab-trip-stat-lbl" style={{ color: activeHood.textColor }}>Round trip</div>
-                  </div>
-                  <div className="ab-trip-stat" style={{ background: '#f0fdf4', border: '1.5px solid #86efac' }}>
-                    <div className="ab-trip-stat-val" style={{ color: '#16a34a' }}>${activeHood.earnings}</div>
-                    <div className="ab-trip-stat-lbl" style={{ color: '#16a34a' }}>Per delivery</div>
-                  </div>
                 </div>
               )}
             </div>
@@ -1086,9 +1196,7 @@ function PhaseExplore({
         </div>
       ) : (
         <div className="ab-explore-empty">
-          {allDone
-            ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><CheckCircle size={16} weight="fill" color="#16a34a" /> All areas explored, press the button to continue!</span>
-            : 'Click a neighborhood on the map, or a tab above, to explore it.'}
+          {allDone ? '✅ All areas explored, press the button to continue!' : 'Click a neighborhood on the map, or a tab above, to explore it.'}
         </div>
       )}
     </div>
@@ -1098,33 +1206,43 @@ function PhaseExplore({
 // ─── Stage 2: Goal ────────────────────────────────────────────────────────────
 
 function PhaseGoal({ onAct }: { onAct: (l: string, e: boolean) => void }) {
-  useEffect(() => { onAct('Start Your Turn →', true); }, [onAct]);
+  useEffect(() => { onAct('Start Simulation →', true); }, [onAct]);
   return (
     <div className="ab-card">
-      <div className="ab-card-title" style={{ display: 'flex', alignItems: 'center', gap: 9 }}><Target size={24} weight="fill" color="#ff3b46" /> Company Goal: Fast Deliveries</div>
-      <div className="ab-card-sub">SpeedEats has one clear objective for dispatch managers. Here's why it makes total sense.</div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(155px, 1fr))', gap: 10, marginBottom: 16 }}>
-        {[
-          { Icon: Coins, head: 'More revenue', body: 'Faster trips = riders complete more orders per shift = higher earnings.' },
-          { Icon: Package, head: 'More completed orders', body: 'Short rides return riders sooner, so more orders can be served during the shift.' },
-          { Icon: Lightning, head: 'Less idle time', body: 'Optimizing speed keeps riders moving, less wasted time between orders.' },
-        ].map(({ Icon, head, body }) => (
-          <div key={head} style={{ background: '#f8f5f1', border: '2px solid #0b1733', borderRadius: 14, padding: '14px 16px' }}>
-            <div style={{ marginBottom: 6 }}><Icon size={24} weight="fill" color="#0b1733" /></div>
-            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8998c', marginBottom: 4 }}>{head}</div>
-            <div style={{ fontSize: 12, color: '#8a7a6d', lineHeight: 1.5 }}>{body}</div>
-          </div>
-        ))}
-      </div>
-      <div style={{ background: '#eef2ff', border: '2px solid #0b1733', borderRadius: 14, padding: '14px 18px', textAlign: 'center', marginBottom: 12, boxShadow: '4px 4px 0 #0b1733' }}>
-        <div style={{ fontSize: 12, color: '#ff3b46', fontWeight: 800, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your Goal This Shift</div>
+      <div style={{ background: '#eef2ff', border: '2px solid #c7d2fe', borderRadius: 14, padding: '14px 18px', textAlign: 'center', marginBottom: 12 }}>
+        <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your Goal This Shift</div>
         <div style={{ fontSize: 22, fontWeight: 800, color: '#3730a3' }}>"Keep average trip time under {LIVE_GOALS.avgTrip}s"</div>
         <div style={{ fontSize: 12, color: '#4f46e5', marginTop: 6 }}>
           The company wants shorter average trips because faster rides usually mean more completed deliveries and more earnings.
         </div>
       </div>
-      <div className="ab-callout amber">
-        You have <strong>{TOTAL_RIDERS} riders</strong> and <strong>{YOUR_TURN_DURATION} seconds</strong>. <strong>Click any neighborhood with demand to dispatch one rider.</strong> Downtown is fast. East Hills ties a rider up much longer. Your choices will matter later.
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(155px, 1fr))', gap: 10, marginBottom: 16 }}>
+        {[
+          { icon: '💰', head: 'More revenue', body: 'Faster trips = riders complete more orders per shift = higher earnings.' },
+          { icon: '📦', head: 'More completed orders', body: 'Short rides return riders sooner, so more orders can be served during the shift.' },
+          { icon: '⚡', head: 'Less idle time', body: 'Optimizing speed keeps riders moving, less wasted time between orders.' },
+        ].map(({ icon, head, body }) => (
+          <div key={head} style={{ background: '#f8f5f1', border: '1px solid #e8e0d5', borderRadius: 14, padding: '14px 16px' }}>
+            <div style={{ fontSize: 22, marginBottom: 6 }}>{icon}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8998c', marginBottom: 4 }}>{head}</div>
+            <div style={{ fontSize: 12, color: '#8a7a6d', lineHeight: 1.5 }}>{body}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ background: '#fffbeb', border: '2px solid #f59e0b', borderRadius: 14, padding: '16px 20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 10 }}>
+          <div style={{ textAlign: 'center', background: '#fef3c7', border: '2px solid #f59e0b', borderRadius: 12, padding: '10px 18px' }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: '#92400e' }}>{TOTAL_RIDERS}</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Riders</div>
+          </div>
+          <div style={{ textAlign: 'center', background: '#fef3c7', border: '2px solid #f59e0b', borderRadius: 12, padding: '10px 18px' }}>
+            <div style={{ fontSize: 24, fontWeight: 900, color: '#92400e' }}>{YOUR_TURN_DURATION}s</div>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#b45309', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Time Limit</div>
+          </div>
+          <div style={{ flex: 1, fontSize: 13, color: '#78350f', lineHeight: 1.6 }}>
+            <strong>Click any neighborhood on the map to dispatch a rider.</strong> Downtown is fast. East Hills ties a rider up much longer. Your choices will matter later.
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -1135,48 +1253,28 @@ function PhaseGoal({ onAct }: { onAct: (l: string, e: boolean) => void }) {
 // This panel shows current status and feedback.
 
 function PhaseYourTurn({
-  onAct, ytIdleRiders, ytDelivered, ytEarnings, ytAvgWait,
-  ytFeedback, ytRoundDone, ytDemand, speedAlert,
+  onAct, onRetry, ytAvgWait,
+  ytRoundDone, ytDemand, speedAlert,
 }: {
   onAct: (l: string, e: boolean) => void;
-  ytIdleRiders: number;
-  ytDelivered: number;
-  ytEarnings: number;
+  onRetry: () => void;
   ytAvgWait: number;
-  ytFeedback: string | null;
   ytRoundDone: boolean;
   ytDemand: Record<string, number>;
   speedAlert: string | null;
 }) {
+  const goalMet = ytAvgWait > 0 && ytAvgWait <= LIVE_GOALS.avgTrip;
   useEffect(() => {
-    if (ytRoundDone) onAct('See What the Algorithm Learned →', true);
-    else onAct('', false); // no button during active play
-  }, [ytRoundDone, onAct]);
+    if (ytRoundDone && goalMet) onAct('See What the Algorithm Learned →', true);
+    else onAct('', false);
+  }, [ytRoundDone, goalMet, onAct]);
 
-  const hasDemand = Object.values(ytDemand).some(v => v > 0);
-  const allBusy = ytIdleRiders === 0;
 
   return (
     <div className="ab-yt-panel">
-      {/* Instruction */}
-      {!ytRoundDone && (
-        <div className="ab-yt-instruction">
-          {allBusy
-            ? <><span style={{ color: '#dc2626' }}>All riders are on the road</span>, wait for one to return <Scooter size={15} weight="fill" style={{ verticalAlign: '-2px' }} /></>
-            : !hasDemand
-              ? <><span>No active demand right now</span>, more orders arriving soon <Package size={15} weight="fill" style={{ verticalAlign: '-2px' }} /></>
-              : <><span>Click a neighborhood</span> on the map to dispatch a rider <Scooter size={15} weight="fill" style={{ verticalAlign: '-2px' }} /></>}
-        </div>
-      )}
 
       {/* Feedback message */}
-      {ytFeedback && (
-        <div className={`ab-yt-feedback ${ytFeedback.includes('No riders') || ytFeedback.includes('No demand') ? 'warn' : ''}`}>
-          {ytFeedback}
-        </div>
-      )}
-
-      {!ytRoundDone && speedAlert && !ytFeedback && (
+      {!ytRoundDone && speedAlert && (
         <div className="ab-yt-feedback warn">
           {speedAlert}
         </div>
@@ -1187,14 +1285,21 @@ function PhaseYourTurn({
         <div className="ab-yt-hood-stats">
           {HOODS.map(h => {
             const demand = ytDemand[h.id] ?? 0;
+            const secs = liveTripSeconds(h.id);
+            const speedLabel = secs <= 10 ? '⚡ Fastest' : secs <= 16 ? '🟢 Fast' : secs <= 25 ? '🟡 Slow' : '🔴 Slowest';
+            const speedColor = secs <= 10 ? '#16a34a' : secs <= 16 ? '#15803d' : secs <= 25 ? '#d97706' : '#dc2626';
+            const barPct = Math.round((secs / 40) * 100);
             return (
               <div key={h.id} className="ab-yt-hood-chip"
                 style={{ borderColor: demand > 0 ? h.color + '80' : '#e2d9ce', background: demand > 0 ? h.bgColor : '#f8f5f1' }}>
-                <div style={{ fontWeight: 700, fontSize: 12, color: h.textColor, display: 'flex', alignItems: 'center', gap: 5 }}><h.Icon size={14} weight="fill" color={h.color} /> {h.name}</div>
-                <div style={{ fontSize: 11, color: demand > 0 ? h.textColor : '#b0a499' }}>
-                  {demand > 0 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Package size={12} weight="fill" /> {demand} waiting</span> : 'No demand'}
+                <div style={{ fontWeight: 700, fontSize: 12, color: h.textColor }}>{h.emoji} {h.name}</div>
+                <div style={{ fontSize: 11, color: demand > 0 ? h.textColor : '#b0a499', marginBottom: 4 }}>
+                  {demand > 0 ? `📦 ${demand} waiting` : 'No demand'}
                 </div>
-                <div style={{ fontSize: 10, color: '#a8998c' }}>~{liveTripSeconds(h.id)} sec round trip · ${h.earnings}/delivery</div>
+                <div style={{ fontSize: 13, fontWeight: 800, color: speedColor, marginBottom: 3 }}>{secs}s &nbsp;<span style={{ fontSize: 11, fontWeight: 600 }}>{speedLabel}</span></div>
+                <div style={{ height: 5, borderRadius: 3, background: '#e2d9ce', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${barPct}%`, background: speedColor, borderRadius: 3 }} />
+                </div>
               </div>
             );
           })}
@@ -1203,78 +1308,140 @@ function PhaseYourTurn({
 
       {/* Round complete */}
       {ytRoundDone && (
-        <div className="ab-round-done" style={{ margin: 0 }}>
-          <div style={{ fontSize: 22, marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><Timer size={22} weight="fill" color="#16a34a" /> Round Complete!</div>
-          <div style={{ fontSize: 14, color: '#166534' }}>
-            You completed <strong>{ytDelivered} deliveries</strong> and earned <strong>${ytEarnings}</strong>.
-            {ytAvgWait > 0 && <> Average trip time: <strong>{Math.round(ytAvgWait)} sec</strong>.</>}
+        <div className={`ab-round-done`} style={{ margin: 0, background: goalMet ? '#f0fdf4' : '#fef2f2', border: `2px solid ${goalMet ? '#86efac' : '#fca5a5'}` }}>
+          <div style={{ fontSize: 22, marginBottom: 4 }}>{goalMet ? '✅ Goal Met!' : '❌ Goal Missed'}</div>
+          <div style={{ fontSize: 14, color: goalMet ? '#166534' : '#991b1b' }}>
+            Average trip time: <strong>{Math.round(ytAvgWait)} sec</strong> — target was under <strong>{LIVE_GOALS.avgTrip}s</strong>.
           </div>
-          {ytAvgWait > 0 && ytAvgWait <= LIVE_GOALS.avgTrip
-            ? <div style={{ fontSize: 13, color: '#15803d', marginTop: 6 }}>Goal met. Your average ride time stayed below the target.</div>
-            : <div style={{ fontSize: 13, color: '#991b1b', marginTop: 6 }}>Goal missed. Your average ride time stayed above the target. Long trips kept riders busy for too long.</div>}
-          <div style={{ fontSize: 13, color: '#166534', marginTop: 6 }}>Service was not evenly distributed. Let's see what happens when this strategy becomes automatic.</div>
+          {goalMet
+            ? <div style={{ fontSize: 13, color: '#15803d', marginTop: 6 }}>Your average ride time stayed below the target. Press the button below to continue.</div>
+            : <>
+                <div style={{ fontSize: 13, color: '#991b1b', marginTop: 6 }}>Too many long-distance trips kept riders away. Try sending more riders to closer neighborhoods.</div>
+                <button onClick={onRetry} style={{ marginTop: 12, padding: '10px 28px', background: '#dc2626', color: '#fff', border: 'none', borderRadius: 10, fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+                  Try Again
+                </button>
+              </>}
         </div>
       )}
     </div>
   );
 }
 
+// ─── Shared: Dispatch Rule + Live Sim Panel ───────────────────────────────────
+
+const DISPATCH_RULES = [
+  { id: 'downtown', hood: 'Downtown',     note: 'fastest trips',  action: 'Fill all demand here first.' },
+  { id: 'midtown', hood: 'Midtown',      note: 'next fastest',   action: 'Assign remaining riders here.' },
+  { id: 'northsuburb', hood: 'North Suburb', note: 'slower trips',   action: 'Send riders if any are left.' },
+  { id: 'easthills', hood: 'East Hills',   note: 'longest trips',  action: 'Last priority — leftovers only.' },
+];
+
+function DispatchSimPanel({
+  simTimer, totalTime, simDemand, simDelivered, surgeHoodId,
+}: {
+  simTimer: number;
+  totalTime: number;
+  simDemand: Record<string, number>;
+  simDelivered: Record<string, number>;
+  surgeHoodId?: string;
+}) {
+  const pct = Math.max(0, simTimer / totalTime) * 100;
+  const activeRuleId = DISPATCH_RULES.find(rule => (simDemand[rule.id] ?? 0) > 0)?.id ?? null;
+  return (
+    <>
+      {/* Dispatch Rule */}
+      <div style={{ background: '#f4f1fd', border: '1.5px solid #c4b5fd', borderRadius: 12, padding: '12px 14px', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4f46e5', marginBottom: 8 }}>Dispatch Rule Learned</div>
+        {DISPATCH_RULES.map(({ id, hood, note, action }, i) => {
+          const isActive = id === activeRuleId;
+          const remaining = simDemand[id] ?? 0;
+          return (
+          <div key={hood} style={{
+            display: 'flex', alignItems: 'flex-start', gap: 8, marginBottom: i < 3 ? 6 : 0,
+            background: isActive ? '#fff' : 'transparent',
+            border: isActive ? '1.5px solid #8b5cf6' : '1.5px solid transparent',
+            borderRadius: 10,
+            padding: isActive ? '6px 8px' : '0 8px',
+            marginLeft: isActive ? -8 : 0,
+            transition: 'all 0.18s ease',
+          }}>
+            <div style={{ minWidth: 20, height: 20, borderRadius: '50%', background: isActive ? '#7c3aed' : '#4f46e5', color: '#fff', fontSize: 11, fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{i + 1}</div>
+            <div style={{ lineHeight: 1.3 }}>
+              <span style={{ fontSize: 12, fontWeight: 700, color: '#2d2419' }}>{hood}</span>
+              <span style={{ fontSize: 11, color: '#8a7a6d', marginLeft: 5 }}>({note})</span>
+              <div style={{ fontSize: 11, color: '#5b50c7', marginTop: 1 }}>{action}</div>
+              {isActive && <div style={{ fontSize: 10, color: '#7c3aed', fontWeight: 800, marginTop: 3 }}>{remaining} waiting - filling this queue now</div>}
+            </div>
+          </div>
+        );})}
+      </div>
+
+      {/* Timer bar */}
+      <div style={{ marginBottom: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, color: '#8a7a6d', marginBottom: 3 }}>
+          <span>{simTimer > 0 ? 'Running with 8 riders…' : 'Simulation complete'}</span>
+          <span style={{ fontWeight: 700, color: '#2d2419' }}>{simTimer > 0 ? `${Math.ceil(simTimer)}s` : 'Done'}</span>
+        </div>
+        <div style={{ height: 5, background: '#e2d9ce', borderRadius: 4, overflow: 'hidden' }}>
+          <div style={{ height: '100%', width: `${pct}%`, background: '#4f46e5', borderRadius: 4, transition: 'width 0.1s linear' }} />
+        </div>
+      </div>
+
+      {/* Live delivery tiles */}
+      <div className="ab-algo-tiles">
+        {HOODS.map(h => {
+          const delivered = simDelivered[h.id] ?? 0;
+          const demand = simDemand[h.id] ?? 0;
+          const isSurge = h.id === surgeHoodId;
+          return (
+            <div key={h.id} className="ab-algo-tile"
+              style={{ borderColor: isSurge ? '#dc2626' : h.color, outline: isSurge ? '2px dashed #dc2626' : undefined }}>
+              <div style={{ fontSize: 16, marginBottom: 2 }}>{h.emoji}</div>
+              <div style={{ fontSize: 10, fontWeight: 700, color: isSurge ? '#dc2626' : h.textColor, marginBottom: 3 }}>{h.name}</div>
+              <div style={{ fontSize: 20, fontWeight: 800, color: isSurge ? '#dc2626' : h.color }}>{delivered}</div>
+              <div style={{ fontSize: 9, color: '#8a7a6d', marginTop: 1 }}>delivered</div>
+              <div style={{ fontSize: 9, color: isSurge ? '#b91c1c' : '#a8998c', marginTop: 2, fontWeight: 600 }}>{demand} waiting</div>
+            </div>
+          );
+        })}
+      </div>
+    </>
+  );
+}
+
 // ─── Stage 4: Automate ────────────────────────────────────────────────────────
 
 function PhaseAutomate({
-  onAct, assignments, algoStep, algoAssignments,
+  onAct, algoStep, autoSimTimer, autoSimDemand, autoSimDelivered,
 }: {
   onAct: (l: string, e: boolean) => void;
-  assignments: Record<string, number>;
   algoStep: number;
-  algoAssignments: Record<string, number>;
+  autoSimTimer: number;
+  autoSimDemand: Record<string, number>;
+  autoSimDelivered: Record<string, number>;
 }) {
   const complete = algoStep >= TOTAL_RIDERS;
+  const simRunning = autoSimTimer > 0;
   useEffect(() => {
-    if (complete) onAct('Run the Algorithm →', true);
-    else onAct(`Building algorithm… (${algoStep}/${TOTAL_RIDERS})`, false);
-  }, [complete, algoStep, onAct]);
+    if (complete && !simRunning) onAct('Run the Algorithm →', true);
+    else onAct('', false);
+  }, [complete, simRunning, onAct]);
 
   return (
     <div className="ab-card">
-      <div className="ab-card-title" style={{ display: 'flex', alignItems: 'center', gap: 9 }}><Robot size={24} weight="fill" color="#ff3b46" /> {complete ? 'Algorithm Ready' : 'Building the Algorithm…'}</div>
+      <div className="ab-card-title">🤖 {complete ? 'Algorithm Running' : 'Building the Algorithm…'}</div>
       <div className="ab-card-sub">SpeedEats is automating dispatch around one objective: keep average trip time under {LIVE_GOALS.avgTrip}s.</div>
       {!complete ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#8a7a6d', fontSize: 13, marginBottom: 14 }}>
           <div className="ab-spinner" /> Analyzing your dispatch patterns…
         </div>
       ) : (
-        <div className="ab-strategy-box">
-          <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#4f46e5', marginBottom: 6 }}>Your Dispatch Pattern</div>
-          <div style={{ fontSize: 14, color: '#3730a3' }}>{describeAssignment(assignments)}</div>
-          <div style={{ fontSize: 12, color: '#6366f1', marginTop: 8 }}>You learned to favor shorter trips because that helped keep the average under {LIVE_GOALS.avgTrip}s. The system derived:</div>
-          <div className="ab-strategy-rule">
-            <ClipboardText size={15} weight="fill" style={{ verticalAlign: '-2px' }} /> Rule: Prioritize deliveries that keep average trip time under {LIVE_GOALS.avgTrip}s.<br />
-            Shorter trips protect the average first.
-          </div>
-        </div>
-      )}
-      <div style={{ fontSize: 12, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8998c', margin: '8px 0' }}>
-        Algorithm Assignment, 8 Riders
-      </div>
-      <div className="ab-algo-tiles">
-        {HOODS.map(h => {
-          const count = algoAssignments[h.id] ?? 0;
-          return (
-            <div key={h.id} className="ab-algo-tile"
-              style={{ borderColor: count > 0 ? h.color : '#e2d9ce', boxShadow: count > 0 ? `0 2px 10px ${h.color}20` : 'none' }}>
-              <div style={{ fontSize: 18, marginBottom: 2 }}>{h.emoji}</div>
-              <div style={{ fontSize: 12, fontWeight: 700, color: h.textColor, marginBottom: 6 }}>{h.name}</div>
-              <div className="ab-algo-count" style={{ color: h.color }}>{count}</div>
-              <div className="ab-algo-label">riders assigned</div>
-            </div>
-          );
-        })}
-      </div>
-      {complete && (
-        <div className="ab-callout indigo" style={{ marginTop: 14 }}>
-          Once you click <strong>"Run the Algorithm,"</strong> this rule runs every shift automatically, with no human review. The algorithm makes all dispatch decisions from now on.
-        </div>
+        <DispatchSimPanel
+          simTimer={autoSimTimer}
+          totalTime={20}
+          simDemand={autoSimDemand}
+          simDelivered={autoSimDelivered}
+        />
       )}
     </div>
   );
@@ -1283,50 +1450,47 @@ function PhaseAutomate({
 // ─── Stage 5: Bias ────────────────────────────────────────────────────────────
 
 function PhaseBias({
-  onAct, biasSubPhase, setBiasSubPhase, algoResults,
+  onAct, biasSubPhase, setBiasSubPhase,
+  biasSimTimer, biasSimDemand, biasSimDelivered,
+  algoResults,
 }: {
   onAct: (l: string, e: boolean) => void;
   biasSubPhase: 'event' | 'running' | 'results';
   setBiasSubPhase: (s: 'event' | 'running' | 'results') => void;
+  biasSimTimer: number;
+  biasSimDemand: Record<string, number>;
+  biasSimDelivered: Record<string, number>;
   algoResults: NResult[];
 }) {
-  const ehResult = algoResults.find(r => r.id === 'easthills');
-  const dtResult = algoResults.find(r => r.id === 'downtown');
 
   useEffect(() => {
     if (biasSubPhase === 'event') {
-      onAct('See the Algorithm Run →', true);
+      onAct('', false);
     } else if (biasSubPhase === 'running') {
-      onAct('See the Results →', false);
-      const t = setTimeout(() => setBiasSubPhase('results'), 2200);
-      return () => clearTimeout(t);
+      onAct('', false);
     } else {
       onAct('What Does This Mean? →', true);
     }
-  }, [biasSubPhase, onAct, setBiasSubPhase]);
+  }, [biasSubPhase, onAct]);
 
   if (biasSubPhase === 'event') {
     return (
       <div className="ab-card">
         <div className="ab-news-banner">
-          <div className="ab-news-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Broadcast size={12} weight="fill" /> Breaking: Today's Orders</div>
-          <div className="ab-news-text">East Hills received 8 orders, nearly triple its usual 3.</div>
+          <div className="ab-news-tag">🚨 BREAKING NEWS</div>
+          <div className="ab-news-text">East Hills: 8 orders today — nearly triple the usual 3. The algorithm is already running.</div>
         </div>
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
-          <div style={{ background: '#fef2f2', border: '1.5px solid #fecaca', borderRadius: 12, padding: '14px 16px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#dc2626', marginBottom: 6 }}>East Hills: Today</div>
-            <div style={{ fontSize: 28, fontWeight: 800, color: '#dc2626' }}>8 orders</div>
-            <div style={{ fontSize: 12, color: '#b91c1c', marginTop: 2 }}>vs. usual 3 orders/shift</div>
-          </div>
-          <div style={{ background: '#f8f5f1', border: '1px solid #e8e0d5', borderRadius: 12, padding: '14px 16px' }}>
-            <div style={{ fontSize: 10, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8998c', marginBottom: 6 }}>Algorithm Status</div>
-            <div style={{ fontSize: 16, fontWeight: 700, color: '#2d2419', marginBottom: 4 }}>Already running</div>
-            <div style={{ fontSize: 12, color: '#8a7a6d' }}>Fixed assignments based on last month's data</div>
-          </div>
-        </div>
-        <div className="ab-callout amber">
-          Goal: keep average trip time under {LIVE_GOALS.avgTrip}s. Will the algorithm protect that target when East Hills needs more help today?
-        </div>
+        <button
+          onClick={() => setBiasSubPhase('running')}
+          style={{
+            width: '100%', padding: '12px 20px', borderRadius: 10, cursor: 'pointer',
+            background: '#f8f5f1', border: '1.5px solid #e2d9ce',
+            color: '#2d2419', fontSize: 14, fontWeight: 600,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          }}
+        >
+          ▶ Run Algorithm Simulation
+        </button>
       </div>
     );
   }
@@ -1334,52 +1498,22 @@ function PhaseBias({
   if (biasSubPhase === 'running') {
     return (
       <div className="ab-card">
-        <div className="ab-card-title" style={{ display: 'flex', alignItems: 'center', gap: 9 }}><Robot size={24} weight="fill" color="#ff3b46" /> Algorithm Running…</div>
-        <div className="ab-card-sub">Assigning riders exactly as trained, prioritizing shorter trips to protect the {LIVE_GOALS.avgTrip}s average.</div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#8a7a6d', fontSize: 13, marginBottom: 14 }}>
-          <div className="ab-spinner" /> Processing today's demand…
-        </div>
-        <div className="ab-algo-tiles">
-          {HOODS.map(h => {
-            const count = computeSeqAssignments(ALGO_SEQUENCE, TOTAL_RIDERS)[h.id] ?? 0;
-            const isSurge = h.id === 'easthills';
-            return (
-              <div key={h.id} className="ab-algo-tile"
-                style={{ borderColor: isSurge ? '#dc2626' : (count > 0 ? h.color : '#e2d9ce'), outline: isSurge ? '2.5px dashed #dc2626' : undefined }}>
-                <div style={{ marginBottom: 2 }}><h.Icon size={20} weight="fill" color={h.color} /></div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: isSurge ? '#dc2626' : h.textColor, marginBottom: 6 }}>{h.name}</div>
-                <div className="ab-algo-count" style={{ color: isSurge ? '#dc2626' : h.color }}>{count}</div>
-                <div className="ab-algo-label">riders assigned</div>
-                {isSurge && <div style={{ fontSize: 10, color: '#dc2626', fontWeight: 700, marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}><Warning size={11} weight="fill" /> 8 orders waiting</div>}
-              </div>
-            );
-          })}
-        </div>
+        <DispatchSimPanel
+          simTimer={biasSimTimer}
+          totalTime={20}
+          simDemand={biasSimDemand}
+          simDelivered={biasSimDelivered}
+          surgeHoodId="easthills"
+        />
       </div>
     );
   }
 
   return (
     <div className="ab-card">
-      <div className="ab-card-title" style={{ display: 'flex', alignItems: 'center', gap: 9 }}><ChartBar size={24} weight="fill" color="#ff3b46" /> What the Algorithm Did</div>
+      <div className="ab-card-title">📊 What the Algorithm Did</div>
       <div className="ab-card-sub">The algorithm protected the {LIVE_GOALS.avgTrip}s trip-time goal. Here's what that meant for each neighborhood.</div>
       <ResultTable results={algoResults} showOrders hideSatisfaction />
-      <div className="ab-callout red" style={{ marginTop: 14 }}>
-        <strong>The numbers:</strong> {dtResult?.drivers} riders to Downtown (6 orders) vs. {ehResult?.drivers ?? 1} rider to East Hills (8 orders). Average looks okay, but 8 people in East Hills were left behind.
-      </div>
-      <div className="ab-reflect-grid" style={{ marginTop: 14 }}>
-        {[
-          { Icon: Timer, title: 'Goal Protected', desc: `The system kept chasing the ${LIVE_GOALS.avgTrip}s average, so short routes stayed attractive even during the demand spike.` },
-          { Icon: ArrowsClockwise, title: 'Feedback Loop', desc: 'Fewer riders → longer waits → fewer future orders. The bias creates the data that justifies the bias.' },
-          { Icon: ChartBar, title: 'Hidden in Averages', desc: 'The average can look fine while one neighborhood waits. East Hills is invisible in the headline metric.' },
-        ].map(({ Icon, title, desc }) => (
-          <div key={title} className="ab-reflect-tile">
-            <div className="ab-reflect-icon"><Icon size={26} weight="fill" color="#0b1733" /></div>
-            <div className="ab-reflect-title">{title}</div>
-            <div className="ab-reflect-desc">{desc}</div>
-          </div>
-        ))}
-      </div>
     </div>
   );
 }
@@ -1387,76 +1521,58 @@ function PhaseBias({
 // ─── Stage 6: Reflect ─────────────────────────────────────────────────────────
 
 function PhaseReflect({
-  onAct, onRestart, assignments, algoResults,
+  onAct, algoResults,
 }: {
-  onAct: (l: string, e: boolean, fn?: () => void) => void;
-  onRestart: () => void;
-  assignments: Record<string, number>;
+  onAct: (l: string, e: boolean) => void;
   algoResults: NResult[];
 }) {
-  useEffect(() => { onAct('↺ Play again', true, onRestart); }, [onAct, onRestart]);
+  useEffect(() => { onAct('Finish →', true); }, [onAct]);
   const ehResult = algoResults.find(r => r.id === 'easthills');
+
+  const ehUnmet = Math.max(0, ALGO_ORDERS_SURGE.easthills - (ehResult?.delivered ?? 1));
+  const ehEarningsLost = ehUnmet * 16; // East Hills earns $16/delivery
 
   return (
     <div className="ab-card">
-      <div className="ab-card-title" style={{ display: 'flex', alignItems: 'center', gap: 9 }}><GraduationCap size={24} weight="fill" color="#ff3b46" /> Why It Went Wrong</div>
-      <div className="ab-card-sub">Same city. Same {TOTAL_RIDERS} riders. A perfectly reasonable goal, but a systematically unfair outcome.</div>
-      <div style={{ background: '#f8f5f1', border: '1px solid #e8e0d5', borderRadius: 14, padding: '14px 18px', marginBottom: 14 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8998c', marginBottom: 8 }}>What You Did</div>
-        <div style={{ fontSize: 14, color: '#2d2419' }}>{describeAssignment(assignments)}</div>
-        <div style={{ fontSize: 12, color: '#8a7a6d', marginTop: 6, lineHeight: 1.5 }}>
-          That made sense for the goal, shorter trips helped protect the {LIVE_GOALS.avgTrip}s average.
+      <div className="ab-card-title">🎓 What Actually Happened</div>
+      <div className="ab-card-sub">SpeedEats hit its speed target — and still lost money. East Hills residents are furious.</div>
+
+      {/* Company lost money */}
+      <div style={{ background: '#fef9ec', border: '1.5px solid #fde68a', borderRadius: 14, padding: '14px 18px', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#92400e', marginBottom: 8 }}>💸 Company Lost Revenue</div>
+        <div style={{ fontSize: 15, fontWeight: 700, color: '#78350f', marginBottom: 6 }}>
+          {ehUnmet} undelivered orders in East Hills = <span style={{ color: '#dc2626' }}>−${ehEarningsLost} lost</span>
+        </div>
+        <div style={{ fontSize: 12, color: '#92400e', lineHeight: 1.6 }}>
+          The algorithm chased a <strong>speed metric</strong>, not revenue. East Hills has the highest earnings per delivery (${16}/order) but got the fewest riders. The company optimised for the wrong goal — and paid for it.
         </div>
       </div>
-      <div style={{ background: '#fef2f2', border: '1.5px solid #fecaca', borderRadius: 14, padding: '14px 18px', marginBottom: 14 }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#dc2626', marginBottom: 8 }}>What the Algorithm Repeated</div>
-        <div style={{ fontSize: 14, color: '#991b1b' }}>
-          East Hills: {ehResult?.drivers ?? 1} rider for {ALGO_ORDERS_SURGE.easthills} orders · {ehResult ? timeLabel(ehResult.time) : '—'} wait
-        </div>
-        <div style={{ fontSize: 12, color: '#b91c1c', marginTop: 6, lineHeight: 1.5 }}>
-          The system protected the {LIVE_GOALS.avgTrip}s average, but East Hills residents waited longer and became frustrated. The company also left money on the table because unmet demand turned into lost orders.
-        </div>
-      </div>
-      <div style={{ background: '#0b1733', border: '2px solid #0b1733', borderRadius: 16, padding: '20px 22px', marginBottom: 14, color: '#fff', boxShadow: '6px 6px 0 #ff3b46' }}>
-        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a5b4fc', marginBottom: 8 }}>The Core Lesson</div>
-        <div style={{ fontSize: 17, fontWeight: 700, lineHeight: 1.5, marginBottom: 10 }}>
-          "A neutral-looking goal can still create biased outcomes."
-        </div>
-        <div style={{ fontSize: 13, color: '#c7d2fe', lineHeight: 1.65 }}>
-          "Keep average trip time under {LIVE_GOALS.avgTrip}s" sounds fair. But applied across neighborhoods with different distances and histories, it systematically advantages easy areas, and leaves the rest behind.
-        </div>
-      </div>
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
-        {[
-          { Icon: Car, txt: 'Ride-share pricing that avoids low-income areas' },
-          { Icon: House, txt: 'Loan algorithms that penalize certain zip codes' },
-          { Icon: FirstAid, txt: 'Healthcare AI trained on wealthier patient data' },
-        ].map(({ Icon, txt }) => (
-          <div key={txt} style={{ flex: 1, minWidth: 155, background: '#f8f5f1', border: '2px solid #0b1733', borderRadius: 12, padding: '10px 14px', fontSize: 12, color: '#6b5f55', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <Icon size={18} weight="fill" color="#ff3b46" style={{ flexShrink: 0 }} /><span>{txt}</span>
+
+      {/* East Hills residents unhappy */}
+      <div style={{ background: '#fef2f2', border: '1.5px solid #fecaca', borderRadius: 14, padding: '14px 18px', marginBottom: 12 }}>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#dc2626', marginBottom: 8 }}>😡 East Hills Residents Are Furious</div>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <div style={{ fontSize: 12, color: '#991b1b', lineHeight: 1.5 }}>
+            "I ordered an hour ago. My food is still not here. Every time it's the same." — East Hills resident
           </div>
-        ))}
-      </div>
-
-      {/* Checkout — the formal definition the player leaves with */}
-      <div style={{ background: '#fff', border: '2px solid #0b1733', borderRadius: 16, padding: '18px 20px', boxShadow: '6px 6px 0 #0b1733' }}>
-        <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#ff3b46', marginBottom: 8 }}>
-          So, what is Algorithmic Bias?
+          <div style={{ fontSize: 12, color: '#991b1b', lineHeight: 1.5 }}>
+            "There are always riders sitting idle downtown while we wait. The app just doesn't care about us."
+          </div>
         </div>
-        <div style={{ fontSize: 14, color: '#2d2419', lineHeight: 1.65 }}>
-          <strong>Algorithmic bias</strong> is when an AI system produces systematically unfair outcomes, often by
-          reflecting imbalances in its data, its design, or the world it runs in. The model can be working exactly as
-          built — accurately learning the patterns it was given — and <em>still</em> encode and amplify existing
-          inequalities. As you saw, the harm doesn't need a malicious goal or a buggy model. A reasonable objective,
-          applied across an unequal city, was enough.
+        <div style={{ marginTop: 10, background: '#fee2e2', borderRadius: 8, padding: '8px 12px', fontSize: 12, color: '#7f1d1d', fontWeight: 600 }}>
+          {ehResult?.drivers ?? 1} rider assigned to {ALGO_ORDERS_SURGE.easthills} orders — {ehUnmet} customers left waiting. Repeat frustration = lost customers permanently.
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 18, alignItems: 'center' }}>
-        <span style={{ fontSize: 13, fontWeight: 700, color: '#16a34a' }}>✓ Game complete</span>
-        <Link to="/#games" style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 700, color: '#ff3b46', textDecoration: 'none' }}>
-          ← Back to all games
-        </Link>
+      {/* Core lesson */}
+      <div style={{ background: '#1e1b4b', borderRadius: 14, padding: '16px 18px', color: '#fff' }}>
+        <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a5b4fc', marginBottom: 8 }}>The Core Problem</div>
+        <div style={{ fontSize: 15, fontWeight: 700, lineHeight: 1.5, marginBottom: 8 }}>
+          The goal was "minimize average trip time" — not "make more money" or "serve every customer."
+        </div>
+        <div style={{ fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 }}>
+          When you optimise for the wrong metric, the algorithm does exactly what you asked — and exactly the wrong thing. A better goal would balance speed, coverage, and revenue across all neighborhoods.
+        </div>
       </div>
     </div>
   );
@@ -1579,7 +1695,7 @@ function PhaseFinalReflect({ onAct, algoResults, fairerResults }: {
 
 export function AlgorithmBias() {
   const navigate = useNavigate();
-  const [phase, setPhase] = useState<GamePhase>('intro');
+  const [phase, setPhase] = useState<GamePhase>('explore');
 
   useEffect(() => {
     if (phase === 'reflect') markGameCompleted('algorithm-bias');
@@ -1603,8 +1719,6 @@ export function AlgorithmBias() {
 
   const [ytDemand, setYtDemand] = useState<Record<string, number>>({ ...INITIAL_DEMAND });
   const [ytWaveCount, setYtWaveCount] = useState(0);
-  const [ytDelivered, setYtDelivered] = useState(0);
-  const [ytEarnings, setYtEarnings] = useState(0);
   const [ytCompletedTimes, setYtCompletedTimes] = useState<number[]>([]); // actual baseTime of each delivery
   const [ytDispatchLog, setYtDispatchLog] = useState<string[]>([]);
   const [ytFeedback, setYtFeedback] = useState<string | null>(null);
@@ -1617,13 +1731,41 @@ export function AlgorithmBias() {
   // Stage 4: Automate
   const [algoStep, setAlgoStep] = useState(0);
   const [algoHighlightId, setAlgoHighlightId] = useState<string | null>(null);
-  // Rider animation for Automate/Bias/FairerRound phases
-  const autoRidersRef = useRef<{ hoodId: string; progress: number }[]>([]);
+  // Rider animation for Automate/FairerRound phases (cycling loop)
+  const autoRidersRef = useRef<{ id: number; hoodId: string; progress: number }[]>([]);
   const [autoRiderPositions, setAutoRiderPositions] = useState<RiderMapPos[]>([]);
+  // Automate live simulation (runs after building completes)
+  const autoSimLiveRidersRef = useRef<LiveRider[]>([]);
+  const autoSimRiderIdRef = useRef(0);
+  const autoSimDemandRef = useRef<Record<string, number>>({});
+  const autoSimAssignedRef = useRef<Record<string, number>>({});
+  const autoSimReservedRef = useRef<Record<string, number>>({});
+  const autoSimIdleRef = useRef(TOTAL_RIDERS);
+  const autoSimDeliveredRef = useRef<Record<string, number>>({});
+  const autoSimDispatchFrameGapRef = useRef(AUTO_DISPATCH_FRAME_GAP);
+  const [autoSimRunning, setAutoSimRunning] = useState(false);
+  const [autoSimTimer, setAutoSimTimer] = useState(20);
+  const [autoSimDemand, setAutoSimDemand] = useState<Record<string, number>>({});
+  const [autoSimDelivered, setAutoSimDelivered] = useState<Record<string, number>>({});
 
   // Stage 5: Bias
   const [biasSubPhase, setBiasSubPhase] = useState<'event' | 'running' | 'results'>('event');
   const [algoResults, setAlgoResults] = useState<NResult[]>([]);
+
+  // Bias live simulation
+  const biasLiveRidersRef = useRef<LiveRider[]>([]);
+  const biasRiderIdRef = useRef(0);
+  const biasSimDemandRef = useRef<Record<string, number>>({});
+  const biasSimStartDemandRef = useRef<Record<string, number>>(ALGO_ORDERS_SURGE);
+  const biasSimAssignedRef = useRef<Record<string, number>>({});
+  const biasSimReservedRef = useRef<Record<string, number>>({});
+  const biasSimIdleRef = useRef(TOTAL_RIDERS);
+  const biasSimDeliveredRef = useRef<Record<string, number>>({});
+  const biasSimDispatchFrameGapRef = useRef(AUTO_DISPATCH_FRAME_GAP);
+  const [biasSimRunning, setBiasSimRunning] = useState(false);
+  const [biasSimTimer, setBiasSimTimer] = useState(20);
+  const [biasSimDemand, setBiasSimDemand] = useState<Record<string, number>>({});
+  const [biasSimDelivered, setBiasSimDelivered] = useState<Record<string, number>>({});
 
   // Hidden stages
   const [fixGoalChoice, setFixGoalChoice] = useState<'A' | 'B' | 'C' | null>(null);
@@ -1656,8 +1798,6 @@ export function AlgorithmBias() {
     ytRiderIdRef.current = 0;
     setYtDemand({ ...INITIAL_DEMAND });
     setYtWaveCount(0);
-    setYtDelivered(0);
-    setYtEarnings(0);
     setYtCompletedTimes([]);
     setYtDispatchLog([]);
     setYtFeedback(null);
@@ -1666,6 +1806,22 @@ export function AlgorithmBias() {
     const t = setTimeout(() => setYtRunning(true), 400);
     return () => clearTimeout(t);
   }, [phase]);
+
+  const resetYourTurn = useCallback(() => {
+    ytLiveRidersRef.current = [];
+    setYtIdleRiders(TOTAL_RIDERS);
+    setYtRenderTick(0);
+    ytRiderIdRef.current = 0;
+    setYtDemand({ ...INITIAL_DEMAND });
+    setYtWaveCount(0);
+    setYtCompletedTimes([]);
+    setYtDispatchLog([]);
+    setYtFeedback(null);
+    setYtTimer(YOUR_TURN_DURATION);
+    setYtRoundDone(false);
+    setYtRunning(false);
+    setTimeout(() => setYtRunning(true), 400);
+  }, []);
 
   // ── Your Turn: timer ──
   useEffect(() => {
@@ -1751,9 +1907,6 @@ export function AlgorithmBias() {
         setYtIdleRiders(prev => prev + returning.length);
       }
       for (const { hoodId } of delivered) {
-        const h = hoodById(hoodId);
-        setYtDelivered(prev => prev + 1);
-        setYtEarnings(prev => prev + h.earnings);
         setYtCompletedTimes(prev => [...prev, liveTripSeconds(hoodId)]);
       }
 
@@ -1772,10 +1925,7 @@ export function AlgorithmBias() {
   const handleDispatch = useCallback((hoodId: string) => {
     if (phase !== 'yourTurn' || ytRoundDone || !ytRunning) return;
 
-    if (ytIdleRiders <= 0) {
-      showFeedback('All riders are out, wait for one to return!');
-      return;
-    }
+    if (ytIdleRiders <= 0) return;
     if ((ytDemand[hoodId] ?? 0) <= 0) {
       showFeedback('No active demand here right now. Wait for orders.');
       return;
@@ -1819,34 +1969,233 @@ export function AlgorithmBias() {
     return () => clearTimeout(t);
   }, [phase, fairerStep]);
 
-  // ── Auto-phase rider animation (Automate / Bias / FairerRound) ──
+  // ── Automate: start live simulation when building completes ──
   useEffect(() => {
-    const isActive = phase === 'automate' || phase === 'bias' || phase === 'fairerRound';
+    if (phase !== 'automate' || algoStep < TOTAL_RIDERS) return;
+    autoRidersRef.current = [];
+    autoSimLiveRidersRef.current = [];
+    autoSimRiderIdRef.current = 0;
+    autoSimDemandRef.current = { ...INITIAL_DEMAND };
+    autoSimAssignedRef.current = { ...EMPTY_HOOD_COUNTS };
+    autoSimReservedRef.current = { ...EMPTY_HOOD_COUNTS };
+    autoSimIdleRef.current = TOTAL_RIDERS;
+    autoSimDeliveredRef.current = { ...EMPTY_HOOD_COUNTS };
+    autoSimDispatchFrameGapRef.current = AUTO_DISPATCH_FRAME_GAP;
+    setAutoSimRunning(true);
+    setAutoSimTimer(20);
+    setAutoSimDemand({ ...INITIAL_DEMAND });
+    setAutoSimDelivered({ ...EMPTY_HOOD_COUNTS });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phase, algoStep]);
+
+  // ── Automate: countdown timer ──
+  useEffect(() => {
+    if (!autoSimRunning) return;
+    const interval = setInterval(() => {
+      setAutoSimTimer(prev => {
+        const next = prev - 1 / 30;
+        if (next <= 0) { setAutoSimRunning(false); return 0; }
+        return next;
+      });
+    }, 33);
+    return () => clearInterval(interval);
+  }, [autoSimRunning]);
+
+  // ── Automate: main simulation loop ──
+  useEffect(() => {
+    if (!autoSimRunning || phase !== 'automate') return;
+    const interval = setInterval(() => {
+      // Advance riders
+      const updated: LiveRider[] = [];
+      for (const rider of autoSimLiveRidersRef.current) {
+        const h = hoodById(rider.hoodId);
+        const newProgress = rider.progress + riderSpeedForHood(h);
+        let served = rider.served;
+        if (!served && rider.progress < 1.0 && newProgress >= 1.0) {
+          served = true;
+          autoSimDeliveredRef.current[rider.hoodId] = (autoSimDeliveredRef.current[rider.hoodId] ?? 0) + 1;
+          autoSimDemandRef.current[rider.hoodId] = Math.max(
+            0,
+            (INITIAL_DEMAND[rider.hoodId] ?? 0) - (autoSimDeliveredRef.current[rider.hoodId] ?? 0)
+          );
+        }
+        if (newProgress >= 2.3) { autoSimIdleRef.current += 1; continue; }
+        updated.push({ ...rider, progress: newProgress, served });
+      }
+      autoSimLiveRidersRef.current = updated;
+
+      // Dispatch exactly one rider per visible beat, following the learned
+      // priority rule so users can see each neighborhood queue drain in order.
+      autoSimDispatchFrameGapRef.current += 1;
+      if (
+        autoSimIdleRef.current > 0 &&
+        autoSimDispatchFrameGapRef.current >= AUTO_DISPATCH_FRAME_GAP
+      ) {
+        for (const hoodId of ['downtown', 'midtown', 'northsuburb', 'easthills'] as const) {
+          if ((autoSimReservedRef.current[hoodId] ?? 0) < (INITIAL_DEMAND[hoodId] ?? 0)) {
+            autoSimLiveRidersRef.current = [...autoSimLiveRidersRef.current,
+              { id: autoSimRiderIdRef.current++, hoodId, progress: 0, served: false }];
+            autoSimReservedRef.current[hoodId] = (autoSimReservedRef.current[hoodId] ?? 0) + 1;
+            autoSimAssignedRef.current[hoodId] = (autoSimAssignedRef.current[hoodId] ?? 0) + 1;
+            autoSimIdleRef.current -= 1;
+            autoSimDispatchFrameGapRef.current = 0;
+            break;
+          }
+        }
+      }
+
+      const positions: RiderMapPos[] = autoSimLiveRidersRef.current
+        .map(r => {
+          const [x, y] = progressToXY(r.hoodId, r.progress);
+          const [sx, sy] = spreadRiderXY(r.id, x, y);
+          return { id: r.id, x: sx, y: sy, delivering: riderIsDelivering(r.progress) };
+        });
+      setAutoRiderPositions(positions);
+      setAutoSimDemand({ ...autoSimDemandRef.current });
+      setAutoSimDelivered({ ...autoSimDeliveredRef.current });
+    }, 33);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [autoSimRunning, phase]);
+
+  // ── Bias: start real simulation when biasSubPhase → 'running' ──
+  useEffect(() => {
+    if (phase !== 'bias' || biasSubPhase !== 'running') return;
+    biasLiveRidersRef.current = [];
+    biasRiderIdRef.current = 0;
+    const biasStartDemand = { ...ALGO_ORDERS_SURGE };
+    biasSimStartDemandRef.current = { ...biasStartDemand };
+    biasSimDemandRef.current = { ...biasStartDemand };
+    biasSimAssignedRef.current = { ...EMPTY_HOOD_COUNTS };
+    biasSimReservedRef.current = { ...EMPTY_HOOD_COUNTS };
+    biasSimIdleRef.current = TOTAL_RIDERS;
+    biasSimDeliveredRef.current = { ...EMPTY_HOOD_COUNTS };
+    biasSimDispatchFrameGapRef.current = AUTO_DISPATCH_FRAME_GAP;
+    setBiasSimRunning(true);
+    setBiasSimTimer(20);
+    setBiasSimDemand({ ...biasStartDemand });
+    setBiasSimDelivered({ ...EMPTY_HOOD_COUNTS });
+  }, [phase, biasSubPhase]);
+
+  // ── Bias: countdown timer ──
+  useEffect(() => {
+    if (!biasSimRunning) return;
+    const interval = setInterval(() => {
+      setBiasSimTimer(prev => {
+        const next = prev - 1 / 30;
+        if (next <= 0) { setBiasSimRunning(false); return 0; }
+        return next;
+      });
+    }, 33);
+    return () => clearInterval(interval);
+  }, [biasSimRunning]);
+
+  // ── Bias: transition to results when timer ends ──
+  useEffect(() => {
+    if (biasSimRunning || biasSimTimer > 0.05 || biasSubPhase !== 'running' || phase !== 'bias') return;
+    setAlgoResults(liveResultsFromRun(
+      biasSimAssignedRef.current,
+      biasSimDeliveredRef.current,
+      biasSimStartDemandRef.current
+    ));
+    setTimeout(() => setBiasSubPhase('results'), 1000);
+  }, [biasSimRunning, biasSimTimer, biasSubPhase, phase]);
+
+  // ── Bias: main simulation loop (dispatch + animate) ──
+  const BIAS_PRIORITY = ['downtown', 'midtown', 'northsuburb', 'easthills'] as const;
+  useEffect(() => {
+    if (!biasSimRunning || phase !== 'bias') return;
+    const interval = setInterval(() => {
+      // 1. Advance rider progress
+      const riders = biasLiveRidersRef.current;
+      const updated: LiveRider[] = [];
+      for (const rider of riders) {
+        const h = hoodById(rider.hoodId);
+        const newProgress = rider.progress + riderSpeedForHood(h);
+        let served = rider.served;
+        if (!served && rider.progress < 1.0 && newProgress >= 1.0) {
+          served = true;
+          biasSimDeliveredRef.current[rider.hoodId] = (biasSimDeliveredRef.current[rider.hoodId] ?? 0) + 1;
+          biasSimDemandRef.current[rider.hoodId] = Math.max(
+            0,
+            (biasSimStartDemandRef.current[rider.hoodId] ?? 0) - (biasSimDeliveredRef.current[rider.hoodId] ?? 0)
+          );
+        }
+        if (newProgress >= 2.3) {
+          biasSimIdleRef.current += 1;
+          continue;
+        }
+        updated.push({ ...rider, progress: newProgress, served });
+      }
+      biasLiveRidersRef.current = updated;
+
+      // 2. Dispatch exactly one rider per visible beat in strict priority
+      // order. East Hills only receives riders after the faster queues empty.
+      biasSimDispatchFrameGapRef.current += 1;
+      if (
+        biasSimIdleRef.current > 0 &&
+        biasSimDispatchFrameGapRef.current >= AUTO_DISPATCH_FRAME_GAP
+      ) {
+        for (const hoodId of BIAS_PRIORITY) {
+          if ((biasSimReservedRef.current[hoodId] ?? 0) < (biasSimStartDemandRef.current[hoodId] ?? 0)) {
+            biasLiveRidersRef.current = [
+              ...biasLiveRidersRef.current,
+              { id: biasRiderIdRef.current++, hoodId, progress: 0, served: false },
+            ];
+            biasSimReservedRef.current[hoodId] = (biasSimReservedRef.current[hoodId] ?? 0) + 1;
+            biasSimAssignedRef.current[hoodId] = (biasSimAssignedRef.current[hoodId] ?? 0) + 1;
+            biasSimIdleRef.current -= 1;
+            biasSimDispatchFrameGapRef.current = 0;
+            break;
+          }
+        }
+      }
+
+      const positions: RiderMapPos[] = biasLiveRidersRef.current
+        .map(r => {
+          const [x, y] = progressToXY(r.hoodId, r.progress);
+          const [sx, sy] = spreadRiderXY(r.id, x, y);
+          return { id: r.id, x: sx, y: sy, delivering: riderIsDelivering(r.progress) };
+        });
+      setAutoRiderPositions(positions);
+
+      // 4. Sync display state for panel
+      setBiasSimDemand({ ...biasSimDemandRef.current });
+      setBiasSimDelivered({ ...biasSimDeliveredRef.current });
+    }, 33);
+    return () => clearInterval(interval);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [biasSimRunning, phase]);
+
+  // ── Auto-phase rider animation (Automate / FairerRound only — bias has its own loop) ──
+  useEffect(() => {
+    const isActive = phase === 'automate' || phase === 'fairerRound';
     if (!isActive) return;
 
-    let targetAssignments: Record<string, number>;
-    if (phase === 'automate') targetAssignments = computeSeqAssignments(ALGO_SEQUENCE, algoStep);
-    else if (phase === 'bias') targetAssignments = computeSeqAssignments(ALGO_SEQUENCE, TOTAL_RIDERS);
-    else targetAssignments = fairerAssignments;
+    const targetAssignments = phase === 'automate'
+      ? computeSeqAssignments(ALGO_SEQUENCE, algoStep)
+      : fairerAssignments;
 
-    // Sync rider pool
     const ref = autoRidersRef.current;
-    const newPool: { hoodId: string; progress: number }[] = [];
+    let autoIdCounter = ref.length > 0 ? Math.max(...ref.map(r => r.id)) + 1 : 0;
+    const newPool: { id: number; hoodId: string; progress: number }[] = [];
+    const startProgress = phase === 'fairerRound'
+      ? (i: number, needed: number) => (i / Math.max(1, needed)) * 2.3
+      : () => 0;
     for (const h of HOODS) {
       const needed = targetAssignments[h.id] ?? 0;
       const existing = ref.filter(r => r.hoodId === h.id);
       for (let i = 0; i < Math.min(needed, existing.length); i++) newPool.push(existing[i]);
       for (let i = existing.length; i < needed; i++) {
-        newPool.push({ hoodId: h.id, progress: (i / Math.max(1, needed)) * 2.3 });
+        newPool.push({ id: autoIdCounter++, hoodId: h.id, progress: startProgress(i, needed) });
       }
     }
     autoRidersRef.current = newPool;
   }, [phase, algoStep, fairerAssignments]);
 
-  // Auto-rider animation loop
+  // Auto-rider animation loop (automate building phase + fairerRound only)
   const autoAnimRunning =
-    (phase === 'automate' && algoStep >= TOTAL_RIDERS) ||
-    phase === 'bias' ||
+    (phase === 'automate' && !autoSimRunning) ||
     (phase === 'fairerRound' && fairerStep >= TOTAL_RIDERS);
 
   useEffect(() => {
@@ -1858,7 +2207,7 @@ export function AlgorithmBias() {
         const h = hoodById(rider.hoodId);
         rider.progress = (rider.progress + riderSpeedForHood(h)) % 2.3;
         const [x, y] = progressToXY(rider.hoodId, rider.progress);
-        positions.push({ x, y, delivering: riderIsDelivering(rider.progress) });
+        positions.push({ id: rider.id, x, y, delivering: riderIsDelivering(rider.progress) });
       }
       setAutoRiderPositions([...positions]);
     }, 33);
@@ -1867,10 +2216,12 @@ export function AlgorithmBias() {
 
   // ── Derive live rider positions for Your Turn (from ref, updated per tick) ──
   const ytRiderPositions: RiderMapPos[] = useMemo(() => {
-    return ytLiveRidersRef.current.map(rider => {
-      const [x, y] = progressToXY(rider.hoodId, rider.progress);
-      return { x, y, delivering: riderIsDelivering(rider.progress) };
-    });
+    return ytLiveRidersRef.current
+      .filter(rider => rider.progress > 0.08)
+      .map(rider => {
+        const [x, y] = progressToXY(rider.hoodId, rider.progress);
+        return { id: rider.id, x, y, delivering: riderIsDelivering(rider.progress) };
+      });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [ytRenderTick]);
 
@@ -1903,7 +2254,7 @@ export function AlgorithmBias() {
     setBtnLabel(''); setBtnEnabled(false); actionFnRef.current = null;
     if (next === 'automate') { setAlgoStep(0); setAlgoHighlightId(null); autoRidersRef.current = []; }
     if (next === 'bias') {
-      setAlgoResults(simulate(computeSeqAssignments(ALGO_SEQUENCE, TOTAL_RIDERS), ALGO_ORDERS_SURGE));
+      setAlgoResults([]);
       setBiasSubPhase('event');
       autoRidersRef.current = [];
     }
@@ -1916,44 +2267,9 @@ export function AlgorithmBias() {
   }
 
   const PHASE_SEQUENCE: GamePhase[] = [
-    'intro', 'explore', 'goal', 'yourTurn', 'automate', 'bias', 'reflect',
+    'explore', 'goal', 'yourTurn', 'automate', 'bias', 'reflect',
+    'fixIt', 'fairerRound', 'finalReflect',
   ];
-
-  const restartGame = useCallback(() => {
-    if (ytFeedbackTimerRef.current) clearTimeout(ytFeedbackTimerRef.current);
-    setBtnLabel('');
-    setBtnEnabled(false);
-    actionFnRef.current = null;
-    setPhase('intro');
-    setVisitedSet(new Set());
-    setActiveExploreTab(null);
-    setDemoState(null);
-    ytLiveRidersRef.current = [];
-    ytRiderIdRef.current = 0;
-    setYtIdleRiders(TOTAL_RIDERS);
-    setYtRenderTick(0);
-    setYtDemand({ ...INITIAL_DEMAND });
-    setYtWaveCount(0);
-    setYtDelivered(0);
-    setYtEarnings(0);
-    setYtCompletedTimes([]);
-    setYtDispatchLog([]);
-    setYtFeedback(null);
-    setYtTimer(YOUR_TURN_DURATION);
-    setYtRunning(false);
-    setYtRoundDone(false);
-    setAlgoStep(0);
-    setAlgoHighlightId(null);
-    autoRidersRef.current = [];
-    setAutoRiderPositions([]);
-    setBiasSubPhase('event');
-    setAlgoResults([]);
-    setFixGoalChoice(null);
-    setFairerStep(0);
-    setFairerNewId(null);
-    setFairerResults([]);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }, []);
 
   function handleActionClick() {
     if (actionFnRef.current) { actionFnRef.current(); return; }
@@ -1972,14 +2288,15 @@ export function AlgorithmBias() {
 
   // ── Derived display values ──
   const isYourTurn = phase === 'yourTurn';
-  const showMap = !['intro', 'reflect', 'fixIt', 'finalReflect'].includes(phase);
+  const showMap = !['reflect', 'fixIt', 'finalReflect'].includes(phase);
   const showDemand = ['automate', 'bias', 'fairerRound'].includes(phase);
   const surgeActive = phase === 'bias';
+  const liveStaticDemand =
+    phase === 'automate' && autoSimRunning ? autoSimDemand :
+    phase === 'bias' && biasSubPhase === 'running' ? biasSimDemand :
+    undefined;
 
   const activeRiderPositions: RiderMapPos[] = isYourTurn ? ytRiderPositions : autoRiderPositions;
-  const idleRiderCount: number = isYourTurn
-    ? ytIdleRiders
-    : TOTAL_RIDERS - activeRiderPositions.length;
 
   const displayAssignments: Record<string, number> =
     phase === 'automate' ? algoAssignments :
@@ -2009,26 +2326,79 @@ export function AlgorithmBias() {
   return (
     <div className="ab-page">
       <style>{STYLES}</style>
-      {phase !== 'intro' && <StepIndicator phase={phase} onBack={p => advance(p)} />}
+      <StepIndicator phase={phase} onBack={p => advance(p)} />
 
       {/* Live HUD, Your Turn only */}
-      {isYourTurn && (
-        <div className="ab-hud" style={{ marginTop: 8 }}>
-          <div className={`ab-goal-panel ${avgTripStatus}`}>
-            <div className="ab-goal-main">
-              <div className="ab-goal-kicker">Goal</div>
-              <div className="ab-goal-title">Keep avg trip under {LIVE_GOALS.avgTrip}s</div>
-              <div className="ab-goal-meta">
-                {ytRoundDone ? 'Round complete' : `${timerSecs}s left`} · {ytAvgWait > 0 ? `${ytAvgWait}s avg` : 'avg pending'} · {ytIdleRiders}/{TOTAL_RIDERS} riders ready
+      {isYourTurn && (() => {
+        const pct = ytRoundDone ? 0 : Math.max(0, ytTimer / YOUR_TURN_DURATION) * 100;
+        const barColor = pct > 50 ? '#22c55e' : pct > 20 ? '#f59e0b' : '#ef4444';
+        return (
+          <>
+            <div className="ab-hud" style={{ marginTop: 8 }}>
+              {/* Goal box */}
+              <div style={{ flex: '1 1 200px', background: '#eef2ff', border: '2px solid #c7d2fe', borderRadius: 14, padding: '10px 16px' }}>
+                <div style={{ fontSize: 9, fontWeight: 800, color: '#6366f1', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>Goal</div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: '#3730a3' }}>Avg trip &lt; {LIVE_GOALS.avgTrip}s</div>
+                <div style={{ fontSize: 11, color: '#6366f1', marginTop: 2 }}>{ytIdleRiders}/{TOTAL_RIDERS} riders ready</div>
+              </div>
+              {/* Current avg box */}
+              <div style={{ flex: '1 1 140px', background: avgTripStatus === 'safe' ? '#f0fdf4' : avgTripStatus === 'warn' ? '#fffbeb' : avgTripStatus === 'bad' ? '#fef2f2' : '#f8f5f1', border: `2px solid ${avgTripStatus === 'safe' ? '#86efac' : avgTripStatus === 'warn' ? '#fbbf24' : avgTripStatus === 'bad' ? '#fca5a5' : '#e2d9ce'}`, borderRadius: 14, padding: '10px 16px', textAlign: 'center' }}>
+                <div style={{ fontSize: 9, fontWeight: 800, color: '#a8998c', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 2 }}>Current Avg Trip</div>
+                <div style={{ fontSize: 28, fontWeight: 900, color: avgTripStatus === 'safe' ? '#16a34a' : avgTripStatus === 'warn' ? '#d97706' : avgTripStatus === 'bad' ? '#dc2626' : '#6b5f55' }}>{ytAvgWait > 0 ? `${ytAvgWait}s` : '--'}</div>
               </div>
             </div>
-            <div className="ab-goal-avg">{ytAvgWait > 0 ? `${ytAvgWait}s` : '--'}</div>
-          </div>
-          <div className="ab-hud-secondary">
-            <span>Delivered {ytDelivered}</span>
-            <span>Earnings ${ytEarnings}</span>
-          </div>
+            {/* Time remaining bar */}
+            <div style={{ width: '100%', maxWidth: 860, marginTop: 6 }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: 11, fontWeight: 700, color: '#6b5f55', marginBottom: 3 }}>
+                <span>Time Remaining</span>
+                <span style={{ color: barColor, fontVariantNumeric: 'tabular-nums' }}>{ytRoundDone ? '0s' : `${timerSecs}s`}</span>
+              </div>
+              <div style={{ height: 10, borderRadius: 6, background: '#e2d9ce', overflow: 'hidden' }}>
+                <div style={{ height: '100%', width: `${pct}%`, background: barColor, borderRadius: 6, transition: 'width 0.1s linear, background 0.4s' }} />
+              </div>
+            </div>
+          </>
+        );
+      })()}
+
+      {/* Explore title */}
+      {phase === 'explore' && (
+        <div style={{ width: '100%', maxWidth: 860, marginBottom: 8, textAlign: 'center' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: '#3730a3', margin: 0 }}>
+            Explore the Different Neighborhoods
+          </h2>
+          <p style={{ fontSize: 13, color: '#6b7280', margin: '4px 0 0' }}>
+            Click each area on the map to learn about the community before dispatching riders.
+          </p>
         </div>
+      )}
+
+      {/* Goal: title + white card above map */}
+      {phase === 'goal' && (
+        <>
+          <div style={{ width: '100%', maxWidth: 860, marginBottom: 8, textAlign: 'center' }}>
+            <h2 style={{ fontSize: 20, fontWeight: 800, color: '#3730a3', margin: 0 }}>
+              🎯 Company Goal: Fast Deliveries
+            </h2>
+            <p style={{ fontSize: 13, color: '#6b7280', margin: '4px 0 0' }}>
+              Keep average trip time under <strong>{LIVE_GOALS.avgTrip}s</strong> — faster rides mean more completed orders and more earnings.
+            </p>
+          </div>
+          <PhaseGoal onAct={setAction} />
+        </>
+      )}
+
+      {/* Bias card above map */}
+      {phase === 'bias' && (
+        <PhaseBias
+          onAct={setAction}
+          biasSubPhase={biasSubPhase}
+          setBiasSubPhase={setBiasSubPhase}
+          biasSimTimer={biasSimTimer}
+          biasSimDemand={biasSimDemand}
+          biasSimDelivered={biasSimDelivered}
+          algoResults={algoResults}
+        />
       )}
 
       {/* City Map */}
@@ -2046,16 +2416,16 @@ export function AlgorithmBias() {
           ytRoundDone={ytRoundDone}
           ytFeedback={ytFeedback}
           activeRiderPositions={activeRiderPositions}
-          idleRiderCount={idleRiderCount}
           showDemand={showDemand}
           surgeActive={surgeActive}
+          staticDemand={liveStaticDemand}
           displayAssignments={displayAssignments}
           highlightHoodId={highlightHoodId}
+          buildingAlgo={phase === 'automate' && algoStep < TOTAL_RIDERS}
         />
       )}
 
       {/* Stage panels */}
-      {phase === 'intro' && <PhaseIntro onAct={setAction} />}
       {phase === 'explore' && (
         <PhaseExplore
           onAct={setAction}
@@ -2064,15 +2434,11 @@ export function AlgorithmBias() {
           demoState={demoState} setDemoState={setDemoState}
         />
       )}
-      {phase === 'goal' && <PhaseGoal onAct={setAction} />}
       {phase === 'yourTurn' && (
         <PhaseYourTurn
           onAct={setAction}
-          ytIdleRiders={ytIdleRiders}
-          ytDelivered={ytDelivered}
-          ytEarnings={ytEarnings}
+          onRetry={resetYourTurn}
           ytAvgWait={ytAvgWait}
-          ytFeedback={ytFeedback}
           ytRoundDone={ytRoundDone}
           ytDemand={ytDemand}
           speedAlert={speedAlert}
@@ -2081,24 +2447,15 @@ export function AlgorithmBias() {
       {phase === 'automate' && (
         <PhaseAutomate
           onAct={setAction}
-          assignments={finalAssignments}
           algoStep={algoStep}
-          algoAssignments={algoAssignments}
-        />
-      )}
-      {phase === 'bias' && (
-        <PhaseBias
-          onAct={setAction}
-          biasSubPhase={biasSubPhase}
-          setBiasSubPhase={setBiasSubPhase}
-          algoResults={algoResults}
+          autoSimTimer={autoSimTimer}
+          autoSimDemand={autoSimDemand}
+          autoSimDelivered={autoSimDelivered}
         />
       )}
       {phase === 'reflect' && (
         <PhaseReflect
           onAct={setAction}
-          onRestart={restartGame}
-          assignments={finalAssignments}
           algoResults={algoResults.length > 0 ? algoResults : simulate(computeSeqAssignments(ALGO_SEQUENCE, TOTAL_RIDERS), ALGO_ORDERS_SURGE)}
         />
       )}
