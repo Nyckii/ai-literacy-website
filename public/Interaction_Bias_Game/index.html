@@ -219,10 +219,17 @@
       // The URL to game.zip, relative to the URL of this file.
       window.gameZipURL = 'game.zip';
 
-      // Register the service worker.
+      // Register the service worker only when opened standalone. When embedded in
+      // the Bias Arcade iframe, skip it — the SW can return 404 on reload/replay.
       if (navigator.serviceWorker) {
-          if (!navigator.serviceWorker.controller) {
-              navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'all' });
+          if (window.self === window.top) {
+              if (!navigator.serviceWorker.controller) {
+                  navigator.serviceWorker.register('./service-worker.js', { updateViaCache: 'all' });
+              }
+          } else {
+              navigator.serviceWorker.getRegistrations().then(function (regs) {
+                  regs.forEach(function (reg) { reg.unregister(); });
+              });
           }
       }
   </script>

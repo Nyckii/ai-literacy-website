@@ -1,0 +1,8 @@
+{
+  "rewrites": [
+    {
+      "source": "/((?!Interaction_Bias_Game/).*)",
+      "destination": "/index.html"
+    }
+  ]
+}

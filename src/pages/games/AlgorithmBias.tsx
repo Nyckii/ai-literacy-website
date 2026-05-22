@@ -1387,13 +1387,14 @@ function PhaseBias({
 // ─── Stage 6: Reflect ─────────────────────────────────────────────────────────
 
 function PhaseReflect({
-  onAct, assignments, algoResults,
+  onAct, onRestart, assignments, algoResults,
 }: {
   onAct: (l: string, e: boolean, fn?: () => void) => void;
+  onRestart: () => void;
   assignments: Record<string, number>;
   algoResults: NResult[];
 }) {
-  useEffect(() => { onAct('↺ Play again', true, () => window.location.reload()); }, [onAct]);
+  useEffect(() => { onAct('↺ Play again', true, onRestart); }, [onAct, onRestart]);
   const ehResult = algoResults.find(r => r.id === 'easthills');
 
   return (
@@ -1918,6 +1919,42 @@ export function AlgorithmBias() {
     'intro', 'explore', 'goal', 'yourTurn', 'automate', 'bias', 'reflect',
   ];
 
+  const restartGame = useCallback(() => {
+    if (ytFeedbackTimerRef.current) clearTimeout(ytFeedbackTimerRef.current);
+    setBtnLabel('');
+    setBtnEnabled(false);
+    actionFnRef.current = null;
+    setPhase('intro');
+    setVisitedSet(new Set());
+    setActiveExploreTab(null);
+    setDemoState(null);
+    ytLiveRidersRef.current = [];
+    ytRiderIdRef.current = 0;
+    setYtIdleRiders(TOTAL_RIDERS);
+    setYtRenderTick(0);
+    setYtDemand({ ...INITIAL_DEMAND });
+    setYtWaveCount(0);
+    setYtDelivered(0);
+    setYtEarnings(0);
+    setYtCompletedTimes([]);
+    setYtDispatchLog([]);
+    setYtFeedback(null);
+    setYtTimer(YOUR_TURN_DURATION);
+    setYtRunning(false);
+    setYtRoundDone(false);
+    setAlgoStep(0);
+    setAlgoHighlightId(null);
+    autoRidersRef.current = [];
+    setAutoRiderPositions([]);
+    setBiasSubPhase('event');
+    setAlgoResults([]);
+    setFixGoalChoice(null);
+    setFairerStep(0);
+    setFairerNewId(null);
+    setFairerResults([]);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   function handleActionClick() {
     if (actionFnRef.current) { actionFnRef.current(); return; }
     if (phase === 'reflect' || phase === 'finalReflect') {
@@ -2060,6 +2097,7 @@ export function AlgorithmBias() {
       {phase === 'reflect' && (
         <PhaseReflect
           onAct={setAction}
+          onRestart={restartGame}
           assignments={finalAssignments}
           algoResults={algoResults.length > 0 ? algoResults : simulate(computeSeqAssignments(ALGO_SEQUENCE, TOTAL_RIDERS), ALGO_ORDERS_SURGE)}
         />

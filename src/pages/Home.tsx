@@ -150,7 +150,7 @@ export function Home() {
 
       <section id="recap" className="recap-section">
         <h2>Test your knowledge</h2>
-        <Link to={`bias-recap`} className="game-card">
+        <Link to="/bias-recap" className="game-card">
           <div className="game-card-body">
             <h4>Bias Recap</h4>
             <p>
