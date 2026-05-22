@@ -4,13 +4,38 @@
 // Your Turn uses click-on-map dispatch: click a neighborhood to send one available rider there.
 
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import type { ElementType } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import {
+  ArrowsClockwise,
+  Broadcast,
+  BuildingOffice,
+  Buildings,
+  Car,
+  ChartBar,
+  CheckCircle,
+  ClipboardText,
+  Coins,
+  FirstAid,
+  GraduationCap,
+  House,
+  HouseLine,
+  Lightning,
+  Mountains,
+  Package,
+  Robot,
+  Scooter,
+  Target,
+  Timer,
+  Warning,
+} from '@phosphor-icons/react';
 import mapImg from './assets/AlgorithmBiasImg/city-delivery-map.png';
 import { markGameCompleted } from '../../lib/gameProgress';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type GamePhase =
+  | 'intro'
   | 'explore'
   | 'goal'
   | 'yourTurn'
@@ -23,7 +48,7 @@ type GamePhase =
   | 'finalReflect';
 
 interface Hood {
-  id: string; name: string; emoji: string;
+  id: string; name: string; emoji: string; Icon: ElementType;
   color: string; bgColor: string; textColor: string;
   pos: { x: number; y: number };
   radius: number;
@@ -71,7 +96,7 @@ const ROAD_PATHS: Record<string, [number, number][]> = {
 
 const HOODS: Hood[] = [
   {
-    id: 'downtown', name: 'Downtown', emoji: '🏙️',
+    id: 'downtown', name: 'Downtown', emoji: '🏙️', Icon: Buildings,
     color: '#4f46e5', bgColor: 'rgba(79,70,229,0.15)', textColor: '#4338ca',
     pos: { x: 25, y: 65 }, radius: 9,
     baseOrders: 6, baseTime: 8, minTime: 4, earnings: 10,
@@ -80,7 +105,7 @@ const HOODS: Hood[] = [
     exploreInfo: 'Packed skyscrapers, busy restaurants, tight grid roads. Riders can zip in and out, very short trips, high order volume.',
   },
   {
-    id: 'midtown', name: 'Midtown', emoji: '🏢',
+    id: 'midtown', name: 'Midtown', emoji: '🏢', Icon: BuildingOffice,
     color: '#0891b2', bgColor: 'rgba(8,145,178,0.15)', textColor: '#0e7490',
     pos: { x: 25, y: 33 }, radius: 8,
     baseOrders: 4, baseTime: 13, minTime: 6, earnings: 11,
@@ -89,7 +114,7 @@ const HOODS: Hood[] = [
     exploreInfo: 'Office towers and apartment blocks mixed together. Steady orders through the day, manageable distances from HQ.',
   },
   {
-    id: 'northsuburb', name: 'North Suburb', emoji: '🏘️',
+    id: 'northsuburb', name: 'North Suburb', emoji: '🏘️', Icon: HouseLine,
     color: '#d97706', bgColor: 'rgba(217,119,6,0.15)', textColor: '#b45309',
     pos: { x: 42, y: 17 }, radius: 7,
     baseOrders: 3, baseTime: 17, minTime: 8, earnings: 13,
@@ -98,7 +123,7 @@ const HOODS: Hood[] = [
     exploreInfo: 'Peaceful residential streets where houses are far apart. Fewer orders per shift, but each delivery covers more ground.',
   },
   {
-    id: 'easthills', name: 'East Hills', emoji: '🏜️',
+    id: 'easthills', name: 'East Hills', emoji: '🏜️', Icon: Mountains,
     color: '#dc2626', bgColor: 'rgba(220,38,38,0.15)', textColor: '#b91c1c',
     pos: { x: 73, y: 47 }, radius: 9,
     baseOrders: 3, baseTime: 23, minTime: 10, earnings: 16,
@@ -234,77 +259,82 @@ function riderSpeedForHood(h: Hood): number {
   return 2.3 / (roundTripSecs * 30); // progress units per frame at 30fps
 }
 
-// Speed for Explore demo (same function, distinct usage)
-const demoRiderSpeed = riderSpeedForHood;
+// The Explore demo plays at a fixed brisk pace (~2.5s round trip) so players
+// aren't left waiting on the long routes — the real per-neighborhood trip
+// time is communicated through the labels and the result card instead.
+const DEMO_ROUND_TRIP_FRAMES = 150;
+function demoRiderSpeed(_h: Hood): number {
+  return 2.3 / DEMO_ROUND_TRIP_FRAMES;
+}
 
 // ─── CSS ──────────────────────────────────────────────────────────────────────
 
 const STYLES = `
 .ab-page {
   min-height: 100vh;
-  background: #ede9e3;
+  background: #faf7f2;
   display: flex;
   flex-direction: column;
   align-items: center;
   padding: 0 16px 110px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  color: #2d2419;
+  font-family: "Inter", ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: #0b1733;
 }
 
 /* ── Stepper ── */
 .ab-stepper { display:flex; align-items:flex-start; gap:0; padding:18px 0 10px; width:100%; max-width:860px; }
 .ab-step { display:flex; flex-direction:column; align-items:center; flex:1; user-select:none; }
-.ab-step-dot { width:10px; height:10px; border-radius:50%; background:#d5cec6; border:2px solid #c4bcb3; transition:all 0.25s; }
-.ab-step.done .ab-step-dot { background:#16a34a; border-color:#15803d; cursor:pointer; }
-.ab-step.active .ab-step-dot { background:#4f46e5; border-color:#4338ca; box-shadow:0 0 0 4px rgba(79,70,229,0.18); width:12px; height:12px; }
+.ab-step-dot { width:11px; height:11px; border-radius:50%; background:#fff; border:2px solid #0b1733; transition:all 0.25s; }
+.ab-step.done .ab-step-dot { background:#16a34a; border-color:#0b1733; cursor:pointer; }
+.ab-step.active .ab-step-dot { background:#ff3b46; border-color:#0b1733; box-shadow:0 0 0 4px rgba(255,59,70,0.18); width:13px; height:13px; }
 .ab-step-label { font-size:10px; color:#a8998c; margin-top:5px; text-align:center; white-space:nowrap; }
-.ab-step.active .ab-step-label { color:#4f46e5; font-weight:700; }
+.ab-step.active .ab-step-label { color:#ff3b46; font-weight:800; }
 .ab-step.done .ab-step-label { color:#7a6e64; }
-.ab-step-line { flex:1; height:2px; background:#ddd5ca; margin-top:4px; }
-.ab-step-line.done { background:rgba(22,163,74,0.4); }
+.ab-step-line { flex:1; height:2px; background:#d8d0c6; margin-top:5px; }
+.ab-step-line.done { background:rgba(22,163,74,0.45); }
 
 /* ── Live HUD bar ── */
 .ab-hud { display:flex; gap:8px; width:100%; max-width:860px; flex-wrap:wrap; }
 .ab-goal-panel {
-  flex:1 1 520px; background:#fff; border:2px solid #d8d0ff; border-radius:14px;
-  padding:10px 14px; box-shadow:0 2px 10px rgba(79,70,229,0.08);
+  flex:1 1 520px; background:#fff; border:2px solid #0b1733; border-radius:14px;
+  padding:10px 14px; box-shadow:4px 4px 0 #0b1733;
   display:flex; align-items:center; justify-content:space-between; gap:12px;
 }
-.ab-goal-panel.safe { border-color:#86efac; background:#f0fdf4; }
-.ab-goal-panel.warn { border-color:#fbbf24; background:#fffbeb; }
-.ab-goal-panel.bad { border-color:#fca5a5; background:#fef2f2; }
+.ab-goal-panel.safe { background:#f0fdf4; }
+.ab-goal-panel.warn { background:#fffbeb; }
+.ab-goal-panel.bad { background:#fef2f2; }
 .ab-goal-main { min-width:0; }
 .ab-goal-kicker { font-size:9px; color:#7a6e64; text-transform:uppercase; letter-spacing:0.08em; font-weight:800; margin-bottom:2px; }
-.ab-goal-title { font-size:18px; color:#2d2419; font-weight:850; letter-spacing:-0.02em; }
+.ab-goal-title { font-size:18px; color:#0b1733; font-weight:850; letter-spacing:-0.02em; }
 .ab-goal-meta { font-size:12px; color:#6b5f55; margin-top:3px; font-weight:650; }
-.ab-goal-avg { flex:0 0 auto; font-size:24px; font-weight:850; font-variant-numeric:tabular-nums; color:#4f46e5; text-align:right; }
+.ab-goal-avg { flex:0 0 auto; font-size:24px; font-weight:850; font-variant-numeric:tabular-nums; color:#0b1733; text-align:right; }
 .ab-goal-panel.safe .ab-goal-avg { color:#16a34a; }
 .ab-goal-panel.warn .ab-goal-avg { color:#d97706; }
 .ab-goal-panel.bad .ab-goal-avg { color:#dc2626; }
 .ab-hud-secondary {
-  flex:1 1 210px; background:#fff; border:1px solid #e2d9ce; border-radius:14px;
+  flex:1 1 210px; background:#fff; border:2px solid #0b1733; border-radius:14px;
   padding:10px 14px; display:flex; align-items:center; justify-content:center;
   gap:14px; color:#6b5f55; font-size:12px; font-weight:750;
-  box-shadow:0 1px 4px rgba(0,0,0,0.05);
+  box-shadow:4px 4px 0 #0b1733;
 }
 .ab-hud-tile {
   flex:1; min-width:90px;
-  background:#fff; border:1px solid #e2d9ce; border-radius:12px;
+  background:#fff; border:2px solid #0b1733; border-radius:12px;
   padding:8px 10px; text-align:center;
-  box-shadow:0 1px 4px rgba(0,0,0,0.06);
+  box-shadow:3px 3px 0 #0b1733;
 }
-.ab-hud-val { font-size:18px; font-weight:700; color:#2d2419; font-variant-numeric:tabular-nums; line-height:1; margin-bottom:2px; }
+.ab-hud-val { font-size:18px; font-weight:700; color:#0b1733; font-variant-numeric:tabular-nums; line-height:1; margin-bottom:2px; }
 .ab-hud-val.ok  { color:#16a34a; }
 .ab-hud-val.warn { color:#d97706; }
 .ab-hud-val.bad  { color:#dc2626; }
 .ab-hud-label { font-size:9px; color:#a8998c; text-transform:uppercase; letter-spacing:0.07em; font-weight:600; }
 .ab-timer-tile {
   flex:0 0 auto; min-width:88px;
-  background:#fff8f0; border:1.5px solid #f4c07a; border-radius:12px;
+  background:#fff8f0; border:2px solid #0b1733; border-radius:12px;
   padding:8px 10px; text-align:center;
-  box-shadow:0 1px 4px rgba(0,0,0,0.06);
+  box-shadow:3px 3px 0 #0b1733;
 }
-.ab-timer-tile.urgent { background:#fef2f2; border-color:#fca5a5; }
+.ab-timer-tile.urgent { background:#fef2f2; }
 .ab-timer-val { font-size:22px; font-weight:800; color:#c87722; font-variant-numeric:tabular-nums; line-height:1; }
 .ab-timer-tile.urgent .ab-timer-val { color:#dc2626; }
 .ab-timer-label { font-size:9px; color:#a8998c; text-transform:uppercase; letter-spacing:0.07em; font-weight:600; }
@@ -361,9 +391,9 @@ const STYLES = `
 /* ── HQ badge (shown during Your Turn) ── */
 .ab-hq-badge {
   position:absolute; transform:translate(-50%,-100%);
-  background:#4f46e5; color:#fff; border-radius:20px;
+  background:#0b1733; color:#fff; border:2px solid #0b1733; border-radius:20px;
   padding:4px 11px 5px; font-size:12px; font-weight:700;
-  box-shadow:0 2px 10px rgba(79,70,229,0.32);
+  box-shadow:0 2px 10px rgba(11,23,51,0.32);
   pointer-events:none; z-index:30; white-space:nowrap; text-align:center;
   animation:ab-fadein 0.3s ease both;
 }
@@ -412,42 +442,43 @@ const STYLES = `
 
 /* ── Demo rider (Explore single-rider animation) ── */
 .ab-demo-rider {
-  position:absolute; width:32px; height:32px; border-radius:50%;
-  background:#4f46e5; border:3px solid #fff;
+  position:absolute; width:30px; height:30px; border-radius:50%;
+  background:#0b1733; border:3px solid #fff;
   display:flex; align-items:center; justify-content:center;
-  font-size:15px;
-  box-shadow:0 2px 10px rgba(79,70,229,0.42);
+  font-size:14px;
+  box-shadow:0 2px 10px rgba(11,23,51,0.42);
   transform:translate(-50%,-50%);
   z-index:30; pointer-events:none;
+  transition:left 0.08s linear, top 0.08s linear;
 }
 
 /* ── Cards ── */
 .ab-card {
-  background:#fff; border:1px solid #e2d9ce; border-radius:18px;
+  background:#fff; border:2px solid #0b1733; border-radius:18px;
   padding:22px 26px; width:100%; max-width:860px; margin-top:10px;
-  box-shadow:0 1px 6px rgba(0,0,0,0.07);
+  box-shadow:6px 6px 0 #0b1733;
   animation:ab-fadein 0.35s ease both;
 }
-.ab-card-title { font-size:21px; font-weight:800; color:#2d2419; margin:0 0 5px; letter-spacing:-0.02em; }
+.ab-card-title { font-size:21px; font-weight:900; color:#0b1733; margin:0 0 5px; letter-spacing:-0.02em; }
 .ab-card-sub   { font-size:14px; color:#8a7a6d; margin:0 0 16px; line-height:1.55; }
 .ab-callout { padding:12px 16px; border-radius:12px; font-size:13px; line-height:1.6; }
-.ab-callout.indigo { background:#eef2ff; border:1px solid #c7d2fe; color:#3730a3; }
-.ab-callout.amber  { background:#fffbeb; border:1px solid #fde68a; color:#92400e; }
-.ab-callout.red    { background:#fef2f2; border:1px solid #fecaca; color:#991b1b; }
-.ab-callout.green  { background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; }
+.ab-callout.indigo { background:#eef2ff; border:2px solid #0b1733; color:#3730a3; }
+.ab-callout.amber  { background:#fffbeb; border:2px solid #0b1733; color:#92400e; }
+.ab-callout.red    { background:#fef2f2; border:2px solid #0b1733; color:#991b1b; }
+.ab-callout.green  { background:#f0fdf4; border:2px solid #0b1733; color:#166534; }
 
 /* ── Your Turn info panel ── */
 .ab-yt-panel {
   width:100%; max-width:860px; margin-top:10px;
-  background:#fff; border:1px solid #e2d9ce; border-radius:16px;
+  background:#fff; border:2px solid #0b1733; border-radius:16px;
   padding:14px 20px;
-  box-shadow:0 1px 6px rgba(0,0,0,0.07);
+  box-shadow:6px 6px 0 #0b1733;
   display:flex; flex-direction:column; gap:10px;
 }
 .ab-yt-instruction {
-  font-size:14px; font-weight:700; color:#2d2419; text-align:center;
+  font-size:14px; font-weight:700; color:#0b1733; text-align:center;
 }
-.ab-yt-instruction span { color:#4f46e5; }
+.ab-yt-instruction span { color:#ff3b46; }
 .ab-yt-feedback {
   font-size:13px; font-weight:600; color:#8a7a6d;
   background:#f8f5f1; border-radius:10px;
@@ -484,12 +515,12 @@ const STYLES = `
 
 /* ── Algo tiles ── */
 .ab-algo-tiles { display:flex; gap:10px; flex-wrap:wrap; margin-top:10px; }
-.ab-algo-tile { flex:1; min-width:120px; background:#f8f5f1; border:2px solid #e2d9ce; border-radius:14px; padding:12px; text-align:center; transition:all 0.3s; }
+.ab-algo-tile { flex:1; min-width:120px; background:#fff; border:2px solid #0b1733; border-radius:14px; padding:12px; text-align:center; box-shadow:3px 3px 0 #0b1733; transition:all 0.3s; }
 .ab-algo-count { font-size:30px; font-weight:800; font-variant-numeric:tabular-nums; line-height:1; }
 .ab-algo-label { font-size:11px; color:#a8998c; margin-top:2px; }
 
 /* ── Strategy box ── */
-.ab-strategy-box { background:#eef2ff; border:2px solid #c7d2fe; border-radius:14px; padding:16px 18px; margin-bottom:14px; }
+.ab-strategy-box { background:#eef2ff; border:2px solid #0b1733; border-radius:14px; padding:16px 18px; margin-bottom:14px; box-shadow:3px 3px 0 #0b1733; }
 .ab-strategy-rule { background:#fff; border:1.5px dashed #c7d2fe; border-radius:10px; padding:12px 16px; font-size:14px; color:#3730a3; font-weight:600; font-style:italic; margin-top:10px; line-height:1.5; }
 
 /* ── News banner ── */
@@ -532,11 +563,11 @@ const STYLES = `
 .ab-choice-feedback.right { color:#166534; background:rgba(22,163,74,0.1); }
 
 /* ── Explore panel ── */
-.ab-explore-panel { width:100%; max-width:860px; margin-top:10px; background:#fff; border:1px solid #e2d9ce; border-radius:16px; overflow:hidden; box-shadow:0 1px 6px rgba(0,0,0,0.06); }
-.ab-explore-tabs { display:flex; border-bottom:1px solid #e2d9ce; }
-.ab-explore-tab { flex:1; padding:10px 6px; border:none; background:none; cursor:pointer; font-size:12px; font-weight:600; color:#a8998c; transition:all 0.18s; display:flex; flex-direction:column; align-items:center; gap:3px; }
-.ab-explore-tab:hover { color:#2d2419; }
-.ab-explore-tab.active  { color:#4f46e5; background:#f5f4ff; border-bottom:2.5px solid #4f46e5; margin-bottom:-1px; }
+.ab-explore-panel { width:100%; max-width:860px; margin-top:10px; background:#fff; border:2px solid #0b1733; border-radius:16px; overflow:hidden; box-shadow:6px 6px 0 #0b1733; }
+.ab-explore-tabs { display:flex; border-bottom:2px solid #0b1733; }
+.ab-explore-tab { flex:1; padding:10px 6px; border:none; background:none; cursor:pointer; font-size:12px; font-weight:700; color:#a8998c; transition:all 0.18s; display:flex; flex-direction:column; align-items:center; gap:3px; }
+.ab-explore-tab:hover { color:#0b1733; }
+.ab-explore-tab.active  { color:#ff3b46; background:#fff1f2; border-bottom:3px solid #ff3b46; margin-bottom:-2px; }
 .ab-explore-tab.visited { color:#16a34a; }
 .ab-explore-content { padding:16px 20px; }
 .ab-explore-empty { color:#b0a499; font-size:14px; padding:20px; text-align:center; }
@@ -546,21 +577,23 @@ const STYLES = `
 .ab-trip-stat-lbl { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:0.07em; opacity:0.7; }
 
 /* ── Round complete banner ── */
-.ab-round-done { width:100%; max-width:860px; margin-top:10px; background:#f0fdf4; border:2px solid #86efac; border-radius:16px; padding:16px 20px; text-align:center; animation:ab-fadein 0.4s ease both; }
+.ab-round-done { width:100%; max-width:860px; margin-top:10px; background:#f0fdf4; border:2px solid #0b1733; border-radius:16px; padding:16px 20px; text-align:center; box-shadow:6px 6px 0 #0b1733; animation:ab-fadein 0.4s ease both; }
 
 /* ── Spinner ── */
-.ab-spinner { width:18px; height:18px; border:2.5px solid #e2d9ce; border-top-color:#4f46e5; border-radius:50%; animation:ab-spin 0.8s linear infinite; flex-shrink:0; }
+.ab-spinner { width:18px; height:18px; border:2.5px solid #e2d9ce; border-top-color:#ff3b46; border-radius:50%; animation:ab-spin 0.8s linear infinite; flex-shrink:0; }
 
 /* ── Action bar ── */
-.ab-action-bar { position:fixed; bottom:0; left:0; right:0; padding:14px 24px; background:rgba(237,233,227,0.96); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-top:1px solid #e2d9ce; display:flex; justify-content:center; align-items:center; z-index:400; box-shadow:0 -4px 20px rgba(0,0,0,0.06); }
-.ab-btn { min-width:260px; padding:13px 36px; border:none; border-radius:14px; font-size:15px; font-weight:700; cursor:pointer; transition:all 0.18s; background:#4f46e5; color:#fff; box-shadow:0 4px 16px rgba(79,70,229,0.3); }
-.ab-btn:hover:not(:disabled) { background:#4338ca; transform:translateY(-1px); box-shadow:0 6px 24px rgba(79,70,229,0.38); }
-.ab-btn:disabled { background:#d5cec6; color:#a8998c; cursor:not-allowed; box-shadow:none; }
+.ab-action-bar { position:fixed; bottom:0; left:0; right:0; padding:14px 24px; background:rgba(250,247,242,0.96); backdrop-filter:blur(16px); -webkit-backdrop-filter:blur(16px); border-top:2px solid #0b1733; display:flex; justify-content:center; align-items:center; z-index:400; }
+.ab-btn { min-width:260px; padding:14px 36px; border:2px solid #0b1733; border-radius:999px; font-size:15px; font-weight:800; cursor:pointer; transition:transform 0.12s ease, box-shadow 0.12s ease, background 0.15s ease; background:#ff3b46; color:#fff; box-shadow:4px 4px 0 #0b1733; }
+.ab-btn:hover:not(:disabled) { background:#ff525c; transform:translate(-2px,-2px); box-shadow:6px 6px 0 #0b1733; }
+.ab-btn:active:not(:disabled) { transform:translate(2px,2px); box-shadow:1px 1px 0 #0b1733; }
+.ab-btn:disabled { background:#e7e1d8; color:#a8998c; cursor:not-allowed; box-shadow:4px 4px 0 #cfc7bb; }
 
 /* ── Animations ── */
 @keyframes ab-fadein  { from{opacity:0;transform:translateY(8px);}  to{opacity:1;transform:translateY(0);} }
 @keyframes ab-spin    { to{transform:rotate(360deg);} }
-@keyframes ab-pulse-ring { 0%{opacity:0.7;transform:translate(-50%,-50%) scale(1);} 100%{opacity:0;transform:translate(-50%,-50%) scale(2.6);} }
+/* SVG-safe ring expansion: scales around the ellipse's own centre (needs transform-box:fill-box) */
+@keyframes ab-ring-expand { 0%{opacity:0.85;transform:scale(1);} 100%{opacity:0;transform:scale(1.7);} }
 @keyframes ab-bob     { 0%,100%{transform:translate(-50%,-100%) translateY(0);} 50%{transform:translate(-50%,-100%) translateY(-5px);} }
 @keyframes ab-urgency { 0%,100%{transform:translate(-50%,-100%) scale(1);} 50%{transform:translate(-50%,-100%) scale(1.07);} }
 @keyframes ab-deliver { from{transform:translate(-50%,-50%) scale(1);} to{transform:translate(-50%,-50%) scale(1.28);} }
@@ -596,7 +629,7 @@ function hoodTripHint(h: Hood) {
 
 const VISIBLE_STEP_LABELS = ['Explore', 'Goal', 'Your Turn', 'Automate', 'Bias', 'Reflect'];
 const PHASE_TO_VSTEP: Record<GamePhase, number> = {
-  explore: 0, goal: 1, yourTurn: 2, automate: 3, bias: 4, reflect: 5,
+  intro: 0, explore: 0, goal: 1, yourTurn: 2, automate: 3, bias: 4, reflect: 5,
   fixIt: 5, fairerRound: 5, finalReflect: 5,
 };
 const VSTEP_FIRST_PHASE: GamePhase[] = ['explore', 'goal', 'yourTurn', 'automate', 'bias', 'reflect'];
@@ -712,7 +745,6 @@ function MapBoard({
           );
         })}
 
-
         {/* Highlight ring for algo assignment */}
         {highlightHoodId && (() => {
           const h = hoodById(highlightHoodId);
@@ -720,7 +752,7 @@ function MapBoard({
             <ellipse cx={h.pos.x * AR} cy={h.pos.y}
               rx={h.radius * AR * 1.65} ry={h.radius * 1.65}
               fill="none" stroke={h.color} strokeWidth="1.3"
-              style={{ animation: 'ab-pulse-ring 0.65s ease-out forwards' }}
+              style={{ transformBox: 'fill-box', transformOrigin: 'center', animation: 'ab-ring-expand 0.65s ease-out forwards' }}
             />
           );
         })()}
@@ -728,12 +760,12 @@ function MapBoard({
         {/* HQ marker */}
         <g>
           <circle cx={HQ.x * AR} cy={HQ.y} r={4.8}
-            fill="white" stroke="#4f46e5" strokeWidth="1.1" opacity="0.96" />
+            fill="white" stroke="#0b1733" strokeWidth="1.4" opacity="0.98" />
           <text x={HQ.x * AR} y={HQ.y + 0.6}
             textAnchor="middle" dominantBaseline="middle"
-            fontSize="3.4" fill="#4f46e5" fontWeight="bold">HQ</text>
+            fontSize="3.4" fill="#0b1733" fontWeight="bold">HQ</text>
           <circle cx={HQ.x * AR} cy={HQ.y} r={7.5}
-            fill="none" stroke="#4f46e5" strokeWidth="0.7"
+            fill="none" stroke="#0b1733" strokeWidth="0.7"
             style={{ animation: 'ab-hq-pulse 2.6s ease-in-out infinite' }}
           />
         </g>
@@ -745,7 +777,8 @@ function MapBoard({
           className={`ab-hq-badge ${ytIdleRiders === 0 ? 'warn' : ''}`}
           style={{ left: `${HQ.x}%`, top: `${HQ.y - 6}%` }}
         >
-          🛵 {ytIdleRiders}/{TOTAL_RIDERS} ready
+          <Scooter size={13} weight="fill" style={{ verticalAlign: '-2px', marginRight: 3 }} />
+          {ytIdleRiders}/{TOTAL_RIDERS} ready
         </div>
       )}
 
@@ -759,7 +792,7 @@ function MapBoard({
               style={{ left: `${h.pos.x}%`, top: `${h.pos.y - h.radius * 0.55}%` }}
             >
               <span className="ab-demand-label">DEMAND</span>
-              <span className="ab-demand-count">📦 {count}</span>
+              <span className="ab-demand-count"><Package size={12} weight="fill" style={{ verticalAlign: '-2px' }} /> {count}</span>
             </div>
           );
         }
@@ -773,7 +806,7 @@ function MapBoard({
             style={{ left: `${h.pos.x}%`, top: `${h.pos.y - h.radius * 0.55}%` }}
           >
             <span className="ab-demand-label">DEMAND</span>
-            <span className="ab-demand-count">📦 {orderCount}</span>
+            <span className="ab-demand-count"><Package size={12} weight="fill" style={{ verticalAlign: '-2px' }} /> {orderCount}</span>
           </div>
         );
       })}
@@ -782,7 +815,7 @@ function MapBoard({
       {idleRiderCount > 0 && ['yourTurn', 'automate', 'bias', 'fairerRound'].includes(phase) && (
         idlePositions.map(([ix, iy], i) => (
           <div key={`idle-${i}`} className="ab-rider-idle"
-            style={{ left: `${ix}%`, top: `${iy}%` }}>🛵</div>
+            style={{ left: `${ix}%`, top: `${iy}%` }}><Scooter size={12} weight="fill" color="#fff" /></div>
         ))
       )}
 
@@ -791,7 +824,7 @@ function MapBoard({
         <div key={`rider-${i}`}
           className={`ab-rider ${pos.delivering ? 'delivering' : ''}`}
           style={{ left: `${pos.x}%`, top: `${pos.y}%` }}>
-          🛵
+          <Scooter size={16} weight="fill" color="#fff" />
         </div>
       ))}
 
@@ -799,7 +832,7 @@ function MapBoard({
       {demoRiderXY && (
         <div className="ab-demo-rider"
           style={{ left: `${demoRiderXY[0]}%`, top: `${demoRiderXY[1]}%` }}>
-          🛵
+          <Scooter size={15} weight="fill" color="#fff" />
         </div>
       )}
 
@@ -833,7 +866,7 @@ function MapBoard({
             disabled={ytRoundDone}
             onClick={() => onHoodClick(h.id)}
           >
-            {h.emoji}
+            <h.Icon size={30} weight="fill" color={h.color} />
           </button>
         );
       })}
@@ -867,8 +900,8 @@ function ResultTable({ results, showOrders, minimal, hideSatisfaction }: {
           const h = hoodById(r.id);
           return (
             <tr key={r.id} className={rowCls(r.sat)}>
-              <td><span style={{ color: h.color, fontWeight: 600 }}>{h.emoji} {h.name}</span></td>
-              <td>{r.drivers === 0 ? <span className="ab-badge ab-badge-zero">0 ⚠</span> : r.drivers}</td>
+              <td><span style={{ color: h.color, fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 5 }}><h.Icon size={15} weight="fill" /> {h.name}</span></td>
+              <td>{r.drivers === 0 ? <span className="ab-badge ab-badge-zero" style={{ display: 'inline-flex', alignItems: 'center', gap: 3 }}>0 <Warning size={11} weight="fill" /></span> : r.drivers}</td>
               {showOrders && <td><strong>{r.orders}</strong></td>}
               <td style={{ fontWeight: r.drivers === 0 ? 600 : undefined, color: r.drivers === 0 ? '#dc2626' : undefined }}>
                 {timeLabel(r.time)}
@@ -887,6 +920,55 @@ function ResultTable({ results, showOrders, minimal, hideSatisfaction }: {
         })}
       </tbody>
     </table>
+  );
+}
+
+// ─── Stage 0: Intro ───────────────────────────────────────────────────────────
+
+function PhaseIntro({ onAct }: { onAct: (l: string, e: boolean) => void }) {
+  useEffect(() => { onAct("Let's go →", true); }, [onAct]);
+
+  const steps: { n: string; title: string; body: string }[] = [
+    { n: '1', title: 'Explore the city', body: 'Tap each of the four neighborhoods to see how far it is from HQ and how many orders it gets.' },
+    { n: '2', title: 'Learn the goal', body: 'Management gives you one rule: keep the average delivery time low.' },
+    { n: '3', title: 'Your turn to dispatch', body: 'Send your 8 riders out by tapping neighborhoods. Try to hit the speed goal before the round ends.' },
+    { n: '4', title: 'Automate it', body: 'Hand your strategy to an algorithm that copies what worked: send riders where trips are fastest.' },
+    { n: '5', title: 'See the bias', body: 'A demand surge hits the far neighborhood. Watch how the “reasonable” algorithm responds.' },
+    { n: '6', title: 'Reflect', body: 'Unpack why a neutral-sounding goal produced an unfair result.' },
+  ];
+
+  return (
+    <div className="ab-card" style={{ maxWidth: 720 }}>
+      <div className="ab-card-title" style={{ display: 'flex', alignItems: 'center', gap: 9 }}><Scooter size={24} weight="fill" color="#ff3b46" /> Fair or Fast? A Delivery Dispatch Game</div>
+      <div className="ab-card-sub">
+        You're the new dispatch manager at <strong>SpeedEats</strong>, a food-delivery startup. Your job is to send riders
+        across the city so customers get their orders quickly. Simple enough — but the choices you make will quietly
+        teach an algorithm who matters and who waits.
+      </div>
+
+      <div className="ab-callout indigo" style={{ marginBottom: 16 }}>
+        <strong>The question to keep in mind:</strong> can a goal that sounds completely fair still lead to an unfair outcome?
+      </div>
+
+      <div style={{ fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8998c', marginBottom: 10 }}>
+        How it works — 6 quick steps
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(210px, 1fr))', gap: 10 }}>
+        {steps.map(s => (
+          <div key={s.n} style={{ display: 'flex', gap: 12, background: '#f8f5f1', border: '1px solid #e8e0d5', borderRadius: 12, padding: '12px 14px' }}>
+            <div style={{ flexShrink: 0, width: 26, height: 26, borderRadius: '50%', background: '#0b1733', color: '#fff', fontWeight: 800, fontSize: 13, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{s.n}</div>
+            <div>
+              <div style={{ fontWeight: 800, fontSize: 13, color: '#2d2419', marginBottom: 2 }}>{s.title}</div>
+              <div style={{ fontSize: 12, color: '#6b5f55', lineHeight: 1.5 }}>{s.body}</div>
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div style={{ fontSize: 12, color: '#a8998c', marginTop: 14 }}>
+        Takes about 3–4 minutes. No right or wrong way to play — just follow the goal and see what happens.
+      </div>
+    </div>
   );
 }
 
@@ -943,13 +1025,18 @@ function PhaseExplore({
 
   return (
     <div className="ab-explore-panel">
+      <div className="ab-yt-instruction" style={{ marginBottom: 10 }}>
+        {allDone
+          ? <>Nice — you've scouted every area. <span>Press the button below to continue.</span></>
+          : <><span>Step 1:</span> Tap each neighborhood (on the map or the tabs) to scout it. {remaining} left.</>}
+      </div>
       <div className="ab-explore-tabs">
         {HOODS.map(h => (
           <button key={h.id}
             className={`ab-explore-tab ${visitedSet.has(h.id) ? 'visited' : ''} ${activeTab === h.id ? 'active' : ''}`}
             onClick={() => handleTab(h.id)}
           >
-            <span>{h.emoji}</span><span>{h.name}</span>
+            <h.Icon size={18} weight="fill" color={h.color} /><span>{h.name}</span>
             {visitedSet.has(h.id) && <span style={{ fontSize: 9, color: '#16a34a' }}>✓</span>}
           </button>
         ))}
@@ -957,20 +1044,20 @@ function PhaseExplore({
       {activeHood ? (
         <div className="ab-explore-content" style={{ animation: 'ab-fadein 0.25s ease both' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
-            <span style={{ fontSize: 34 }}>{activeHood.emoji}</span>
+            <activeHood.Icon size={34} weight="fill" color={activeHood.color} style={{ flexShrink: 0 }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontWeight: 800, fontSize: 17, color: activeHood.textColor, marginBottom: 2 }}>{activeHood.name}</div>
               <div style={{ fontSize: 11, fontWeight: 600, color: '#a8998c', marginBottom: 8 }}>{activeHood.tagline}</div>
               <div style={{ fontSize: 13, color: '#6b5f55', lineHeight: 1.6, marginBottom: 10 }}>{activeHood.exploreInfo}</div>
               <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
                 {[
-                  { icon: '⏱', txt: `~${liveTripSeconds(activeHood.id)} sec round trip` },
-                  { icon: '📦', txt: `${activeHood.baseOrders} orders/shift` },
-                  { icon: '💰', txt: `$${activeHood.earnings}/delivery` },
-                  { icon: '🎯', txt: activeHood.difficulty },
-                ].map(({ icon, txt }) => (
-                  <div key={txt} style={{ background: activeHood.bgColor, borderRadius: 8, padding: '5px 10px', fontSize: 12, fontWeight: 600, color: activeHood.textColor }}>
-                    {icon} {txt}
+                  { Icon: Timer, txt: `~${liveTripSeconds(activeHood.id)} sec round trip` },
+                  { Icon: Package, txt: `${activeHood.baseOrders} orders/shift` },
+                  { Icon: Coins, txt: `$${activeHood.earnings}/delivery` },
+                  { Icon: Target, txt: activeHood.difficulty },
+                ].map(({ Icon, txt }) => (
+                  <div key={txt} style={{ background: activeHood.bgColor, borderRadius: 8, padding: '5px 10px', fontSize: 12, fontWeight: 600, color: activeHood.textColor, display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+                    <Icon size={14} weight="fill" /> {txt}
                   </div>
                 ))}
               </div>
@@ -978,7 +1065,7 @@ function PhaseExplore({
                 <div style={{ marginTop: 12, display: 'flex', alignItems: 'center', gap: 8, fontSize: 13, color: '#6b5f55' }}>
                   <div className="ab-spinner" />
                   {demoState!.phase === 'outbound' && `Rider heading to ${activeHood.name}…`}
-                  {demoState!.phase === 'arrived' && `📦 Delivering in ${activeHood.name}…`}
+                  {demoState!.phase === 'arrived' && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Package size={14} weight="fill" /> Delivering in {activeHood.name}…</span>}
                   {demoState!.phase === 'returning' && 'Rider returning to HQ…'}
                 </div>
               )}
@@ -999,7 +1086,9 @@ function PhaseExplore({
         </div>
       ) : (
         <div className="ab-explore-empty">
-          {allDone ? '✅ All areas explored, press the button to continue!' : 'Click a neighborhood on the map, or a tab above, to explore it.'}
+          {allDone
+            ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6 }}><CheckCircle size={16} weight="fill" color="#16a34a" /> All areas explored, press the button to continue!</span>
+            : 'Click a neighborhood on the map, or a tab above, to explore it.'}
         </div>
       )}
     </div>
@@ -1012,23 +1101,23 @@ function PhaseGoal({ onAct }: { onAct: (l: string, e: boolean) => void }) {
   useEffect(() => { onAct('Start Your Turn →', true); }, [onAct]);
   return (
     <div className="ab-card">
-      <div className="ab-card-title">🎯 Company Goal: Fast Deliveries</div>
+      <div className="ab-card-title" style={{ display: 'flex', alignItems: 'center', gap: 9 }}><Target size={24} weight="fill" color="#ff3b46" /> Company Goal: Fast Deliveries</div>
       <div className="ab-card-sub">SpeedEats has one clear objective for dispatch managers. Here's why it makes total sense.</div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(155px, 1fr))', gap: 10, marginBottom: 16 }}>
         {[
-          { icon: '💰', head: 'More revenue', body: 'Faster trips = riders complete more orders per shift = higher earnings.' },
-          { icon: '📦', head: 'More completed orders', body: 'Short rides return riders sooner, so more orders can be served during the shift.' },
-          { icon: '⚡', head: 'Less idle time', body: 'Optimizing speed keeps riders moving, less wasted time between orders.' },
-        ].map(({ icon, head, body }) => (
-          <div key={head} style={{ background: '#f8f5f1', border: '1px solid #e8e0d5', borderRadius: 14, padding: '14px 16px' }}>
-            <div style={{ fontSize: 22, marginBottom: 6 }}>{icon}</div>
+          { Icon: Coins, head: 'More revenue', body: 'Faster trips = riders complete more orders per shift = higher earnings.' },
+          { Icon: Package, head: 'More completed orders', body: 'Short rides return riders sooner, so more orders can be served during the shift.' },
+          { Icon: Lightning, head: 'Less idle time', body: 'Optimizing speed keeps riders moving, less wasted time between orders.' },
+        ].map(({ Icon, head, body }) => (
+          <div key={head} style={{ background: '#f8f5f1', border: '2px solid #0b1733', borderRadius: 14, padding: '14px 16px' }}>
+            <div style={{ marginBottom: 6 }}><Icon size={24} weight="fill" color="#0b1733" /></div>
             <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8998c', marginBottom: 4 }}>{head}</div>
             <div style={{ fontSize: 12, color: '#8a7a6d', lineHeight: 1.5 }}>{body}</div>
           </div>
         ))}
       </div>
-      <div style={{ background: '#eef2ff', border: '2px solid #c7d2fe', borderRadius: 14, padding: '14px 18px', textAlign: 'center', marginBottom: 12 }}>
-        <div style={{ fontSize: 12, color: '#6366f1', fontWeight: 700, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your Goal This Shift</div>
+      <div style={{ background: '#eef2ff', border: '2px solid #0b1733', borderRadius: 14, padding: '14px 18px', textAlign: 'center', marginBottom: 12, boxShadow: '4px 4px 0 #0b1733' }}>
+        <div style={{ fontSize: 12, color: '#ff3b46', fontWeight: 800, marginBottom: 4, textTransform: 'uppercase', letterSpacing: '0.08em' }}>Your Goal This Shift</div>
         <div style={{ fontSize: 22, fontWeight: 800, color: '#3730a3' }}>"Keep average trip time under {LIVE_GOALS.avgTrip}s"</div>
         <div style={{ fontSize: 12, color: '#4f46e5', marginTop: 6 }}>
           The company wants shorter average trips because faster rides usually mean more completed deliveries and more earnings.
@@ -1073,10 +1162,10 @@ function PhaseYourTurn({
       {!ytRoundDone && (
         <div className="ab-yt-instruction">
           {allBusy
-            ? <><span style={{ color: '#dc2626' }}>All riders are on the road</span>, wait for one to return 🛵</>
+            ? <><span style={{ color: '#dc2626' }}>All riders are on the road</span>, wait for one to return <Scooter size={15} weight="fill" style={{ verticalAlign: '-2px' }} /></>
             : !hasDemand
-              ? <><span>No active demand right now</span>, more orders arriving soon 📦</>
-              : <><span>Click a neighborhood</span> on the map to dispatch a rider 🛵</>}
+              ? <><span>No active demand right now</span>, more orders arriving soon <Package size={15} weight="fill" style={{ verticalAlign: '-2px' }} /></>
+              : <><span>Click a neighborhood</span> on the map to dispatch a rider <Scooter size={15} weight="fill" style={{ verticalAlign: '-2px' }} /></>}
         </div>
       )}
 
@@ -1101,9 +1190,9 @@ function PhaseYourTurn({
             return (
               <div key={h.id} className="ab-yt-hood-chip"
                 style={{ borderColor: demand > 0 ? h.color + '80' : '#e2d9ce', background: demand > 0 ? h.bgColor : '#f8f5f1' }}>
-                <div style={{ fontWeight: 700, fontSize: 12, color: h.textColor }}>{h.emoji} {h.name}</div>
+                <div style={{ fontWeight: 700, fontSize: 12, color: h.textColor, display: 'flex', alignItems: 'center', gap: 5 }}><h.Icon size={14} weight="fill" color={h.color} /> {h.name}</div>
                 <div style={{ fontSize: 11, color: demand > 0 ? h.textColor : '#b0a499' }}>
-                  {demand > 0 ? `📦 ${demand} waiting` : 'No demand'}
+                  {demand > 0 ? <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Package size={12} weight="fill" /> {demand} waiting</span> : 'No demand'}
                 </div>
                 <div style={{ fontSize: 10, color: '#a8998c' }}>~{liveTripSeconds(h.id)} sec round trip · ${h.earnings}/delivery</div>
               </div>
@@ -1115,7 +1204,7 @@ function PhaseYourTurn({
       {/* Round complete */}
       {ytRoundDone && (
         <div className="ab-round-done" style={{ margin: 0 }}>
-          <div style={{ fontSize: 22, marginBottom: 4 }}>⏱ Round Complete!</div>
+          <div style={{ fontSize: 22, marginBottom: 4, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}><Timer size={22} weight="fill" color="#16a34a" /> Round Complete!</div>
           <div style={{ fontSize: 14, color: '#166534' }}>
             You completed <strong>{ytDelivered} deliveries</strong> and earned <strong>${ytEarnings}</strong>.
             {ytAvgWait > 0 && <> Average trip time: <strong>{Math.round(ytAvgWait)} sec</strong>.</>}
@@ -1148,7 +1237,7 @@ function PhaseAutomate({
 
   return (
     <div className="ab-card">
-      <div className="ab-card-title">🤖 {complete ? 'Algorithm Ready' : 'Building the Algorithm…'}</div>
+      <div className="ab-card-title" style={{ display: 'flex', alignItems: 'center', gap: 9 }}><Robot size={24} weight="fill" color="#ff3b46" /> {complete ? 'Algorithm Ready' : 'Building the Algorithm…'}</div>
       <div className="ab-card-sub">SpeedEats is automating dispatch around one objective: keep average trip time under {LIVE_GOALS.avgTrip}s.</div>
       {!complete ? (
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#8a7a6d', fontSize: 13, marginBottom: 14 }}>
@@ -1160,7 +1249,7 @@ function PhaseAutomate({
           <div style={{ fontSize: 14, color: '#3730a3' }}>{describeAssignment(assignments)}</div>
           <div style={{ fontSize: 12, color: '#6366f1', marginTop: 8 }}>You learned to favor shorter trips because that helped keep the average under {LIVE_GOALS.avgTrip}s. The system derived:</div>
           <div className="ab-strategy-rule">
-            📋 Rule: Prioritize deliveries that keep average trip time under {LIVE_GOALS.avgTrip}s.<br />
+            <ClipboardText size={15} weight="fill" style={{ verticalAlign: '-2px' }} /> Rule: Prioritize deliveries that keep average trip time under {LIVE_GOALS.avgTrip}s.<br />
             Shorter trips protect the average first.
           </div>
         </div>
@@ -1220,7 +1309,7 @@ function PhaseBias({
     return (
       <div className="ab-card">
         <div className="ab-news-banner">
-          <div className="ab-news-tag">📡 Breaking: Today's Orders</div>
+          <div className="ab-news-tag" style={{ display: 'inline-flex', alignItems: 'center', gap: 5 }}><Broadcast size={12} weight="fill" /> Breaking: Today's Orders</div>
           <div className="ab-news-text">East Hills received 8 orders, nearly triple its usual 3.</div>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10, marginBottom: 14 }}>
@@ -1245,7 +1334,7 @@ function PhaseBias({
   if (biasSubPhase === 'running') {
     return (
       <div className="ab-card">
-        <div className="ab-card-title">🤖 Algorithm Running…</div>
+        <div className="ab-card-title" style={{ display: 'flex', alignItems: 'center', gap: 9 }}><Robot size={24} weight="fill" color="#ff3b46" /> Algorithm Running…</div>
         <div className="ab-card-sub">Assigning riders exactly as trained, prioritizing shorter trips to protect the {LIVE_GOALS.avgTrip}s average.</div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, color: '#8a7a6d', fontSize: 13, marginBottom: 14 }}>
           <div className="ab-spinner" /> Processing today's demand…
@@ -1257,11 +1346,11 @@ function PhaseBias({
             return (
               <div key={h.id} className="ab-algo-tile"
                 style={{ borderColor: isSurge ? '#dc2626' : (count > 0 ? h.color : '#e2d9ce'), outline: isSurge ? '2.5px dashed #dc2626' : undefined }}>
-                <div style={{ fontSize: 18, marginBottom: 2 }}>{h.emoji}</div>
+                <div style={{ marginBottom: 2 }}><h.Icon size={20} weight="fill" color={h.color} /></div>
                 <div style={{ fontSize: 12, fontWeight: 700, color: isSurge ? '#dc2626' : h.textColor, marginBottom: 6 }}>{h.name}</div>
                 <div className="ab-algo-count" style={{ color: isSurge ? '#dc2626' : h.color }}>{count}</div>
                 <div className="ab-algo-label">riders assigned</div>
-                {isSurge && <div style={{ fontSize: 10, color: '#dc2626', fontWeight: 700, marginTop: 3 }}>⚠ 8 orders waiting</div>}
+                {isSurge && <div style={{ fontSize: 10, color: '#dc2626', fontWeight: 700, marginTop: 3, display: 'flex', alignItems: 'center', gap: 4 }}><Warning size={11} weight="fill" /> 8 orders waiting</div>}
               </div>
             );
           })}
@@ -1272,7 +1361,7 @@ function PhaseBias({
 
   return (
     <div className="ab-card">
-      <div className="ab-card-title">📊 What the Algorithm Did</div>
+      <div className="ab-card-title" style={{ display: 'flex', alignItems: 'center', gap: 9 }}><ChartBar size={24} weight="fill" color="#ff3b46" /> What the Algorithm Did</div>
       <div className="ab-card-sub">The algorithm protected the {LIVE_GOALS.avgTrip}s trip-time goal. Here's what that meant for each neighborhood.</div>
       <ResultTable results={algoResults} showOrders hideSatisfaction />
       <div className="ab-callout red" style={{ marginTop: 14 }}>
@@ -1280,12 +1369,12 @@ function PhaseBias({
       </div>
       <div className="ab-reflect-grid" style={{ marginTop: 14 }}>
         {[
-          { icon: '⏱', title: 'Goal Protected', desc: `The system kept chasing the ${LIVE_GOALS.avgTrip}s average, so short routes stayed attractive even during the demand spike.` },
-          { icon: '🔄', title: 'Feedback Loop', desc: 'Fewer riders → longer waits → fewer future orders. The bias creates the data that justifies the bias.' },
-          { icon: '📊', title: 'Hidden in Averages', desc: 'The average can look fine while one neighborhood waits. East Hills is invisible in the headline metric.' },
-        ].map(({ icon, title, desc }) => (
+          { Icon: Timer, title: 'Goal Protected', desc: `The system kept chasing the ${LIVE_GOALS.avgTrip}s average, so short routes stayed attractive even during the demand spike.` },
+          { Icon: ArrowsClockwise, title: 'Feedback Loop', desc: 'Fewer riders → longer waits → fewer future orders. The bias creates the data that justifies the bias.' },
+          { Icon: ChartBar, title: 'Hidden in Averages', desc: 'The average can look fine while one neighborhood waits. East Hills is invisible in the headline metric.' },
+        ].map(({ Icon, title, desc }) => (
           <div key={title} className="ab-reflect-tile">
-            <div className="ab-reflect-icon">{icon}</div>
+            <div className="ab-reflect-icon"><Icon size={26} weight="fill" color="#0b1733" /></div>
             <div className="ab-reflect-title">{title}</div>
             <div className="ab-reflect-desc">{desc}</div>
           </div>
@@ -1300,16 +1389,16 @@ function PhaseBias({
 function PhaseReflect({
   onAct, assignments, algoResults,
 }: {
-  onAct: (l: string, e: boolean) => void;
+  onAct: (l: string, e: boolean, fn?: () => void) => void;
   assignments: Record<string, number>;
   algoResults: NResult[];
 }) {
-  useEffect(() => { onAct('Finish →', true); }, [onAct]);
+  useEffect(() => { onAct('↺ Play again', true, () => window.location.reload()); }, [onAct]);
   const ehResult = algoResults.find(r => r.id === 'easthills');
 
   return (
     <div className="ab-card">
-      <div className="ab-card-title">🎓 Why It Went Wrong</div>
+      <div className="ab-card-title" style={{ display: 'flex', alignItems: 'center', gap: 9 }}><GraduationCap size={24} weight="fill" color="#ff3b46" /> Why It Went Wrong</div>
       <div className="ab-card-sub">Same city. Same {TOTAL_RIDERS} riders. A perfectly reasonable goal, but a systematically unfair outcome.</div>
       <div style={{ background: '#f8f5f1', border: '1px solid #e8e0d5', borderRadius: 14, padding: '14px 18px', marginBottom: 14 }}>
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#a8998c', marginBottom: 8 }}>What You Did</div>
@@ -1327,7 +1416,7 @@ function PhaseReflect({
           The system protected the {LIVE_GOALS.avgTrip}s average, but East Hills residents waited longer and became frustrated. The company also left money on the table because unmet demand turned into lost orders.
         </div>
       </div>
-      <div style={{ background: '#1e1b4b', borderRadius: 16, padding: '20px 22px', marginBottom: 14, color: '#fff' }}>
+      <div style={{ background: '#0b1733', border: '2px solid #0b1733', borderRadius: 16, padding: '20px 22px', marginBottom: 14, color: '#fff', boxShadow: '6px 6px 0 #ff3b46' }}>
         <div style={{ fontSize: 11, fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.1em', color: '#a5b4fc', marginBottom: 8 }}>The Core Lesson</div>
         <div style={{ fontSize: 17, fontWeight: 700, lineHeight: 1.5, marginBottom: 10 }}>
           "A neutral-looking goal can still create biased outcomes."
@@ -1336,19 +1425,37 @@ function PhaseReflect({
           "Keep average trip time under {LIVE_GOALS.avgTrip}s" sounds fair. But applied across neighborhoods with different distances and histories, it systematically advantages easy areas, and leaves the rest behind.
         </div>
       </div>
-      <div className="ab-callout indigo">
-        <strong>Real-world pattern:</strong> Ride-share pricing that avoids low-income areas. Loan algorithms that penalize certain zip codes. Healthcare AI trained mostly on wealthier patients. Algorithmic bias consistently hits communities with the least power to push back.
-      </div>
-      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 14 }}>
+      <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginBottom: 16 }}>
         {[
-          { icon: '🚗', txt: 'Ride-share pricing that avoids low-income areas' },
-          { icon: '🏠', txt: 'Loan algorithms that penalize certain zip codes' },
-          { icon: '🏥', txt: 'Healthcare AI trained on wealthier patient data' },
-        ].map(({ icon, txt }) => (
-          <div key={txt} style={{ flex: 1, minWidth: 155, background: '#f8f5f1', border: '1px solid #e8e0d5', borderRadius: 12, padding: '10px 14px', fontSize: 12, color: '#6b5f55', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
-            <span style={{ fontSize: 18, flexShrink: 0 }}>{icon}</span><span>{txt}</span>
+          { Icon: Car, txt: 'Ride-share pricing that avoids low-income areas' },
+          { Icon: House, txt: 'Loan algorithms that penalize certain zip codes' },
+          { Icon: FirstAid, txt: 'Healthcare AI trained on wealthier patient data' },
+        ].map(({ Icon, txt }) => (
+          <div key={txt} style={{ flex: 1, minWidth: 155, background: '#f8f5f1', border: '2px solid #0b1733', borderRadius: 12, padding: '10px 14px', fontSize: 12, color: '#6b5f55', display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+            <Icon size={18} weight="fill" color="#ff3b46" style={{ flexShrink: 0 }} /><span>{txt}</span>
           </div>
         ))}
+      </div>
+
+      {/* Checkout — the formal definition the player leaves with */}
+      <div style={{ background: '#fff', border: '2px solid #0b1733', borderRadius: 16, padding: '18px 20px', boxShadow: '6px 6px 0 #0b1733' }}>
+        <div style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#ff3b46', marginBottom: 8 }}>
+          So, what is Algorithm Bias?
+        </div>
+        <div style={{ fontSize: 14, color: '#2d2419', lineHeight: 1.65 }}>
+          <strong>Algorithm bias</strong> is when an AI system produces systematically unfair outcomes, often by
+          reflecting imbalances in its data, its design, or the world it runs in. The model can be working exactly as
+          built — accurately learning the patterns it was given — and <em>still</em> encode and amplify existing
+          inequalities. As you saw, the harm doesn't need a malicious goal or a buggy model. A reasonable objective,
+          applied across an unequal city, was enough.
+        </div>
+      </div>
+
+      <div style={{ display: 'flex', gap: 12, flexWrap: 'wrap', marginTop: 18, alignItems: 'center' }}>
+        <span style={{ fontSize: 13, fontWeight: 700, color: '#16a34a' }}>✓ Game complete</span>
+        <Link to="/#games" style={{ marginLeft: 'auto', fontSize: 13, fontWeight: 700, color: '#ff3b46', textDecoration: 'none' }}>
+          ← Back to all games
+        </Link>
       </div>
     </div>
   );
@@ -1471,7 +1578,7 @@ function PhaseFinalReflect({ onAct, algoResults, fairerResults }: {
 
 export function AlgorithmBias() {
   const navigate = useNavigate();
-  const [phase, setPhase] = useState<GamePhase>('explore');
+  const [phase, setPhase] = useState<GamePhase>('intro');
 
   useEffect(() => {
     if (phase === 'reflect') markGameCompleted('algorithm-bias');
@@ -1665,7 +1772,7 @@ export function AlgorithmBias() {
     if (phase !== 'yourTurn' || ytRoundDone || !ytRunning) return;
 
     if (ytIdleRiders <= 0) {
-      showFeedback('All riders are out, wait for one to return! 🛵');
+      showFeedback('All riders are out, wait for one to return!');
       return;
     }
     if ((ytDemand[hoodId] ?? 0) <= 0) {
@@ -1808,8 +1915,7 @@ export function AlgorithmBias() {
   }
 
   const PHASE_SEQUENCE: GamePhase[] = [
-    'explore', 'goal', 'yourTurn', 'automate', 'bias', 'reflect',
-    'fixIt', 'fairerRound', 'finalReflect',
+    'intro', 'explore', 'goal', 'yourTurn', 'automate', 'bias', 'reflect',
   ];
 
   function handleActionClick() {
@@ -1829,7 +1935,7 @@ export function AlgorithmBias() {
 
   // ── Derived display values ──
   const isYourTurn = phase === 'yourTurn';
-  const showMap = !['reflect', 'fixIt', 'finalReflect'].includes(phase);
+  const showMap = !['intro', 'reflect', 'fixIt', 'finalReflect'].includes(phase);
   const showDemand = ['automate', 'bias', 'fairerRound'].includes(phase);
   const surgeActive = phase === 'bias';
 
@@ -1866,7 +1972,7 @@ export function AlgorithmBias() {
   return (
     <div className="ab-page">
       <style>{STYLES}</style>
-      <StepIndicator phase={phase} onBack={p => advance(p)} />
+      {phase !== 'intro' && <StepIndicator phase={phase} onBack={p => advance(p)} />}
 
       {/* Live HUD, Your Turn only */}
       {isYourTurn && (
@@ -1912,6 +2018,7 @@ export function AlgorithmBias() {
       )}
 
       {/* Stage panels */}
+      {phase === 'intro' && <PhaseIntro onAct={setAction} />}
       {phase === 'explore' && (
         <PhaseExplore
           onAct={setAction}
