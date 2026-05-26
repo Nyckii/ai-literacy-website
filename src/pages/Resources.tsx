@@ -12,22 +12,31 @@ interface DownloadItem {
 
 const DOWNLOADS: DownloadItem[] = [
   {
-    title: "Lesson Plans & Materials",
+    title: "Teacher Resources",
     description: "A collection of teaching materials that includes single lessons and a jigsaw lesson with multiple worksheets.",
-    filename: "LessonPlans.zip",
-    fileSize: "323 KB",
+    filename: "TeacherResources.zip",
+    fileSize: "330 KB",
     fileType: "zip",
-    url: "/downloads/LessonPlans.zip",
+    url: "/downloads/TeacherResources.zip",
     accentClass: "tile-lavender",
   },
   {
     title: "Bias Overview",
     description: "An overview document explaining various biases and their impacts.",
     filename: "BiasOverview.docx",
-    fileSize: "18 KB",
+    fileSize: "23 KB",
     fileType: "docx",
     url: "/downloads/BiasOverview.docx",
     accentClass: "tile-salmon",
+  },
+  {
+    title: "Teacher Guide",
+    description: "A comprehensive guide for teachers on how to use the Bias Arcade and teach AI literacy concepts.",
+    filename: "TeacherGuide.pdf",
+    fileSize: "213 KB",
+    fileType: "pdf",
+    url: "/downloads/TeacherGuide.pdf",
+    accentClass: "tile-sky",
   },
 ];
 
@@ -107,18 +116,6 @@ export function Resources() {
           </li>
           <li>
             <a
-              href="https://www.survivalofthebestfit.com/"
-              target="_blank"
-              rel="noreferrer"
-            >
-              Survival of the Best Fit
-            </a>
-            <span className="resource-note">
-              An interactive game exploring the impacts of historical bias on automated hiring algorithms.
-            </span>
-          </li>
-          <li>
-            <a
               href="https://github.com/survivalofthebestfit/survivalofthebestfit/wiki/Reading-List"
               target="_blank"
               rel="noreferrer"
@@ -144,7 +141,7 @@ export function Resources() {
               target="_blank"
               rel="noreferrer"
             >
-              A survey on bias and fairness in machine learning
+              A survey on bias and fairness in machine learning (2021)
             </a>
             <span className="resource-note">
               A comprehensive survey investigating real-world AI biases, classifying their various sources, and establishing a detailed taxonomy of mathematical fairness definitions to prevent discriminatory outcomes.
@@ -156,7 +153,7 @@ export function Resources() {
               target="_blank"
               rel="noreferrer"
             >
-              AI Literacy Framework (AILitFramework)
+              AI Literacy Framework (AILitFramework) (2025)
             </a>
             <span className="resource-note">
               A structured framework defining the critical dimensions of AI literacy: knowledge, skills, attitudes, and ethical considerations.
@@ -168,7 +165,7 @@ export function Resources() {
               target="_blank"
               rel="noreferrer"
             >
-              FairAIED: Navigating Fairness, Bias, and Ethics in Educational AI Applications
+              FairAIED: Navigating Fairness, Bias, and Ethics in Educational AI Applications (2024)
             </a>
             <span className="resource-note">
               A systematic review bridging the gap between technical fairness research and educational applications, establishing a harmonized framework for bias sources, mitigation strategies, and multi-level student fairness concerns.
@@ -180,7 +177,7 @@ export function Resources() {
               target="_blank"
               rel="noreferrer"
             >
-              Ethical and Bias Considerations in Artificial Intelligence/Machine Learning
+              Ethical and Bias Considerations in Artificial Intelligence/Machine Learning (2025)
             </a>
             <span className="resource-note">
               A review of ethical considerations and bias in medical AI systems, outlining key sources of bias in data, model development, and clinical deployment. The paper highlights the need for transparent, fair, and carefully evaluated machine learning systems to ensure reliable and equitable healthcare outcomes.
@@ -192,7 +189,7 @@ export function Resources() {
               target="_blank"
               rel="noreferrer"
             >
-              Biases in Scholarly Recommender Systems: Impact, Prevalence, and Mitigation
+              Biases in Scholarly Recommender Systems: Impact, Prevalence, and Mitigation (2023)
             </a>
             <span className="resource-note">
               A review of bias in scholarly recommender systems, examining how recommendation algorithms can shape research visibility, amplify inequalities, and influence scientific discovery. The paper explores the prevalence and impact of these biases while discussing strategies for creating fairer and more transparent recommendation systems.
@@ -204,7 +201,7 @@ export function Resources() {
               target="_blank"
               rel="noreferrer"
             >
-              Evolution and impact of bias in human and machine learning algorithm interaction
+              Evolution and impact of bias in human and machine learning algorithm interaction (2020)
             </a>
             <span className="resource-note">
               A study of how bias evolves through repeated interactions between humans and machine learning systems, showing how biased data, predictions, and user behavior can reinforce one another over time. The paper introduces an iterative framework for analyzing algorithmic bias and highlights the long-term risks of personalization and filtering mechanisms on fairness and information discovery.

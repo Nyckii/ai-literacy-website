@@ -70,9 +70,9 @@ export const games: Game[] = [
     slug: "historical-bias",
     title: "Historical Bias",
     level: "group",
-    short: "Same applicant, different ZIP code, different decision.",
+    short: "Watch the AI learn from your past hiring decisions.",
     description:
-      "A loan-application model trained on historical data. Switch the applicant’s city between a wealthy and a poor neighborhood, nothing else changes, and watch the model’s decision flip. Inspired by survivalofthebestfit.com.",
+      "An automated hiring algorithm trained on your historical data. See how the model learns from your own past hiring decisions to unfairly reject certain candidates later.",
   },
   {
     slug: "exclusion-bias",

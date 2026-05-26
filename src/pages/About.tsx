@@ -27,6 +27,19 @@ export function About() {
       </section>
 
       <section className="content-block">
+        <h2>Why we built Bias Arcade</h2>
+        <p>
+          As AI systems become increasingly embedded in high-stakes decisions from hiring and healthcare to education and credit scoring, understanding how bias enters these systems has never been more important. Yet public awareness of AI bias remains limited, and the resources that do exist are largely aimed at technical audiences: developers, researchers, and computer scientists.
+        </p>
+        <p>
+          Non-technical learners, including high school and university students outside of computer science, are rarely given accessible tools to engage critically with AI bias. Existing materials often rely on code-heavy explanations or abstract descriptions that fail to connect bias to its real-world consequences. This leaves a large and important audience without the knowledge they need to recognize, question, or respond to biased AI systems they may encounter in everyday life.
+        </p>
+        <p>
+          Bias Arcade was designed to meet that need, giving any curious learner the tools to understand not just that AI systems can be biased, but how and why that bias develops, and what it means for the people affected.
+        </p>
+      </section>
+
+      <section className="content-block">
         <h2>Learning objectives</h2>
         <p>By the end of the interactive experiences, learners will be able to:</p>
         <ul>
