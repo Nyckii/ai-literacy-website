@@ -126,7 +126,7 @@ export function About() {
           <li><strong>Multi-level biases:</strong> Simultaneously operate at both individual and group levels.</li>
         </ul>
         <p>
-          We selected six biases spanning all three levels: historical bias and exclusion bias at the group level, confirmation bias at the individual level, and algorithmic bias, learning bias, and interaction bias from the multi-level category. This choice was intentional and reflects a core goal of Bias Arcade, which is to show users that bias enters AI systems in multiple ways.
+          We selected five biases: confirmation bias at the individual level, algorithmic bias, learning bias, and interaction bias from the multi-level category, as well as historical bias which is from an external team.
         </p>
       </section>
 
@@ -136,11 +136,11 @@ export function About() {
           This project was developed as part of the <a href="https://peachlab.inf.ethz.ch/teaching/diet2026/">Design in Educational Technology 2026</a> course at ETH Zürich.
         </p>
         <ul>
-          <li><strong>Akankshya Ingale:</strong> BSc Computer Science – University of Lugano</li>
+          <li><strong>Akankshya Ingale:</strong> BSc Computer Science – USI Università della Svizzera italiana</li>
           <li><strong>Leroy Borgeaud dit Avocat:</strong> MSc Computer Science – ETH Zürich</li>
           <li><strong>Nagyung Kim:</strong> MSc Computer Science – ETH Zürich</li>
           <li><strong>Nicolas Stucki:</strong> MSc Computer Science – ETH Zürich</li>
-          <li><strong>Xiaozihan Wang:</strong> BSc Computer Science – University of Lugano</li>
+          <li><strong>Xiaozihan Wang:</strong> BSc Computer Science – USI Università della Svizzera italiana</li>
         </ul>
       </section>
     </article>
