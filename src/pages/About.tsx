@@ -52,32 +52,28 @@ export function About() {
       <section className="content-block">
         <h2>Design rationale</h2>
         <p>
-          Bias Arcade uses multiple decision-making interactive experiences to build a comprehensive understanding of biases in AI systems. It is built on three core pillars: Interactive Learning to maximise learner motivation, Situated Learning to ground concepts in real-world contexts and Cognitive Load Theory to ensure the experience remains focused and accessible.
+          Bias Arcade uses <strong>learner-centered design</strong> to support <strong>mental model change</strong>, not just <strong>task success</strong>. Many non-technical learners assume algorithms are neutral because they are computational. The games challenge this misconception by placing learners in decision-making situations where biased outcomes become opportunities to <strong>learn from error</strong>. Learners see how reasonable <strong>optimization targets</strong> and engagement signals can still produce unfair outcomes.
         </p>
-
-        <h3>Interactive learning</h3>
         <p>
-          Rather than presenting AI bias through reading materials or videos, the interactive experiences place learners in situations where they must make decisions, observe consequences and reflect on outcomes. This active involvement supports deeper understanding and is better suited to developing critical thinking skills. Research in interactive learning highlights its benefits for motivation, engagement and knowledge retention.
+          The tool follows <strong>constructivist learning theory</strong> by grounding bias in concrete scenarios: delivery allocation, social media feeds, training data, and civic participation. Learners build understanding by acting within these contexts before receiving abstract definitions. The games use <strong>scaffolding</strong> and <strong>productive struggle</strong> by guiding learners through staged experiences while preserving meaningful decisions and consequences.
         </p>
-
-        <h3>Situated in real-world contexts</h3>
         <p>
-          Interactive experiences in Bias Arcade are set in real-world contexts such as hiring, healthcare or social media. This grounds the learning experience in contexts learners can relate to, thereby making the consequences of AI bias feel more concrete. Furthermore, it directly supports learners in connecting biases to harmful real-world outcomes.
+          Bias Arcade manages <strong>cognitive load</strong> through <strong>intrinsic load</strong>, <strong>extraneous load</strong>, and <strong>germane load</strong>. One bias per experience limits the intrinsic complexity of algorithmic bias. For example, in Confirmation Bias, early stages intentionally exclude side objectives such as revenue, user satisfaction, and broader business metrics, reducing extraneous load so learners can focus on the core optimization logic first. Decision-making, observation, and debriefing preserve germane load: the productive effort that builds understanding.
         </p>
-
-        <h3>Designed for non-technical audiences</h3>
         <p>
-          Bias Arcade requires no coding knowledge or technical background to use. This was an intentional decision based on our target audience: high school and university students outside of computer science and educators who may have limited experience with AI systems. The interactive experiences focus on concepts, decisions and consequences rather than implementation. This aligns with the AILit Framework's emphasis on AI literacy as a broad competency that should be accessible to all learners, not only those with a technical background.
+          The interface supports <strong>working memory</strong> and <strong>attention</strong> through focused stages, clear metrics, visible feedback, and simple choices. It also applies <strong>multimedia learning</strong> principles. The <strong>active-processing assumption</strong> appears because learners act before receiving explanation. The <strong>coherence principle</strong> appears in the one-bias-per-game structure. The <strong>segmenting principle</strong> appears through short, step-by-step phases.
         </p>
-
-        <h3>One bias per experience</h3>
         <p>
-          Each experience focuses on a single type of bias. This decision was driven by cognitive load considerations. Introducing multiple types of bias in one experience risks overwhelming and confusing learners. Isolating one bias per experience allows learners to develop a clear and accurate mental model of how each bias operates.
+          Feedback functions as <strong>formative assessment</strong>. Learners receive visible feedback and progress cues during the experience, helping them update their understanding as they proceed. Confirmation Bias makes this especially explicit: a live interaction history panel logs each like, read, and dwell event as it happens. When the next session loads, the feed narrows around those accumulated signals, making the link between behavior and outcome visible. Bias Recap adds an <strong>assessment layer</strong> by checking whether learners can match the four featured bias types to abstract descriptions.
         </p>
-
-        <h3>Shorter experiences</h3>
         <p>
-          Rather than creating longer interactions, we aimed to create a collection of short, self-contained experiences with additional supporting resources. This provides two advantages: first, it maintains learner motivation and attention. Second, it gives educators the flexibility to incorporate the experiences in multiple ways: For example, as a warm-up activity, a standalone lesson, or a brief in-class exercise. This makes Bias Arcade suitable for both self-study and structured classroom use.
+          The learning goals align with <strong>Bloom's taxonomy</strong>, especially <strong>Apply</strong> and <strong>Analyze</strong>. Learners must apply bias concepts to concrete scenarios and analyze how design choices produce harmful outcomes. Bias Recap reinforces this by asking learners to recognize the same bias mechanisms in different wording from the original games, checking whether their understanding holds up when the framing changes.
+        </p>
+        <p>
+          For motivation, Bias Arcade draws on <strong>Self-Determination Theory</strong>. It supports <strong>autonomy</strong> through meaningful choices in the learning scenarios and <strong>competence</strong> through short experiences, clear goals, visible progress, retries or restarts where appropriate, and completion feedback. The low-stakes <strong>no embarrassment</strong> setting lets learners make biased choices privately, receive feedback, and reflect honestly.
+        </p>
+        <p>
+          Overall, Bias Arcade works beyond the <strong>interaction layer</strong>. The goal is not simply that learners click correctly, but that they build a revised understanding of how bias enters systems that appear to operate normally. The <strong>epistemic layer</strong> is supported through debriefing that connects visible outcomes to objectives, signals, data, and interaction patterns. This makes Bias Arcade a <strong>learning intervention</strong> with an evaluable design sequence: the design links choices, feedback, debriefing, and recap assessment into a coherent path from first encounter to conceptual understanding.
         </p>
       </section>
 
