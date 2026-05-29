@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 export function Tool() {
   return (
     <article className="content-page">
@@ -10,51 +12,59 @@ export function Tool() {
       </header>
 
       <section className="content-block">
-        <h2>Section 1 — Access and setup</h2>
+        <h2>Section 1: Access and setup</h2>
 
         <h3>Access the tool</h3>
         <p>
-          {/* TODO: Replace with a short description of how to access Bias Arcade. */}
-          Bias Arcade runs entirely in the browser — no installation or account
-          is required.
+          Bias Arcade is a web-based tool that runs entirely in your browser.
+          There is nothing to install and no account to create. Open the link
+          below and start playing.
         </p>
         <p>
-          <a
-            className="button-primary"
-            href="https://example.com" /* TODO: replace with the deployed URL */
-            target="_blank"
-            rel="noreferrer"
-          >
+          <Link className="button-primary" to="/">
             Open Bias Arcade →
-          </a>
+          </Link>
         </p>
 
         <h3>What users need to prepare</h3>
         <ul>
           <li>
-            {/* TODO: device requirements (e.g., desktop / laptop / tablet). */}
-            Device: …
+            <strong>Device:</strong> a desktop or laptop is recommended. Tablets
+            work, but some games use drag-and-drop interactions that are easier
+            with a mouse or trackpad. Phones are not supported.
           </li>
           <li>
-            {/* TODO: supported browsers and minimum versions. */}
-            Browser: …
+            <strong>Browser:</strong> a recent version of Chrome, Firefox, Safari,
+            or Edge (released in the last two years). JavaScript must be enabled.
           </li>
           <li>
-            {/* TODO: screen / display recommendations. */}
-            Screen: …
+            <strong>Screen:</strong> a screen at least 1280 × 800 px. Some games
+            include images and side-by-side comparisons that benefit from a
+            larger display.
           </li>
           <li>
-            {/* TODO: any audio, input, or physical setup needs. */}
-            Other: …
+            <strong>Connection:</strong> a stable internet connection to load
+            the games and the embedded demo video.
+          </li>
+          <li>
+            <strong>Other:</strong> no audio, microphone, or special hardware is
+            required. Plan roughly 10–15 minutes per featured game.
           </li>
         </ul>
+
+        <p>
+          Each game is self-contained. You can play any of them on their own,
+          in any order, and stop whenever you like. If something is unclear or
+          you run into trouble, the <Link to="/faq">FAQ</Link> covers the most
+          common questions.
+        </p>
       </section>
 
       <section className="content-block">
-        <h2>Section 2 — Demo video</h2>
+        <h2>Section 2: Demo video</h2>
         <p>
-          A short demo (max 5 minutes) showing the interface and how learners
-          interact with the tool.
+          The video below walks through Bias Arcade: the home page, one of the
+          featured games, and the recap that follows.
         </p>
 
         <div className="video-embed">
@@ -65,14 +75,6 @@ export function Tool() {
             allowFullScreen
           />
         </div>
-
-        <h3>What the demo covers</h3>
-        <ul>
-          <li>{/* TODO */}Walkthrough of the landing page and navigation.</li>
-          <li>{/* TODO */}Playing one of the featured bias experiences end-to-end.</li>
-          <li>{/* TODO */}Reflection / recap after a game.</li>
-          <li>{/* TODO */}Where to find the supporting resources and FAQ.</li>
-        </ul>
       </section>
     </article>
   );
