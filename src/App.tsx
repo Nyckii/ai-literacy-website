@@ -6,6 +6,7 @@ import { FAQ } from "./pages/FAQ";
 import { Home } from "./pages/Home";
 import { NotFound } from "./pages/NotFound";
 import { Resources } from "./pages/Resources";
+import { Tool } from "./pages/Tool";
 import { AlgorithmBias } from "./pages/games/AlgorithmBias";
 import { ConfirmationBias } from "./pages/games/ConfirmationBias";
 import { ExclusionBias } from "./pages/games/ExclusionBias";
@@ -24,6 +25,7 @@ export default function App() {
         <Route element={<Layout />}>
           <Route index element={<Home />} />
           <Route path="about" element={<About />} />
+          <Route path="tool" element={<Tool />} />
           <Route path="resources" element={<Resources />} />
           <Route path="faq" element={<FAQ />} />
           <Route

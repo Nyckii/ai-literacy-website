@@ -30,6 +30,7 @@ export function Layout() {
         <nav className="site-nav">
           <NavLink to="/" end>Home</NavLink>
           <NavLink to="/#games">Games</NavLink>
+          <NavLink to="/tool">Tool</NavLink>
           <NavLink to="/about">About</NavLink>
           <NavLink to="/resources">Resources</NavLink>
           <NavLink to="/faq">FAQ</NavLink>
@@ -58,6 +59,7 @@ export function Layout() {
             <ul className="footer-links">
               <li><Link to="/">Home</Link></li>
               <li><Link to="/#games">Games</Link></li>
+              <li><Link to="/tool">Tool</Link></li>
               <li><Link to="/about">About</Link></li>
               <li><Link to="/resources">Resources</Link></li>
               <li><Link to="/faq">FAQ</Link></li>
