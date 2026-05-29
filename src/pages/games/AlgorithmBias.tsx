@@ -118,6 +118,11 @@ const ALGO_ORDERS_SURGE: Record<string, number> = { downtown: 6, midtown: 4, nor
 const TOTAL_RIDERS = 8;
 const YOUR_TURN_DURATION = 45;
 const AUTO_DISPATCH_FRAME_GAP = 12;
+const AUTOMATE_BUILD_STEP_MS = 120;
+const AUTOMATE_HIGHLIGHT_MS = 180;
+const AUTOMATE_SIM_SECONDS = 6;
+const AUTOMATE_SIM_SPEED_MULTIPLIER = 4;
+const AUTOMATE_DISPATCH_FRAME_GAP = 3;
 const LIVE_GOALS = {
   avgTrip: 15,
   delivered: 13,
@@ -1438,7 +1443,7 @@ function PhaseAutomate({
       ) : (
         <DispatchSimPanel
           simTimer={autoSimTimer}
-          totalTime={20}
+          totalTime={AUTOMATE_SIM_SECONDS}
           simDemand={autoSimDemand}
           simDelivered={autoSimDelivered}
         />
@@ -1762,6 +1767,7 @@ export function AlgorithmBias() {
   const biasSimIdleRef = useRef(TOTAL_RIDERS);
   const biasSimDeliveredRef = useRef<Record<string, number>>({});
   const biasSimDispatchFrameGapRef = useRef(AUTO_DISPATCH_FRAME_GAP);
+  const biasSimHasTickedRef = useRef(false);
   const [biasSimRunning, setBiasSimRunning] = useState(false);
   const [biasSimTimer, setBiasSimTimer] = useState(20);
   const [biasSimDemand, setBiasSimDemand] = useState<Record<string, number>>({});
@@ -1952,8 +1958,8 @@ export function AlgorithmBias() {
       const id = ALGO_SEQUENCE[algoStep];
       setAlgoHighlightId(id);
       setAlgoStep(s => s + 1);
-      setTimeout(() => setAlgoHighlightId(null), 550);
-    }, 600);
+      setTimeout(() => setAlgoHighlightId(null), AUTOMATE_HIGHLIGHT_MS);
+    }, AUTOMATE_BUILD_STEP_MS);
     return () => clearTimeout(t);
   }, [phase, algoStep]);
 
@@ -1980,9 +1986,9 @@ export function AlgorithmBias() {
     autoSimReservedRef.current = { ...EMPTY_HOOD_COUNTS };
     autoSimIdleRef.current = TOTAL_RIDERS;
     autoSimDeliveredRef.current = { ...EMPTY_HOOD_COUNTS };
-    autoSimDispatchFrameGapRef.current = AUTO_DISPATCH_FRAME_GAP;
+    autoSimDispatchFrameGapRef.current = AUTOMATE_DISPATCH_FRAME_GAP;
     setAutoSimRunning(true);
-    setAutoSimTimer(20);
+    setAutoSimTimer(AUTOMATE_SIM_SECONDS);
     setAutoSimDemand({ ...INITIAL_DEMAND });
     setAutoSimDelivered({ ...EMPTY_HOOD_COUNTS });
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -1993,7 +1999,7 @@ export function AlgorithmBias() {
     if (!autoSimRunning) return;
     const interval = setInterval(() => {
       setAutoSimTimer(prev => {
-        const next = prev - 1 / 30;
+        const next = prev - AUTOMATE_SIM_SPEED_MULTIPLIER / 30;
         if (next <= 0) { setAutoSimRunning(false); return 0; }
         return next;
       });
@@ -2009,7 +2015,7 @@ export function AlgorithmBias() {
       const updated: LiveRider[] = [];
       for (const rider of autoSimLiveRidersRef.current) {
         const h = hoodById(rider.hoodId);
-        const newProgress = rider.progress + riderSpeedForHood(h);
+        const newProgress = rider.progress + riderSpeedForHood(h) * AUTOMATE_SIM_SPEED_MULTIPLIER;
         let served = rider.served;
         if (!served && rider.progress < 1.0 && newProgress >= 1.0) {
           served = true;
@@ -2029,7 +2035,7 @@ export function AlgorithmBias() {
       autoSimDispatchFrameGapRef.current += 1;
       if (
         autoSimIdleRef.current > 0 &&
-        autoSimDispatchFrameGapRef.current >= AUTO_DISPATCH_FRAME_GAP
+        autoSimDispatchFrameGapRef.current >= AUTOMATE_DISPATCH_FRAME_GAP
       ) {
         for (const hoodId of ['downtown', 'midtown', 'northsuburb', 'easthills'] as const) {
           if ((autoSimReservedRef.current[hoodId] ?? 0) < (INITIAL_DEMAND[hoodId] ?? 0)) {
@@ -2071,6 +2077,7 @@ export function AlgorithmBias() {
     biasSimIdleRef.current = TOTAL_RIDERS;
     biasSimDeliveredRef.current = { ...EMPTY_HOOD_COUNTS };
     biasSimDispatchFrameGapRef.current = AUTO_DISPATCH_FRAME_GAP;
+    biasSimHasTickedRef.current = false;
     setBiasSimRunning(true);
     setBiasSimTimer(20);
     setBiasSimDemand({ ...biasStartDemand });
@@ -2081,6 +2088,7 @@ export function AlgorithmBias() {
   useEffect(() => {
     if (!biasSimRunning) return;
     const interval = setInterval(() => {
+      biasSimHasTickedRef.current = true;
       setBiasSimTimer(prev => {
         const next = prev - 1 / 30;
         if (next <= 0) { setBiasSimRunning(false); return 0; }
@@ -2092,7 +2100,13 @@ export function AlgorithmBias() {
 
   // ── Bias: transition to results when timer ends ──
   useEffect(() => {
-    if (biasSimRunning || biasSimTimer > 0.05 || biasSubPhase !== 'running' || phase !== 'bias') return;
+    if (
+      biasSimRunning ||
+      !biasSimHasTickedRef.current ||
+      biasSimTimer > 0.05 ||
+      biasSubPhase !== 'running' ||
+      phase !== 'bias'
+    ) return;
     setAlgoResults(liveResultsFromRun(
       biasSimAssignedRef.current,
       biasSimDeliveredRef.current,

@@ -58,10 +58,8 @@ export function Tool() {
         </p>
 
         <div className="video-embed">
-          {/* TODO: Replace the src below with the final demo video URL
-              (YouTube / Vimeo embed, or self-hosted MP4). */}
           <iframe
-            src="https://www.youtube.com/embed/REPLACE_ME"
+            src="https://www.youtube.com/embed/Af6eox-AGXw"
             title="Bias Arcade demo video"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
