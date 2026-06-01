@@ -69,7 +69,7 @@ export function Tool() {
 
         <div className="video-embed">
           <iframe
-            src="https://www.youtube.com/embed/oDNTVYh09I8"
+            src="https://www.youtube.com/embed/3re21V1DkoE"
             title="Bias Arcade demo video"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
